@@ -29,6 +29,8 @@ function ClientComms( options ) {
 		}
 	}
 
+	this.pingStartTime = null;
+	this.ping = 0;
 	this.playerName = null;
 
 	// Create as close to a websocket connection as we can
@@ -45,6 +47,7 @@ ClientComms.prototype = {
 	// These are prefixed with _
 	_bindEvents: function() {
 		this.socket.on('connected', this.onConnect.bind(this));
+		this.socket.on('ping', this.onPingReceived.bind(this));
 		this.socket.on('roomFull', this.onRoomFull.bind(this));
 		this.socket.on('joinedRoom', this.onJoinedRoom.bind(this));
 		this.socket.on('playerNameExists', this.onPlayerNameExists.bind(this));
@@ -70,6 +73,11 @@ ClientComms.prototype = {
 
 	enterName: function( name ) {
 		this.socket.emit('enterName', name);
+	},
+
+	sendPing: function() {
+		this.pingStartTime = Date.now();
+		this.socket.emit('ping');
 	},
 
 	sendState: function( state ) {
@@ -99,6 +107,11 @@ ClientComms.prototype = {
 		this.options.onConnect();
 	},
 
+	onPingReceived: function() {
+		this.ping = Date.now() - this.pingStartTime;
+		console.log(this.ping);
+	},
+
 	onRoomFull: function() {
 		console.log('roomFull');
 		this.options.onRoomFull();
@@ -114,9 +127,10 @@ ClientComms.prototype = {
 		this.options.onPlayerNameExists( name );
 	},
 
-	onPlayerNameAccepted: function( name ) {
-		console.log('player name accepted', name);
-		this.options.onPlayerNameAccepted( name );
+	onPlayerNameAccepted: function( playerDetails ) {
+		console.log('player name accepted', playerDetails);
+		this.playerName = playerDetails.name;
+		this.options.onPlayerNameAccepted( playerDetails );
 	},
 
 	onChatMessageReceived: function( message ) {
