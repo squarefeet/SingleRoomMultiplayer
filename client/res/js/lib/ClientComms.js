@@ -16,7 +16,9 @@ function ClientComms( options ) {
 		onChatMessageReceived: noop,
 		onPlayerNameExists: noop,
 		onPlayerNameAccepted: noop,
-		onPlayerListReceived: noop
+		onPlayerJoined: noop,
+		onPlayerListReceived: noop,
+		onPlayerDisconnected: noop
 	};
 
 
@@ -52,8 +54,10 @@ ClientComms.prototype = {
 		this.socket.on('joinedRoom', this.onJoinedRoom.bind(this));
 		this.socket.on('playerNameExists', this.onPlayerNameExists.bind(this));
 		this.socket.on('playerNameAccepted', this.onPlayerNameAccepted.bind(this));
+		this.socket.on('playerJoined', this.onPlayerJoined.bind(this));
 		this.socket.on('chatMessage', this.onChatMessageReceived.bind(this));
 		this.socket.on('state', this.onStateReceive.bind(this));
+		this.socket.on('onPlayerDisconnected', this.onPlayerDisconnected.bind(this));
 	},
 
 	_compressPacket: function( packet ) {
@@ -133,14 +137,24 @@ ClientComms.prototype = {
 		this.options.onPlayerNameAccepted( playerDetails );
 	},
 
+	onPlayerJoined: function( playerDetails ) {
+		console.log('new played joined: ', playerDetails.name);
+		this.options.onPlayerJoined( playerDetails );
+	},
+
 	onChatMessageReceived: function( message ) {
 		console.log('chat message received', message);
 		this.options.onChatMessageReceived();
 	},
 
 	onStateReceive: function( packet ) {
-		console.log('received packet', packet);
+		// console.log('received packet', packet);
 		var state = this._decompressPacket( packet );
 		this.options.onPacketReceived( state );
 	},
+
+	onPlayerDisconnected: function( playerDetails ) {
+		console.log('Player disconnected:', playerDetails);
+		this.options.onPlayerDisconnected( playerDetails );
+	}
 };

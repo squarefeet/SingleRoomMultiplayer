@@ -1,10 +1,88 @@
+var players = {};
+
+var userName = '';
+
+
 function onSocketConnected() {
 	comms.joinRoom();
 }
 
+function onJoinedRoom() {
+    comms.getPlayerList();
+}
+
+function onPlayerListReceived( list ) {
+    processPlayerList( list );
+
+    setTimeout(function() {
+        var name = 'Player ' + ((Math.random() * 12345) | 0);
+        players[name] = {
+            name: name
+        };
+
+        userName = name;
+
+        comms.enterName( name );
+    }, 1000);
+}
+
+
+function processPlayerList( list ) {
+    for(var i = 0; i < list.length; ++i) {
+        players[list[i]] = {
+            name: list[i]
+        };
+
+        var player = players[list[i]].player = new Player();
+        sceneManager.addObjectTo( 'middleground', player );
+    }
+}
+
+function onPlayerJoined( playerDetails ) {
+
+    if(playerDetails.name === userName) {
+        console.log('Not making player for', userName);
+        return;
+    }
+
+    players[playerDetails.name] = {
+        name: playerDetails.name
+    };
+
+    var player = players[playerDetails.name].player = new Player();
+    sceneManager.addObjectTo( 'middleground', player );
+}
+
+
+function onPlayerNameAccepted() {
+    // var player = new Player();
+    // sceneManager.addObjectTo( 'middleground', player );
+}
+
+
+function onPlayerDisconnected( playerDetails ) {
+
+}
+
+
+function onPacketReceived( state ) {
+    if(players[state.name] && players[state.name].player) {
+        players[state.name].player.mesh.position.x = state.x;
+        players[state.name].player.mesh.position.y = state.y;
+        players[state.name].player.mesh.position.z = state.z;
+    }
+}
+
+
 
 var comms = new ClientComms({
-	onConnect: onSocketConnected
+	onConnect: onSocketConnected,
+    onJoinedRoom: onJoinedRoom,
+    onPlayerListReceived: onPlayerListReceived,
+    onPlayerNameAccepted: onPlayerNameAccepted,
+    onPlayerJoined: onPlayerJoined,
+    onPlayerDisconnected: onPlayerDisconnected,
+    onPacketReceived: onPacketReceived
 });
 
 
@@ -12,7 +90,9 @@ var comms = new ClientComms({
 
 // Create the main event store. Events will be added (.on(...)), removed
 // (.off(...)), and fired (.fire(...)) from this object.
-// var eventHandler = new EventHandler();
+var eventHandler = new EventHandler();
+
+// eventHandler.on('')
 
 // Create a key handler. Note that this isn't used by most (if any) camera
 // movements. Those are handled by three.js.
@@ -60,6 +140,9 @@ sceneManager.middleground.controls.rollSpeed = Math.PI / 2;
 
 // Make sure these controls can be updated by adding a custom tick function
 sceneManager.background.tick = function(dt) {
+    this.controls.update(dt);
+};
+sceneManager.middleground.tick = function(dt) {
     this.controls.update(dt);
 };
 

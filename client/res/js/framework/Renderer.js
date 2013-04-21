@@ -56,12 +56,19 @@
         if(!that.sceneManager) return;
 
         var sceneManager = that.sceneManager,
-            getDelta = that.clock.getDelta;
+            getDelta = that.clock.getDelta,
+            tickCount = 0;
 
         function animate() {
             if(that.active) {
                 requestAnimationFrame(animate);
-                that.render( getDelta.call(that.clock), sceneManager.getObjects() );
+
+                ++tickCount;
+
+                // if(tickCount % 1 === 0) {
+                    that.render( getDelta.call(that.clock), sceneManager.getObjects() );
+                    tickCount = 0;
+                // }
             }
         }
 

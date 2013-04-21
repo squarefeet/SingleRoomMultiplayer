@@ -12,7 +12,6 @@ THREE.FlyControlsVelocity = function ( object, domElement, acceleration, deceler
     // if ( domElement ) this.domElement.setAttribute( 'tabindex', -1 );
 
 	// API
-
 	this.movementSpeed = 1.0;
 	this.rollSpeed = 0.005;
 
@@ -35,6 +34,7 @@ THREE.FlyControlsVelocity = function ( object, domElement, acceleration, deceler
 	this.object.useQuaternion = true;
 
 	// internals
+	this.tickCount = 0;
 
 	this.tmpQuaternion = new THREE.Quaternion();
 
@@ -329,6 +329,18 @@ THREE.FlyControlsVelocity = function ( object, domElement, acceleration, deceler
 		this.object.matrix.setPosition( this.object.position );
 		this.object.matrix.setRotationFromQuaternion( this.object.quaternion );
 		this.object.matrixWorldNeedsUpdate = true;
+
+		++this.tickCount;
+
+		if(this.tickCount % 5 === 0) {
+			comms.sendState( {
+				name: userName,
+				x: this.object.position.x,
+				y: this.object.position.y,
+				z: this.object.position.z
+			});
+			this.tickCount = 0;
+		}
 	};
 
 
