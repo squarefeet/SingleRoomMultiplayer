@@ -1,3 +1,6 @@
+// This is here so this file can be used both server- and client-side.
+var window = window || global;
+
 (function(attachTo) {
 
     // Shared constructor function. Used by inherit().

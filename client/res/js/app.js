@@ -23,7 +23,7 @@ function onPlayerListReceived( list ) {
         userName = name;
 
         comms.enterName( name );
-    }, 1000);
+    }, 0);
 }
 
 
@@ -34,7 +34,7 @@ function processPlayerList( list ) {
         };
 
         var player = players[list[i]].player = new Player();
-        sceneManager.addObjectTo( 'middleground', player );
+        // sceneManager.addObjectTo( 'middleground', player );
     }
 }
 
@@ -50,26 +50,35 @@ function onPlayerJoined( playerDetails ) {
     };
 
     var player = players[playerDetails.name].player = new Player();
-    sceneManager.addObjectTo( 'middleground', player );
 }
 
 
 function onPlayerNameAccepted() {
-    // var player = new Player();
-    // sceneManager.addObjectTo( 'middleground', player );
+    var player = new Player({
+        hasControls: true
+    });
+
+    players[userName].player = player;
+
+    sceneManager.addObjectTo( 'middleground', player );
 }
 
 
 function onPlayerDisconnected( playerDetails ) {
+    if(players[playerDetails.name]) {
 
+        var playerObj = players[playerDetails.name].player;
+        sceneManager.removeObjectFrom( 'middleground', playerObj );
+
+        delete[playerDetails.name];
+    }
 }
 
 
 function onPacketReceived( state ) {
+    // console.log('got packet for', state.name);
     if(players[state.name] && players[state.name].player) {
-        players[state.name].player.mesh.position.x = state.x;
-        players[state.name].player.mesh.position.y = state.y;
-        players[state.name].player.mesh.position.z = state.z;
+        players[state.name].player.onServerStateReceived( state );
     }
 }
 
@@ -118,33 +127,33 @@ var sceneManager = new SceneManager();
 
 
 // Add some camera controls to each scene's camera
-sceneManager.background.controls = new THREE.FlyControlsVelocity(
-    sceneManager.background.camera,
-    document, // domElement
-    0.8, // acceleration multiplier
-    0.97, // deceleration multiplier
-    1000 // maximum movement velocity
-);
-sceneManager.background.controls.movementSpeed = 0;
-sceneManager.background.controls.rollSpeed = Math.PI / 2;
+// sceneManager.background.controls = new THREE.FlyControlsVelocity(
+//     sceneManager.background.camera,
+//     document, // domElement
+//     0.8, // acceleration multiplier
+//     0.97, // deceleration multiplier
+//     1000 // maximum movement velocity
+// );
+// sceneManager.background.controls.movementSpeed = 0;
+// sceneManager.background.controls.rollSpeed = Math.PI / 2;
 
-sceneManager.middleground.controls = new THREE.FlyControlsVelocity(
-    sceneManager.middleground.camera,
-    document, // domElement
-    0.8, // acceleration multiplier
-    0.97, // deceleration multiplier
-    1000 // maximum movement velocity
-);
-sceneManager.middleground.controls.rollSpeed = Math.PI / 2;
+// sceneManager.middleground.controls = new THREE.FlyControlsVelocity(
+//     sceneManager.middleground.camera,
+//     document, // domElement
+//     0.8, // acceleration multiplier
+//     0.97, // deceleration multiplier
+//     1000 // maximum movement velocity
+// );
+// sceneManager.middleground.controls.rollSpeed = Math.PI / 2;
 
 
 // Make sure these controls can be updated by adding a custom tick function
-sceneManager.background.tick = function(dt) {
-    this.controls.update(dt);
-};
-sceneManager.middleground.tick = function(dt) {
-    this.controls.update(dt);
-};
+// sceneManager.background.tick = function(dt) {
+//     this.controls.update(dt);
+// };
+// sceneManager.middleground.tick = function(dt) {
+//     this.controls.update(dt);
+// };
 
 
 

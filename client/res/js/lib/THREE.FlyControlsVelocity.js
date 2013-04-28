@@ -48,18 +48,15 @@ THREE.FlyControlsVelocity = function ( object, domElement, acceleration, deceler
 	    yawLeft: 0, yawRight: 0,
 	    rollLeft: 0, rollRight: 0
 	};
+
 	this.moveVector = new THREE.Vector3( 0, 0, 0 );
 	this.rotationVector = new THREE.Vector3( 0, 0, 0 );
 	this.velocityVector = new THREE.Vector3( 0, 0, 0 );
 
 	this.handleEvent = function ( event ) {
-
 		if ( typeof this[ event.type ] == 'function' ) {
-
 			this[ event.type ]( event );
-
 		}
-
 	};
 
 	this.keydown = function( event ) {
@@ -128,7 +125,6 @@ THREE.FlyControlsVelocity = function ( object, domElement, acceleration, deceler
 
 		this.updateMovementVector();
 		this.updateRotationVector();
-
 	};
 
 	this.mousedown = function( event ) {
@@ -335,9 +331,8 @@ THREE.FlyControlsVelocity = function ( object, domElement, acceleration, deceler
 		if(this.tickCount % 5 === 0) {
 			comms.sendState( {
 				name: userName,
-				x: this.object.position.x,
-				y: this.object.position.y,
-				z: this.object.position.z
+				matrix: this.object.matrix,
+				position: this.object.position
 			});
 			this.tickCount = 0;
 		}
@@ -384,13 +379,9 @@ THREE.FlyControlsVelocity = function ( object, domElement, acceleration, deceler
 	};
 
 	function bind( scope, fn ) {
-
 		return function () {
-
 			fn.apply( scope, arguments );
-
 		};
-
 	};
 
     if(this.domElement) {
