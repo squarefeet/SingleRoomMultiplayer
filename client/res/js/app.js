@@ -173,6 +173,16 @@ var light = new THREE.PointLight(0xffffff);
 sceneManager.middleground.scene.add( light );
 
 
+for( var i = 0; i < 25; ++i ) {
+    var asteroid = new Asteroid({
+        weightX: Math.random()/8,
+        weightY: Math.random()/8,
+        weightZ: Math.random()/8,
+        spread: 4096
+    });
+}
+
+
 
 // Create the renderer. By default it'll set width and height to window values
 // and attach the domElement to document.body. You only need one of these.

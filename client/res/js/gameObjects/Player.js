@@ -60,6 +60,8 @@ var window = window || global;
 	    	}
 
 	    	else {
+	    		this.hud = new HUD();
+
 	    		this.target = sceneManager.middleground.camera;
 	    		this.backgroundTarget = sceneManager.background.camera;
 
@@ -91,7 +93,13 @@ var window = window || global;
 	    onServerStateReceived: function( state ) {
 
 	    	var newPos = new THREE.Vector3(state.pos.x, state.pos.y, state.pos.z);
-	    	var newQuat = new THREE.Quaternion(state.quaternion.x, state.quaternion.y, state.quaternion.z, state.quaternion.w);
+
+	    	var newQuat = new THREE.Quaternion(
+	    		state.quaternion.x,
+	    		state.quaternion.y,
+	    		state.quaternion.z,
+	    		state.quaternion.w
+	    	);
 
 			this.target.position.lerp( newPos, 0.5);
 			this.target.quaternion.slerp( newQuat, 0.5);
