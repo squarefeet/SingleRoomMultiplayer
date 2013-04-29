@@ -85,29 +85,19 @@ var window = window || global;
 	    },
 
 	    tick: function( dt ) {
-    		// this.updateMatrix( dt );
+    		this.updateMatrix( dt );
 	    },
 
 	    onServerStateReceived: function( state ) {
-	    	// console.log('got state')
-	    	// if(this.options.hasControls) return;
 
-	    	// this.updateMovementVector();
-			// this.updateRotationVector();
+	    	var newPos = new THREE.Vector3(state.pos.x, state.pos.y, state.pos.z);
+	    	var newQuat = new THREE.Quaternion(state.quaternion.x, state.quaternion.y, state.quaternion.z, state.quaternion.w);
 
-			// this.updateMatrix( 40 );
-
-			this.target.position = state.pos;
-
-			this.target.matrix.setPosition( this.target.position );
-			this.target.matrix.setRotationFromQuaternion( state.quaternion );
-			this.target.matrixWorldNeedsUpdate = true;
+			this.target.position.lerp( newPos, 0.5);
+			this.target.quaternion.slerp( newQuat, 0.5);
 
 			if(this.backgroundTarget) {
-				this.backgroundTarget.position = state.pos;
-				this.backgroundTarget.matrix.setPosition( this.backgroundTarget.position );
-				this.backgroundTarget.matrix.setRotationFromQuaternion( state.quaternion );
-				this.backgroundTarget.matrixWorldNeedsUpdate = true;
+				this.backgroundTarget.quaternion.slerp( newQuat, 0.5);
 			}
 	    },
 
@@ -362,17 +352,20 @@ var window = window || global;
 			    1
 			).normalize();
 
-			this.target.quaternion.multiplySelf( this.tmpQuaternion );
-			this.target.matrix.setPosition( this.target.position );
-			this.target.matrix.setRotationFromQuaternion( this.target.quaternion );
-			this.target.matrixWorldNeedsUpdate = true;
+			this.target.quaternion.multiply( this.tmpQuaternion );
+			// this.target.matrix.setPosition( this.target.position );
+			// this.target.matrix.setRotationFromQuaternion( this.target.quaternion );
+			// this.target.matrixWorldNeedsUpdate = true;
 
 
 			if(this.backgroundTarget) {
-				this.backgroundTarget.quaternion.multiplySelf( this.tmpQuaternion );
-				this.backgroundTarget.matrix.setPosition( this.backgroundTarget.position );
-				this.backgroundTarget.matrix.setRotationFromQuaternion( this.backgroundTarget.quaternion );
-				this.backgroundTarget.matrixWorldNeedsUpdate = true;
+				// this.backgroundTarget.translateX( x );
+				// this.backgroundTarget.translateY( y );
+				// this.backgroundTarget.translateZ( z );
+				this.backgroundTarget.quaternion.multiply( this.tmpQuaternion );
+				// this.backgroundTarget.matrix.setPosition( this.target.position );
+				// this.backgroundTarget.matrix.setRotationFromQuaternion( this.backgroundTarget.quaternion );
+				// this.backgroundTarget.matrixWorldNeedsUpdate = true;
 			}
 		}
 
