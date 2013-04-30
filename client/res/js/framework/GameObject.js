@@ -13,15 +13,12 @@ var window = window || global;
         // etc.)
         this.renderables = [];
 
-        // Give this instance a default zIndex
-        this.zIndex = 1;
-
-        // Apply a default 'classification' (friendly, enemy, unknown; ints 0-2 inclusive)
-        this.classification = 2;
+        // Create a 'targetable' flag - if truthy, it means a player
+        // can target this GameObject
+        this.targetable = 0;
 
         // Call the initialization function
 		this.initialize.apply(this, arguments);
-
     }
 
 
@@ -45,7 +42,6 @@ var window = window || global;
                 // dae.rotation.y = -90 / (Math.PI*180);
 
         		callback(dae, skin);
-
         	} );
         },
 

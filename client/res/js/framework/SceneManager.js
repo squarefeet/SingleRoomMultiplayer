@@ -33,9 +33,9 @@
         // this.middleground.scene.fog = new THREE.FogExp2( 0x000000, 0.0024 );
 
 
-        var light = new THREE.DirectionalLight(0x00c1f8, 1);
-        light.position.set(0, 0, -1);
-        this.middleground.camera.add(light);
+        // var light = new THREE.PointLight(0x00c1f8, 1);
+        // light.position.set(0, 0, -1);
+        // this.middleground.camera.add(light);
 
 
 		// The foreground will hold static objects to sit on top of everything

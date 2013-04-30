@@ -4,13 +4,21 @@ function HUD() {
 	this.outerReticuleMoveScale = 1.5;
 
 	this.transforms = {
-		reticuleOuter: { x: 0, y: 0, z: 0, scale: 1 },
-		reticuleInner: { x: 0, y: 0, z: 0, scale: 1 }
+		reticuleOuter: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
+		reticuleInner: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
+		centerThing: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
+		centerThingOne: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
+		centerThingTwo: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
+		centerThingThree: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
+		centerThingFour: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
+		centerThingFive: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
+		centerThingSix: { x: 0, y: 0, z: 0, scale: 1, rotate: 0 },
 	};
 
 	this.elements = {
 		wrapper: null,
-		reticule: {}
+		reticule: {},
+		centerThing: {}
 	};
 
 	this.mouse = {
@@ -29,6 +37,7 @@ HUD.prototype = {
 		this.elements.wrapper.className = 'hud';
 
 		this.createReticule();
+		this.createCenterThing();
 
 		document.body.appendChild(this.elements.wrapper);
 	},
@@ -44,6 +53,33 @@ HUD.prototype = {
 
 		wrapper.appendChild(outer);
 		wrapper.appendChild(inner);
+
+		this.elements.wrapper.appendChild(wrapper);
+	},
+
+	createCenterThing: function() {
+		var wrapper = this.elements.centerThing.wrapper = document.createElement('div');
+		var one = this.elements.centerThing.one = document.createElement('div');
+		var two = this.elements.centerThing.two = document.createElement('div');
+		var three = this.elements.centerThing.three = document.createElement('div');
+		var four = this.elements.centerThing.four = document.createElement('div');
+		var five = this.elements.centerThing.five = document.createElement('div');
+		var six = this.elements.centerThing.six = document.createElement('div');
+
+		wrapper.className = 'centerThing';
+		one.className = 'one';
+		two.className = 'two';
+		three.className = 'three';
+		four.className = 'four';
+		five.className = 'five';
+		six.className = 'six';
+
+		wrapper.appendChild(one);
+		wrapper.appendChild(two);
+		wrapper.appendChild(three);
+		wrapper.appendChild(four);
+		wrapper.appendChild(five);
+		wrapper.appendChild(six);
 
 		this.elements.wrapper.appendChild(wrapper);
 	},
@@ -78,7 +114,7 @@ HUD.prototype = {
 		this.transforms.reticuleOuter.x = x / this.outerReticuleMoveScale;
 		this.transforms.reticuleOuter.y = y / this.outerReticuleMoveScale;
 
-		this.update();
+		this.updateReticule();
 	},
 
 	mouseup: function(e) {
@@ -98,12 +134,32 @@ HUD.prototype = {
 				transform.y + 'px,' +
 				transform.z + 'px' +
 			')' +
-			'scale(' + transform.scale + ')';
+			'scale(' + transform.scale + ')' +
+			'rotate(' + transform.rotate + 'deg)';
 	},
 
-	update: function() {
+	updateReticule: function() {
 		this.applyTransform(this.elements.reticule.inner, this.transforms.reticuleInner);
 		this.applyTransform(this.elements.reticule.outer, this.transforms.reticuleOuter);
+	},
+
+	updateRoll: function( roll ) {
+
+		// this.transforms.centerThing.rotate += -(roll * 25);
+		this.transforms.centerThingOne.rotate += (roll * 30);
+		this.transforms.centerThingTwo.rotate += -(roll * 60);
+		this.transforms.centerThingThree.rotate += (roll * 50);
+		this.transforms.centerThingFour.rotate += -(roll * 65);
+		this.transforms.centerThingFive.rotate += (roll * 45);
+		this.transforms.centerThingSix.rotate += -(roll * 50);
+
+		// this.applyTransform(this.elements.centerThing.wrapper, this.transforms.centerThing);
+		this.applyTransform(this.elements.centerThing.one, this.transforms.centerThingOne);
+		this.applyTransform(this.elements.centerThing.two, this.transforms.centerThingTwo);
+		this.applyTransform(this.elements.centerThing.three, this.transforms.centerThingThree);
+		this.applyTransform(this.elements.centerThing.four, this.transforms.centerThingFour);
+		this.applyTransform(this.elements.centerThing.five, this.transforms.centerThingFive);
+		this.applyTransform(this.elements.centerThing.six, this.transforms.centerThingSix);
 	}
 
 };

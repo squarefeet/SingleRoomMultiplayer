@@ -81,6 +81,11 @@ var window = window || global;
 	    	this.renderables.push( this.mesh );
 	    	sceneManager.addObjectTo( 'middleground', this );
 
+
+	    	// var light = new THREE.PointLight(0xffffff, 1);
+	    	// light.direction.set(0, 0, -1);
+	    	// this.mesh.add(light);
+
         	this.target = this.mesh;
         	this.updateMovementVector();
         	this.updateRotationVector();
@@ -374,6 +379,10 @@ var window = window || global;
 				// this.backgroundTarget.matrix.setPosition( this.target.position );
 				// this.backgroundTarget.matrix.setRotationFromQuaternion( this.backgroundTarget.quaternion );
 				// this.backgroundTarget.matrixWorldNeedsUpdate = true;
+			}
+
+			if(this.hud) {
+				this.hud.updateRoll( roll );
 			}
 		}
 

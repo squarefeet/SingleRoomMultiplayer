@@ -38,8 +38,8 @@ function processPlayerList( list ) {
     }
 }
 
-function onPlayerJoined( playerDetails ) {
 
+function onPlayerJoined( playerDetails ) {
     if(playerDetails.name === userName) {
         console.log('Not making player for', userName);
         return;
@@ -106,7 +106,7 @@ var eventHandler = new EventHandler();
 // Create a key handler. Note that this isn't used by most (if any) camera
 // movements. Those are handled by three.js.
 // It also doesn't use the EventHandler! Maybe it should...
-// var keyHandler = new KeyHandler();
+var keyHandler = new THREEx.KeyboardState();
 
 // Create a mouse handler. Note that this isn't used by most (if any) camera
 // movements. Those are handled by three.js.
@@ -123,42 +123,6 @@ var sceneManager = new SceneManager();
 
 
 
-
-
-
-// Add some camera controls to each scene's camera
-// sceneManager.background.controls = new THREE.FlyControlsVelocity(
-//     sceneManager.background.camera,
-//     document, // domElement
-//     0.8, // acceleration multiplier
-//     0.97, // deceleration multiplier
-//     1000 // maximum movement velocity
-// );
-// sceneManager.background.controls.movementSpeed = 0;
-// sceneManager.background.controls.rollSpeed = Math.PI / 2;
-
-// sceneManager.middleground.controls = new THREE.FlyControlsVelocity(
-//     sceneManager.middleground.camera,
-//     document, // domElement
-//     0.8, // acceleration multiplier
-//     0.97, // deceleration multiplier
-//     1000 // maximum movement velocity
-// );
-// sceneManager.middleground.controls.rollSpeed = Math.PI / 2;
-
-
-// Make sure these controls can be updated by adding a custom tick function
-// sceneManager.background.tick = function(dt) {
-//     this.controls.update(dt);
-// };
-// sceneManager.middleground.tick = function(dt) {
-//     this.controls.update(dt);
-// };
-
-
-
-
-
 // Create a new Skybox.
 var skybox = new Skybox({
 	imagePath: 'res/img/universe_sml_darker.jpg',
@@ -169,8 +133,8 @@ var skybox = new Skybox({
 sceneManager.addObjectTo( 'background', skybox );
 
 
-var light = new THREE.PointLight(0xffffff);
-sceneManager.middleground.scene.add( light );
+// var light = new THREE.AmbientLight(0x333333);
+// sceneManager.middleground.scene.add( light );
 
 
 for( var i = 0; i < 25; ++i ) {
@@ -184,6 +148,11 @@ for( var i = 0; i < 25; ++i ) {
 
 
 
+var cube = new Cube();
+cube.mesh.position.z = -1;
+sceneManager.addObjectTo( 'middleground', cube );
+
+
 // Create the renderer. By default it'll set width and height to window values
 // and attach the domElement to document.body. You only need one of these.
 var renderer = new Renderer();
@@ -194,3 +163,51 @@ renderer.setSceneManager( sceneManager );
 // Render the scene!
 renderer.start();
 
+
+
+var overlayCanvas = document.getElementById('overlay'),
+    overlayCtx = overlayCanvas.getContext('2d');
+
+overlayCanvas.width = window.innerWidth;
+overlayCanvas.height = window.innerHeight;
+
+overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+
+
+setTimeout(function() {
+
+    setInterval(function() {
+
+        var camera = sceneManager.middleground.camera,
+
+            vFOV = camera.fov * (Math.PI / 180),
+            height = 2 * Math.tan( vFOV / 2 ) * (camera.position.distanceTo(cube.mesh.position) - 50),
+            aspect = window.innerWidth / window.innerHeight,
+            width = height * aspect,
+            fractionH = 100 / height,
+            fractionW = 100 / width,
+            sizeOnScreenH = window.innerHeight * fractionH,
+            sizeOnScreenW = window.innerWidth * fractionW;
+
+        if(sizeOnScreenW < 0) return;
+
+        console.log(camera.position.angleTo(cube.mesh.position));
+
+        // Add padding
+        sizeOnScreenW += (sizeOnScreenW / 100) * 10;
+        sizeOnScreenH += (sizeOnScreenH / 100) * 10;
+
+        var centerX = window.innerWidth / 2,
+            centerY = window.innerHeight / 2;
+
+        centerX -= sizeOnScreenW / 2;
+        centerY -= sizeOnScreenH / 2;
+
+        overlayCanvas.width = window.innerWidth;
+        overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        overlayCtx.clearRect(0, 0, window.innerHeight, window.innerWidth);
+        overlayCtx.fillRect(centerX, centerY, sizeOnScreenW, sizeOnScreenH);
+
+    }, 500);
+
+}, 2000);
