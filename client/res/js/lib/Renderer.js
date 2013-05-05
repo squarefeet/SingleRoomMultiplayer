@@ -5,6 +5,14 @@ function State(x) {
 	this.v = 0;
 }
 
+State.prototype.clone = function() {
+	var s = new State();
+	s.x = this.x;
+	s.v = this.v;
+
+	return s;
+}
+
 function Derivative() {
 	this.dx = 0;
 	this.dv = 0;
@@ -25,10 +33,17 @@ function Renderer( options ) {
 	this.accumulator = 0.0;
 	this.t = 0;
 
-	this.currentState = {};
+	this.currentState = new State();
 	this.previousState = null;
 
 	this.tick = this.tick.bind(this);
+
+	this.canvas = document.createElement('canvas');
+	this.canvas.width = 480;
+	this.canvas.height = 320;
+	this.ctx = this.canvas.getContext('2d');
+
+	document.body.appendChild(this.canvas);
 }
 
 
@@ -36,6 +51,9 @@ Renderer.prototype = {
 
 
 	tick: function() {
+
+		requestAnimationFrame(this.tick);
+
 		var newTime = Date.now(),
 			frameTime = newTime - this.currentTime,
 			dt = this.options.physicsTickRate,
@@ -50,30 +68,31 @@ Renderer.prototype = {
 		this.accumulator += frameTime;
 
 		while( this.accumulator >= dt ) {
-			this.previousState = this.currentState;
-			integrate( this.currentState, this.t, dt );
+			this.previousState = this.currentState.clone();
+			this.integrate( this.currentState, this.t, dt );
 			this.t += dt;
 			this.accumulator -= dt;
 		}
 
-		alpha = accumulator / dt;
+		alpha = this.accumulator / dt;
 
 		this.updateState( alpha );
 
-		this.render( state );
+		this.render( this.currentState );
 	},
 
 	evaluate: function( initial, t, dt, derivative ) {
 		if(typeof dt === 'undefined' && typeof derivative === 'undefined') {
+			derivative = new Derivative();
 			derivative.dx = initial.v;
-			derivative.dv += 1; // FIXME: acceleration and whatnot goes here
+			derivative.dv = 0; // FIXME: acceleration and whatnot goes here
 			return derivative;
 		}
 		else {
-			state.x += d.dx * dt;
-			state.v += d.dv * dt;
-			derivative.dx = state.v;
-			derivative.dv += 1; // FIXME: acceleration and whatnot goes here
+			initial.x += derivative.dx * dt;
+			initial.v += derivative.dv * dt;
+			derivative.dx = initial.v;
+			derivative.dv = 0.0000001; // FIXME: acceleration and whatnot goes here
 			return derivative;
 		}
 	},
@@ -96,17 +115,20 @@ Renderer.prototype = {
 
 
 	updateState: function( alpha ) {
+		this.currentState.x + this.previousState.x * (1 - alpha);
+		this.currentState.v + this.previousState.v * (1 - alpha);
 		// currentState*alpha + previousState * ( 1.0 - alpha );
 	},
 
 
 	render: function( state ) {
 		// Render state
+		this.ctx.fillRect(state.x, 100, 5, 5);
 	},
 
 
 	start: function() {
-
+		this.tick();
 	},
 
 	stop: function() {
