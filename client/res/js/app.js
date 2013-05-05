@@ -192,7 +192,7 @@ function toScreenXY ( position, camera, width, height ) {
 var currentTargetIndex = -1;
 
 document.addEventListener('keydown', function(e) {
-    console.log( e.keyCode );
+    // console.log( e.keyCode );
 
     if( e.keyCode === 84 ) {
         var gameObjects = sceneManager.getTargetableObjectsForLevel('middleground');
