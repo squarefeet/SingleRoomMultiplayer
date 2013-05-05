@@ -3,6 +3,7 @@
 
 body {
 	overflow: hidden;
+	font-family: sans-serif;
 }
 
 #overlay {
@@ -104,4 +105,13 @@ body {
 	background: url('../img/redArrow.png') center top no-repeat transparent;
 	-webkit-transition: opacity 150ms linear;
 	opacity: 0;
+	color: red;
+	text-align: center;
+}
+
+.hud > .targetAngle > .targetDistance {
+	position: absolute;
+	top: -25px;
+	width: 100%;
+	text-align: center;
 }

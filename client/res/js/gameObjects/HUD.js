@@ -59,8 +59,13 @@ HUD.prototype = {
 	},
 
 	createTarget: function() {
+		this.elements.targetDistance = document.createElement( 'div' );
+		this.elements.targetDistance.className = 'targetDistance';
+
 		this.elements.targetAngle = document.createElement( 'div' );
 		this.elements.targetAngle.className = 'targetAngle';
+
+		this.elements.targetAngle.appendChild( this.elements.targetDistance );
 		this.elements.wrapper.appendChild( this.elements.targetAngle );
 	},
 
@@ -170,16 +175,20 @@ HUD.prototype = {
 	},
 
 
-	updateTarget: function( angle ) {
+	updateTarget: function( angle, text ) {
 		if(typeof angle === 'undefined') {
-			this.elements.targetAngle.style.opacity = 0;
+			// this.elements.targetAngle.style.opacity = 0;
 		}
 		else {
 			this.elements.targetAngle.style.opacity = 1;
 			this.elements.targetAngle.style.webkitTransform = 'rotate(' + angle + 'deg)';
+			this.elements.targetDistance.style.webkitTransform = 'rotate(-' + (angle+360) + 'deg)';
+		}
+
+		if(text) {
+			this.elements.targetDistance.textContent = text;
 		}
 	},
-
 
 	updateTargetAngle: function() {
 		if(!currentTarget) return;
@@ -191,24 +200,20 @@ HUD.prototype = {
             window.innerHeight
         );
 
-        var centerX = window.innerWidth / 2,
-        	centerY = window.innerHeight / 2;
+		var center = new THREE.Vector2( window.innerWidth/2, window.innerHeight/2 );
+		var dist = sceneManager.middleground.camera.position.distanceTo(currentTarget.position) | 0;
 
-        if(
-        	pos.x > centerX - 150 && pos.x < centerX + 150 &&
-        	pos.y > centerY - 150 && pos.y < centerY + 150
-        ) {
-        	this.updateTarget();
-        }
-        else {
-	        var angle = utils.get2dAngle( pos, { x: window.innerWidth/2, y: window.innerHeight/2} );
+        // if(	center.distanceTo( pos ) < 150 ) {
+        // 	this.updateTarget( undefined, dist );
+        // }
+        // else {
+	        var angle = utils.get2dAngle( pos, center );
 
 	        angle *= 180 / Math.PI;
-
 	        angle -= 90;
 
-	        this.updateTarget( angle );
-	    }
+	        this.updateTarget( angle, dist );
+	    // }
 	}
 
 };
