@@ -2,15 +2,37 @@
 	<head>
 		<title>Wat</title>
 
+		<link rel="stylesheet" type="text/css" href="res/css/app.css">
+		<link rel="stylesheet" type="text/css" href="res/css/animations.css">
+
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
-		<script type="text/javascript" src="/res/js/lib/stats.min.js"></script>
-		<script type="text/javascript" src="/res/js/lib/three.min.js"></script>
-		<script type="text/javascript" src="/res/js/lib/Renderer.js"></script>
+		<script type="text/javascript" src="/res/js/lib/Stats.min.js"></script>
+		<script type="text/javascript" src="/res/js/lib/THREE-r58.min.js"></script>
+		<script type="text/javascript" src="/res/js/lib/THREEx.DomEvent.js"></script>
+		<script type="text/javascript" src="/res/js/lib/THREEx.KeyboardState.js"></script>
+		<script type="text/javascript" src="/res/js/lib/THREE.FlyControlsVelocity.js"></script>
+		<script type="text/javascript" src="/res/js/lib/THREE.ColladaLoader.js"></script>
 
 		<script type="text/javascript" src="res/js/lib/ClientComms.js"></script>
+
+		<script type="text/javascript" src="res/js/framework/Prototypes.js"></script>
+		<script type="text/javascript" src="res/js/framework/Utils.js"></script>
+		<script type="text/javascript" src="res/js/framework/Inheritance.js"></script>
+		<script type="text/javascript" src="res/js/framework/GameObject.js"></script>
+		<script type="text/javascript" src="res/js/framework/Renderer.js"></script>
+		<script type="text/javascript" src="res/js/framework/SceneManager.js"></script>
+		<script type="text/javascript" src="res/js/framework/EventHandler.js"></script>
+
+		<script type="text/javascript" src="res/js/gameObjects/Skybox.js"></script>
+
+		<script type="text/javascript" src="res/js/gameObjects/HUD.js"></script>
+		<script type="text/javascript" src="res/js/gameObjects/Player.js"></script>
+		<script type="text/javascript" src="res/js/gameObjects/Asteroid.js"></script>
+		<script type="text/javascript" src="res/js/gameObjects/Cube.js"></script>
 	</head>
 
 	<body>
+		<canvas id="overlay"></canvas>
 		<script type="text/javascript" src="res/js/app.js"></script>
 	</body>
 

@@ -1,0 +1,23 @@
+.shudder {
+	-webkit-animation-name: shudder;
+	-webkit-animation-duration: 250ms;
+	-webkit-animation-iteration-count: infinite;
+}
+
+@-webkit-keyframes shudder {
+	0% { -webkit-transform: scale(1); }
+	40% { -webkit-transform: scale(0.95); }
+	50% { -webkit-transform: scale(1.025); }
+	60% { -webkit-transform: scale(0.975); }
+	100% { -webkit-transform: scale(1); }
+}
+
+.shudderSlow {
+	-webkit-animation: shudderSlow 250ms ease-in-out;
+}
+
+@-webkit-keyframes shudderSlow {
+	0% { -webkit-transform: scale(0.9); }
+	50% { -webkit-transform: scale(1.1); }
+	100% { -webkit-transform: scale(1); }
+}

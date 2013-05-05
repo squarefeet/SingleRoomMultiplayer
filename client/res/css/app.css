@@ -1,0 +1,117 @@
+* { margin: 0; padding: 0; }
+
+
+body {
+	overflow: hidden;
+	font-family: sans-serif;
+}
+
+#overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 100000;
+}
+
+
+.hud {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 100;
+	opacity: 0.6;
+	user-select: none;
+}
+
+
+.hud > .reticule {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 150px;
+	height: 150px;
+	margin-left: -75px;
+	margin-top: -75px;
+}
+
+.hud > .reticule > .outer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: url('../img/reticule_outer.png') center center no-repeat transparent;
+}
+
+.hud > .reticule > .inner {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: url('../img/reticule_inner.png') center center no-repeat transparent;
+}
+
+
+.hud > .centerThing {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 420px;
+	height: 420px;
+	margin-top: -210px;
+	margin-left: -210px;
+	opacity: 0.5;
+}
+
+.hud > .centerThing > div {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.hud > .centerThing > .one {
+	background: url('../img/centerThing-1.png') center center no-repeat transparent;
+}
+.hud > .centerThing > .two {
+	background: url('../img/centerThing-2.png') center center no-repeat transparent;
+}
+.hud > .centerThing > .three {
+	background: url('../img/centerThing-3.png') center center no-repeat transparent;
+}
+.hud > .centerThing > .four {
+	background: url('../img/centerThing-4.png') center center no-repeat transparent;
+}
+.hud > .centerThing > .five {
+	background: url('../img/centerThing-5.png') center center no-repeat transparent;
+}
+.hud > .centerThing > .six {
+	background: url('../img/centerThing-6.png') center center no-repeat transparent;
+}
+
+
+.hud > .targetAngle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 440px;
+	height: 440px;
+	margin-top: -220px;
+	margin-left: -220px;
+	background: url('../img/redArrow.png') center top no-repeat transparent;
+	-webkit-transition: opacity 150ms linear;
+	opacity: 0;
+	color: red;
+	text-align: center;
+}
+
+.hud > .targetAngle > .targetDistance {
+	position: absolute;
+	top: -25px;
+	width: 100%;
+	text-align: center;
+}
