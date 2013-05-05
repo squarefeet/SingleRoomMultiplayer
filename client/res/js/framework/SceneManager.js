@@ -33,14 +33,13 @@
         // this.middleground.scene.fog = new THREE.FogExp2( 0x000000, 0.0024 );
 
 
-        // var light = new THREE.PointLight(0x00c1f8, 1);
-        // light.position.set(0, 0, -1);
-        // this.middleground.camera.add(light);
+        var light = new THREE.AmbientLight(0x333333);
+        this.middleground.camera.add(light);
 
 
 		// The foreground will hold static objects to sit on top of everything
 		// else (the HUD, lensflares, etc.).
-		this.foreground = new Scene();
+		this.foreground = new Scene(1, 100000);
 
 
         // An array to hold all the objects for each scene. Kept in bg -> fg
@@ -159,6 +158,20 @@
 	*/
 	SceneManager.prototype.getObjects = function() {
 	    return this.storeCache;
+	};
+
+
+	SceneManager.prototype.getTargetableObjectsForLevel = function( level ) {
+		var store = this[ level + 'Store' ],
+			targets = [];
+
+		for(var i = 0; i < store.length; ++i) {
+			if(store[i].targetable) {
+				targets.push(store[i]);
+			}
+		}
+
+		return targets;
 	};
 
 

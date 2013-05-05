@@ -22,8 +22,22 @@
 	        // Add the mesh to the renderables Array so it'll be rendered.
 	        this.renderables.push(this.mesh);
 
-	    }
+	        this.targetable = 1;
 
+	    },
+
+	    tick: function() {
+	    	if(!this.isTargeted) return;
+
+	    	var quaternion = sceneManager.middleground.camera.quaternion;
+
+	    	this.boundingSphere.mesh.position = this.mesh.position;
+	    	this.boundingSphere.mesh.quaternion = quaternion;
+	    },
+
+	    getGeometry: function() {
+	    	return this.mesh.geometry;
+	    }
 	});
 
 

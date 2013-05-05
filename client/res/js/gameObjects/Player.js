@@ -45,6 +45,9 @@ var window = window || global;
 
 	        this.target = null;
 	        this.backgroundTarget = null;
+	        this.foregroundTarget = null;
+
+	        this.targetable = 1;
 
 	        this.options = options || {};
 
@@ -64,9 +67,11 @@ var window = window || global;
 
 	    		this.target = sceneManager.middleground.camera;
 	    		this.backgroundTarget = sceneManager.background.camera;
+	    		this.foregroundTarget = sceneManager.foreground.camera;
 
 	    		this.target.useQuaternion = true;
 	    		this.backgroundTarget.useQuaternion = true;
+	    		this.foregroundTarget.useQuaternion = true;
 
 	        	this.addEvents();
 	        	this.updateMovementVector();
@@ -91,11 +96,21 @@ var window = window || global;
         	this.updateRotationVector();
 	    },
 
+	    getGeometry: function() {
+	    	if(this.mesh) {
+	    		return this.mesh.children[0].geometry;
+	    	}
+	    	else {
+	    		return undefined;
+	    	}
+	    },
+
 	    tick: function( dt ) {
     		this.updateMatrix( dt );
 	    },
 
 	    onServerStateReceived: function( state ) {
+	    	return;
 
 	    	var newPos = new THREE.Vector3(state.pos.x, state.pos.y, state.pos.z);
 
@@ -110,7 +125,12 @@ var window = window || global;
 			this.target.quaternion.slerp( newQuat, 0.5);
 
 			if(this.backgroundTarget) {
-				this.backgroundTarget.quaternion.slerp( newQuat, 0.5);
+				this.backgroundTarget.quaternion = this.target.quaternion;
+			}
+
+			if(this.foregroundTarget) {
+				this.foregroundTarget.position = this.target.position;
+				this.foregroundTarget.quaternion = this.target.quaternion;
 			}
 	    },
 
@@ -366,23 +386,22 @@ var window = window || global;
 			).normalize();
 
 			this.target.quaternion.multiply( this.tmpQuaternion );
-			// this.target.matrix.setPosition( this.target.position );
-			// this.target.matrix.setRotationFromQuaternion( this.target.quaternion );
-			// this.target.matrixWorldNeedsUpdate = true;
 
 
 			if(this.backgroundTarget) {
-				// this.backgroundTarget.translateX( x );
-				// this.backgroundTarget.translateY( y );
-				// this.backgroundTarget.translateZ( z );
 				this.backgroundTarget.quaternion.multiply( this.tmpQuaternion );
-				// this.backgroundTarget.matrix.setPosition( this.target.position );
-				// this.backgroundTarget.matrix.setRotationFromQuaternion( this.backgroundTarget.quaternion );
-				// this.backgroundTarget.matrixWorldNeedsUpdate = true;
+			}
+
+			if(this.foregroundTarget) {
+				this.foregroundTarget.translateX( x );
+				this.foregroundTarget.translateY( y );
+				this.foregroundTarget.translateZ( z );
+				this.foregroundTarget.quaternion.multiply( this.tmpQuaternion );
 			}
 
 			if(this.hud) {
 				this.hud.updateRoll( roll );
+				this.hud.updateTargetAngle();
 			}
 		}
 

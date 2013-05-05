@@ -38,6 +38,7 @@ HUD.prototype = {
 
 		this.createReticule();
 		this.createCenterThing();
+		this.createTarget();
 
 		document.body.appendChild(this.elements.wrapper);
 	},
@@ -55,6 +56,12 @@ HUD.prototype = {
 		wrapper.appendChild(inner);
 
 		this.elements.wrapper.appendChild(wrapper);
+	},
+
+	createTarget: function() {
+		this.elements.targetAngle = document.createElement( 'div' );
+		this.elements.targetAngle.className = 'targetAngle';
+		this.elements.wrapper.appendChild( this.elements.targetAngle );
 	},
 
 	createCenterThing: function() {
@@ -160,6 +167,48 @@ HUD.prototype = {
 		this.applyTransform(this.elements.centerThing.four, this.transforms.centerThingFour);
 		this.applyTransform(this.elements.centerThing.five, this.transforms.centerThingFive);
 		this.applyTransform(this.elements.centerThing.six, this.transforms.centerThingSix);
+	},
+
+
+	updateTarget: function( angle ) {
+		if(typeof angle === 'undefined') {
+			this.elements.targetAngle.style.opacity = 0;
+		}
+		else {
+			this.elements.targetAngle.style.opacity = 1;
+			this.elements.targetAngle.style.webkitTransform = 'rotate(' + angle + 'deg)';
+		}
+	},
+
+
+	updateTargetAngle: function() {
+		if(!currentTarget) return;
+
+		var pos = utils.getScreenXY(
+            currentTarget.position,
+            sceneManager.middleground.camera,
+            window.innerWidth,
+            window.innerHeight
+        );
+
+        var centerX = window.innerWidth / 2,
+        	centerY = window.innerHeight / 2;
+
+        if(
+        	pos.x > centerX - 150 && pos.x < centerX + 150 &&
+        	pos.y > centerY - 150 && pos.y < centerY + 150
+        ) {
+        	this.updateTarget();
+        }
+        else {
+	        var angle = utils.get2dAngle( pos, { x: window.innerWidth/2, y: window.innerHeight/2} );
+
+	        angle *= 180 / Math.PI;
+
+	        angle -= 90;
+
+	        this.updateTarget( angle );
+	    }
 	}
 
 };

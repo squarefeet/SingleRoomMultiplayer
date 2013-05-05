@@ -1,5 +1,10 @@
 * { margin: 0; padding: 0; }
 
+
+body {
+	overflow: hidden;
+}
+
 #overlay {
 	position: absolute;
 	top: 0;
@@ -57,7 +62,7 @@
 	height: 420px;
 	margin-top: -210px;
 	margin-left: -210px;
-	opacity: 0.2;
+	opacity: 0.5;
 }
 
 .hud > .centerThing > div {
@@ -85,4 +90,18 @@
 }
 .hud > .centerThing > .six {
 	background: url('../img/centerThing-6.png') center center no-repeat transparent;
+}
+
+
+.hud > .targetAngle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 440px;
+	height: 440px;
+	margin-top: -220px;
+	margin-left: -220px;
+	background: url('../img/redArrow.png') center top no-repeat transparent;
+	-webkit-transition: opacity 150ms linear;
+	opacity: 0;
 }

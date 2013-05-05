@@ -17,11 +17,14 @@
     Renderer.prototype.init = function(width, height, parent) {
         var that = this;
 
-        that.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+        that.renderer = new THREE.WebGLRenderer({
+            // antialias: true,
+            // alpha: true
+        });
     	that.renderer.setFaceCulling(0);
     	that.renderer.setSize(width, height);
     	that.renderer.autoClear = false;
-        that.renderer.sortObjects = false;
+        // that.renderer.sortObjects = false;
 
         // that.renderer.gammaInput = true;
         // that.renderer.gammaOutput = true;
@@ -117,6 +120,12 @@
         // Render the scenes
         renderer.render(bg.scene, bg.camera);
         renderer.render(mg.scene, mg.camera);
+
+        // Clear the depth buffer we've accumulated so far, so anything
+        // in the foreground scene is drawn on top of the background
+        // and middleground scenes.
+        renderer.clear(false, true, false);
+
         renderer.render(fg.scene, fg.camera);
     };
 

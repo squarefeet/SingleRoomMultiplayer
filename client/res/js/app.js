@@ -1,6 +1,6 @@
-var players = {};
-
-var userName = '';
+var players = {},
+    userName = '',
+    currentTarget = null;
 
 
 function onSocketConnected() {
@@ -174,40 +174,97 @@ overlayCanvas.height = window.innerHeight;
 overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
 
 
-setTimeout(function() {
 
-    setInterval(function() {
+function toScreenXY ( position, camera, width, height ) {
+    var pos = position.clone(),
+        projScreenMat = new THREE.Matrix4();
 
-        var camera = sceneManager.middleground.camera,
+    projScreenMat.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+    pos.applyProjection( projScreenMat );
 
-            vFOV = camera.fov * (Math.PI / 180),
-            height = 2 * Math.tan( vFOV / 2 ) * (camera.position.distanceTo(cube.mesh.position) - 50),
-            aspect = window.innerWidth / window.innerHeight,
-            width = height * aspect,
-            fractionH = 100 / height,
-            fractionW = 100 / width,
-            sizeOnScreenH = window.innerHeight * fractionH,
-            sizeOnScreenW = window.innerWidth * fractionW;
+    return {
+        x: ( pos.x + 1 ) * width / 2,
+        y: ( -pos.y + 1) * height / 2
+    };
+}
 
-        if(sizeOnScreenW < 0) return;
 
-        console.log(camera.position.angleTo(cube.mesh.position));
+var currentTargetIndex = -1;
 
-        // Add padding
-        sizeOnScreenW += (sizeOnScreenW / 100) * 10;
-        sizeOnScreenH += (sizeOnScreenH / 100) * 10;
+document.addEventListener('keydown', function(e) {
+    console.log( e.keyCode );
 
-        var centerX = window.innerWidth / 2,
-            centerY = window.innerHeight / 2;
+    if( e.keyCode === 84 ) {
+        var gameObjects = sceneManager.getTargetableObjectsForLevel('middleground');
 
-        centerX -= sizeOnScreenW / 2;
-        centerY -= sizeOnScreenH / 2;
+        if( ++currentTargetIndex >= gameObjects.length ) {
+            currentTargetIndex = 0;
+        }
 
-        overlayCanvas.width = window.innerWidth;
-        overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        overlayCtx.clearRect(0, 0, window.innerHeight, window.innerWidth);
-        overlayCtx.fillRect(centerX, centerY, sizeOnScreenW, sizeOnScreenH);
+        for(var i = 0; i < gameObjects.length; ++i) {
+            if(i === currentTargetIndex) {
+                gameObjects[i].target();
+            }
+            else {
+                gameObjects[i].untarget();
+            }
+        }
 
-    }, 500);
 
-}, 2000);
+        currentTarget = gameObjects[ currentTargetIndex ].renderables[0];
+    }
+});
+
+
+// setInterval(function() {
+//     var picker = new THREE.Vector3(),
+//         pos = toScreenXY(
+//             cube.mesh.position,
+//             sceneManager.middleground.camera,
+//             window.innerWidth,
+//             window.innerHeight
+//         );
+
+//     var angle = Math.atan2(
+//         (window.innerHeight / 2) - pos.y,
+//         (window.innerWidth / 2) - pos.x
+//     );
+
+//     // console.log( (angle * (180/Math.PI)) );
+// }, 1000);
+
+// setTimeout(function() {
+
+//     setInterval(function() {
+
+//         var camera = sceneManager.middleground.camera,
+//             vFOV = camera.fov * (Math.PI / 180),
+//             height = 2 * Math.tan( vFOV / 2 ) * (camera.position.distanceTo(cube.mesh.position) - 50),
+//             aspect = window.innerWidth / window.innerHeight,
+//             width = height * aspect,
+//             fractionH = 100 / height,
+//             fractionW = 100 / width,
+//             sizeOnScreenH = window.innerHeight * fractionH,
+//             sizeOnScreenW = window.innerWidth * fractionW;
+
+//         if(sizeOnScreenW < 0) return;
+
+//         // Add padding
+//         sizeOnScreenW *= 1.3;
+//         sizeOnScreenH *= 1.3;
+
+//         var screenPos = toScreenXY(
+//             cube.mesh.position,
+//             camera,
+//             window.innerWidth,
+//             window.innerHeight
+//         );
+
+//         overlayCanvas.width = window.innerWidth;
+//         overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+//         overlayCtx.clearRect(0, 0, window.innerHeight, window.innerWidth);
+//         overlayCtx.fillRect(screenPos.x - (sizeOnScreenW/2), screenPos.y - (sizeOnScreenH/2), sizeOnScreenW, sizeOnScreenH);
+
+//     }, 16);
+
+// }, 2000);

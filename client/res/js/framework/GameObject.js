@@ -16,6 +16,9 @@ var window = window || global;
         // Create a 'targetable' flag - if truthy, it means a player
         // can target this GameObject
         this.targetable = 0;
+        this.isTargeted = 0;
+        this.boundingSphere = null;
+        this.targetOutline = null;
 
         // Call the initialization function
 		this.initialize.apply(this, arguments);
@@ -24,6 +27,21 @@ var window = window || global;
 
     GameObject.prototype = {
 
+        // The default, no-op tick function. Required by the Renderer. Override
+        // with your own if necessary.
+        tick: noop,
+
+        // A default, no-op initialize function. Override it with your own
+        // functionality.
+        initialize: noop,
+
+        // Fill this function in with one that returns a THREE geometry object.
+        getGeometry: noop,
+
+        // A link to the scene manager. Link create when added to sceneManager.
+        sceneManager: null,
+        sceneLevel: null,
+
         loadCollada: function(url, callback) {
             var camera, scene, renderer, objects;
         	var particleLight, pointLight;
@@ -31,8 +49,8 @@ var window = window || global;
 
         	var loader = new THREE.ColladaLoader();
             loader.options.convertUpAxis = true;
-        	loader.load( url, function ( collada ) {
 
+        	loader.load( url, function ( collada ) {
         		dae = collada.scene;
         		skin = collada.skins[ 0 ];
 
@@ -45,17 +63,49 @@ var window = window || global;
         	} );
         },
 
-        // The default, no-op tick function. Required by the Renderer. Override
-        // with your own if necessary.
-        tick: noop,
+        target: function() {
+            var geometry = this.getGeometry();
 
-        // A default, no-op initialize function. Override it with your own
-        // functionality.
-        initialize: noop,
+            if(!geometry) {
+                console.log('!geometry for target()')
+                return;
+            }
 
-        // A link to the scene manager. Link create when added to sceneManager.
-        sceneManager: null,
-        sceneLevel: null,
+            if(!this.boundingSphere) {
+                geometry.computeBoundingBox();
+                this.boundingSphere = {
+                    size: geometry.boundingSphere.radius * 2,
+                    material: new THREE.MeshBasicMaterial({
+                        wireframe: true,
+                        wireframeLinewidth: 1,
+                        color: 0xff0000
+                    })
+                };
+
+                this.boundingSphere.geometry = new THREE.PlaneGeometry(
+                    this.boundingSphere.size,
+                    this.boundingSphere.size
+                );
+
+                this.boundingSphere.mesh = new THREE.Mesh(
+                    this.boundingSphere.geometry,
+                    this.boundingSphere.material
+                );
+
+                this.boundingSphere.mesh.useQuaternion = true;
+            }
+
+            sceneManager.foreground.scene.add(this.boundingSphere.mesh);
+            this.isTargeted = 1;
+        },
+
+        untarget: function() {
+            this.isTargeted = 0;
+
+            if(this.boundingSphere) {
+                sceneManager.foreground.scene.remove(this.boundingSphere.mesh);
+            }
+        },
 
         remove: function(obj) {
             this.sceneManager.removeRenderable(this.sceneLevel, obj);

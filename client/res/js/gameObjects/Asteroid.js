@@ -31,6 +31,9 @@
 	        	'res/models/asteroid' + this.options.variation + '.dae',
 	        	this.onModelLoaded.bind(this)
 	        );
+
+	        this.mesh = null;
+	        this.targetable = 0;
 	    },
 
 		onModelLoaded: function( dae, skin ) {
@@ -44,12 +47,23 @@
 	    	sceneManager.addObjectTo( 'middleground', this );
 		},
 
+		getGeometry: function() {
+	    	return this.mesh.children[0].geometry;
+	    },
+
 		tick: function( dt ) {
 			if(this.mesh) {
 				this.mesh.rotation.x += this.options.weightX * dt;
 				this.mesh.rotation.y += this.options.weightY * dt;
 				this.mesh.rotation.z += this.options.weightZ * dt;
 			}
+
+			if(this.isTargeted) {
+		    	var quaternion = sceneManager.middleground.camera.quaternion;
+
+		    	this.boundingSphere.mesh.position = this.mesh.position;
+		    	this.boundingSphere.mesh.quaternion = quaternion;
+		    }
 		}
 
 	});
