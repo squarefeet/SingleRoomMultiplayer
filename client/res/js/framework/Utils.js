@@ -13,7 +13,7 @@ var utils = {
 	    };
 	},
 
-	getSizeOnScreen: function(position, camera, mesh, width, height) {
+	getSizeOnScreen: function(position, camera, width, height) {
 		var camera = sceneManager.middleground.camera,
             vFOV = camera.fov * (Math.PI / 180),
             height = 2 * Math.tan( vFOV / 2 ) * (camera.position.distanceTo(position) - 50),

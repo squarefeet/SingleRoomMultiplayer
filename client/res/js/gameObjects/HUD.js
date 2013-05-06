@@ -207,6 +207,11 @@ HUD.prototype = {
 		var center = new THREE.Vector2( window.innerWidth/2, window.innerHeight/2 );
 		var dist = sceneManager.middleground.camera.position.distanceTo(currentTarget.position) | 0;
 
+		dist /= 100;
+
+		dist = dist.toFixed(2);
+
+
         if(	center.distanceTo( pos ) < 150 ) {
         	this.updateTarget( undefined, dist );
         }
@@ -217,6 +222,10 @@ HUD.prototype = {
 	        angle -= 90;
 
 	        this.updateTarget( angle, dist );
+
+	        if( center.distanceTo( pos ) > center.length() ) {
+	        	console.log('offscreen');
+	        }
 	    }
 	}
 

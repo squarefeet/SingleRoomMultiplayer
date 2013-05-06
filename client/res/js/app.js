@@ -202,7 +202,7 @@ document.addEventListener('keydown', function(e) {
         }
 
         for(var i = 0; i < gameObjects.length; ++i) {
-            if(i === currentTargetIndex) {
+            if(i === currentTargetIndex && typeof gameObjects[i].target === 'function') {
                 gameObjects[i].target();
             }
             else {

@@ -12,6 +12,10 @@
 		<script type="text/javascript" src="/res/js/lib/THREEx.KeyboardState.js"></script>
 		<script type="text/javascript" src="/res/js/lib/THREE.FlyControlsVelocity.js"></script>
 		<script type="text/javascript" src="/res/js/lib/THREE.ColladaLoader.js"></script>
+		<script type="text/javascript" src="/res/js/lib/SPARKS.js"></script>
+		<script type="text/javascript" src="/res/js/lib/TWEEN.js"></script>
+		<script type="text/javascript" src="/res/js/lib/Emitter.js"></script>
+		<script type="text/javascript" src="/res/js/lib/Pool.js"></script>
 
 		<script type="text/javascript" src="res/js/lib/ClientComms.js"></script>
 
@@ -33,6 +37,44 @@
 
 	<body>
 		<canvas id="overlay"></canvas>
+
+		<script type="x-shader/x-vertex" id="vertexshader">
+
+				attribute float size;
+				attribute vec3 pcolor;
+
+				varying vec3 vColor;
+
+				void main() {
+
+					vColor = pcolor;
+
+					vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+					gl_PointSize = size * ( 200.0 / length( mvPosition.xyz ) );
+
+					gl_Position = projectionMatrix * mvPosition;
+
+				}
+
+			</script>
+
+			<script type="x-shader/x-fragment" id="fragmentshader">
+
+				uniform sampler2D texture;
+
+				varying vec3 vColor;
+
+				void main() {
+
+					vec4 outColor = texture2D( texture, gl_PointCoord );
+
+					gl_FragColor = outColor * vec4( vColor, 1.0 );
+
+				}
+
+			</script>
+
 		<script type="text/javascript" src="res/js/app.js"></script>
 	</body>
 

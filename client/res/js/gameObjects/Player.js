@@ -73,6 +73,17 @@ var window = window || global;
 	    		this.backgroundTarget.useQuaternion = true;
 	    		this.foregroundTarget.useQuaternion = true;
 
+
+	    		var light = new THREE.PointLight(
+			        0x70b0ff,
+			        2,
+			        5000
+			    );
+
+		        light.position.z = 2;
+
+		        sceneManager.middleground.camera.add(light);
+
 	        	this.addEvents();
 	        	this.updateMovementVector();
 	        	this.updateRotationVector();
@@ -83,13 +94,58 @@ var window = window || global;
 	    	this.mesh = dae;
 	    	this.mesh.useQuaternion = true;
 
+        	this.emitterRight = new Emitter({
+		        position: new THREE.Vector3(100, -10, 150),
+		        velocity: new THREE.Vector3(0, 0, 50),
+		        acceleration: new THREE.Vector3(0, 0, 50),
+		        randomDrift: new THREE.Vector3(50, 50, 1000),
+		        minSize: 40,
+		        maxSize: 60,
+		        duration: 200,
+		        lifetime: [2, 2],
+		        count: 750,
+		        colors: [0x509efe, 0x50d7fe, 0xc97474, 0x009cff, 0x245490, 0x3186f0],
+		        hasLight: true
+		    });
+
+        	this.emitterLeft = new Emitter({
+		        position: new THREE.Vector3(-100, -10, 150),
+		        velocity: new THREE.Vector3(0, 0, 50),
+		        acceleration: new THREE.Vector3(0, 0, 50),
+		        randomDrift: new THREE.Vector3(50, 50, 1000),
+		        minSize: 40,
+		        maxSize: 60,
+		        duration: 200,
+		        lifetime: [2, 2],
+		        count: 750,
+		        colors: [0x509efe, 0x50d7fe, 0xc97474, 0x009cff, 0x245490, 0x3186f0],
+		        hasLight: true
+		    });
+
+        	this.mesh.add( this.emitterRight.object );
+	       	this.mesh.add( this.emitterLeft.object );
+
+	        this.emitterLeft.start();
+	        this.emitterRight.start();
+
+	        var light = new THREE.PointLight(
+		        0x00FF00,
+		        2,
+		        1000
+		    );
+
+	        light.position.z = -250;
+
+		    this.mesh.add(light);
+
 	    	this.renderables.push( this.mesh );
 	    	sceneManager.addObjectTo( 'middleground', this );
 
+	    	// sceneManager.addObjectTo( 'middleground', this.emitterLeft.object );
+	    	// sceneManager.addObjectTo( 'middleground', this.emitterRight.object );
 
-	    	// var light = new THREE.PointLight(0xffffff, 1);
-	    	// light.direction.set(0, 0, -1);
-	    	// this.mesh.add(light);
+	    	// sceneManager.middleground.scene.add( this.emitterLeft.object );
+	    	// sceneManager.middleground.scene.add( this.emitterRight.object );
 
         	this.target = this.mesh;
         	this.updateMovementVector();
@@ -106,11 +162,26 @@ var window = window || global;
 	    },
 
 	    tick: function( dt ) {
+	    	if(this.emitterLeft) {
+	    		// this.emitterLeft.emitterPos = this.target.position.clone();
+	    		// this.emitterLeft.emitterPos.x -= 100;
+	    		// this.emitterLeft.emitterPos.y -= 10;
+	    		// this.emitterLeft.emitterPos.z += 200;
+
+	    		// this.emitterRight.emitterPos = this.target.position.clone();
+	    		// this.emitterRight.emitterPos.x -= 100;
+	    		// this.emitterRight.emitterPos.y -= 10;
+	    		// this.emitterRight.emitterPos.z += 200;
+
+	    		this.emitterLeft.tick();
+	    		this.emitterRight.tick();
+	    	}
+
     		this.updateMatrix( dt );
 	    },
 
 	    onServerStateReceived: function( state ) {
-	    	return;
+	    	if(!this.target) return;
 
 	    	var newPos = new THREE.Vector3(state.pos.x, state.pos.y, state.pos.z);
 
@@ -124,13 +195,32 @@ var window = window || global;
 			this.target.position.lerp( newPos, 0.5);
 			this.target.quaternion.slerp( newQuat, 0.5);
 
+			// if(this.emitterLeft) {
+				// this.emitterLeft.emitterPos.lerp(newPos, 0.5);
+				// this.emitterLeft.object.quaternion.slerp( newQuat, 0.5);
+
+				// this.emitterLeft.emitterPos.x -= 100;
+	    		// this.emitterLeft.emitterPos.y -= 10;
+	    		// this.emitterLeft.emitterPos.z += 200;
+
+	    		// this.emitterRight.emitterPos.lerp(newPos, 0.5);
+	    		// this.emitterRight.object.quaternion.slerp( newQuat, 0.5);
+
+				// this.emitterRight.emitterPos.x -= 100;
+	    		// this.emitterRight.emitterPos.y -= 10;
+	    		// this.emitterRight.emitterPos.z += 200;
+	    	// }
+
 			if(this.backgroundTarget) {
-				this.backgroundTarget.quaternion = this.target.quaternion;
+				// this.backgroundTarget.quaternion = this.target.quaternion;
+				this.backgroundTarget.quaternion.slerp( newQuat, 0.5);
 			}
 
 			if(this.foregroundTarget) {
-				this.foregroundTarget.position = this.target.position;
-				this.foregroundTarget.quaternion = this.target.quaternion;
+				// this.foregroundTarget.position = this.target.position;
+				// this.foregroundTarget.quaternion = this.target.quaternion;
+				this.foregroundTarget.position.lerp( newPos, 0.5);
+				this.foregroundTarget.quaternion.slerp( newQuat, 0.5);
 			}
 	    },
 
