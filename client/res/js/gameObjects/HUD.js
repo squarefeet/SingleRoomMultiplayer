@@ -224,7 +224,7 @@ HUD.prototype = {
 	        this.updateTarget( angle, dist );
 
 	        if( center.distanceTo( pos ) > center.length() ) {
-	        	console.log('offscreen');
+	        	// console.log('offscreen');
 	        }
 	    }
 	}

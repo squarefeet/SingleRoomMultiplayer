@@ -65,6 +65,9 @@ var window = window || global;
 	    	else {
 	    		this.hud = new HUD();
 
+	    		this.primaryWeapon = new PrimaryWeapon();
+	    		sceneManager.addObjectTo( 'middleground', this.primaryWeapon );
+
 	    		this.target = sceneManager.middleground.camera;
 	    		this.backgroundTarget = sceneManager.background.camera;
 	    		this.foregroundTarget = sceneManager.foreground.camera;
@@ -228,6 +231,7 @@ var window = window || global;
 
 	    // EVENTS
 	    addEvents: function() {
+	    	document.addEventListener( 'mousedown', this, false );
 	    	document.addEventListener( 'mousemove', this, false );
 	    	document.addEventListener( 'keydown', this, false );
 	    	document.addEventListener( 'keyup', this, false );
@@ -236,6 +240,13 @@ var window = window || global;
 		handleEvent: function ( event ) {
 			if ( typeof this[ event.type ] == 'function' ) {
 				this[ event.type ]( event );
+			}
+		},
+
+		mousedown: function( e ) {
+			// Fire!
+			if(this.primaryWeapon) {
+				this.primaryWeapon.fire();
 			}
 		},
 
@@ -487,6 +498,13 @@ var window = window || global;
 				this.foregroundTarget.translateY( y );
 				this.foregroundTarget.translateZ( z );
 				this.foregroundTarget.quaternion.multiply( this.tmpQuaternion );
+			}
+
+			if(this.primaryWeapon) {
+				this.primaryWeapon.particleSystem.translateX( x );
+				this.primaryWeapon.particleSystem.translateY( y );
+				this.primaryWeapon.particleSystem.translateZ( z );
+				this.primaryWeapon.particleSystem.quaternion.multiply( this.tmpQuaternion );
 			}
 
 			if(this.hud) {

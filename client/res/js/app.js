@@ -148,9 +148,9 @@ for( var i = 0; i < 25; ++i ) {
 
 
 
-var cube = new Cube();
-cube.mesh.position.z = -1;
-sceneManager.addObjectTo( 'middleground', cube );
+// var cube = new Cube();
+// cube.mesh.position.z = -1;
+// sceneManager.addObjectTo( 'middleground', cube );
 
 
 // Create the renderer. By default it'll set width and height to window values
