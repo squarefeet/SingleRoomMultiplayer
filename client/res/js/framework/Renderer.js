@@ -26,9 +26,9 @@
     	that.renderer.autoClear = false;
         // that.renderer.sortObjects = false;
 
-        // that.renderer.gammaInput = true;
-        // that.renderer.gammaOutput = true;
-        // that.renderer.physicallyBasedShading = true;
+        that.renderer.gammaInput = true;
+        that.renderer.gammaOutput = true;
+        that.renderer.physicallyBasedShading = true;
 
     	parent.appendChild( that.renderer.domElement );
 
@@ -114,19 +114,111 @@
 	    // any controls and requires updating on a per-frame basis).
 	    bg.tick.call(bg, dt);
 	    mg.tick.call(mg, dt);
-	    fg.tick.call(fg, dt);
+	    // fg.tick.call(fg, dt);
 
 
         // Render the scenes
-        renderer.render(bg.scene, bg.camera);
-        renderer.render(mg.scene, mg.camera);
+        // if(this.postProcesses['background']) {
+        //     this.postProcesses['background'].composer.render();
+        // }
+        // else {
+            // renderer.render(bg.scene, bg.camera);
+        // }
 
-        // Clear the depth buffer we've accumulated so far, so anything
+        // if(this.postProcesses['middleground']) {
+        //     this.postProcesses['middleground'].composer.render();
+        // }
+        // else {
+            // renderer.render(mg.scene, mg.camera);
+        // }
+
+        // Clear only the depth buffer we've accumulated so far, so anything
         // in the foreground scene is drawn on top of the background
         // and middleground scenes.
-        renderer.clear(false, true, false);
+        // renderer.clear(false, true, false);
 
-        renderer.render(fg.scene, fg.camera);
+
+        // if(this.postProcesses['foreground']) {
+        //     this.postProcesses['foreground'].composer.render();
+        // }
+        // else {
+        //     renderer.render(fg.scene, fg.camera);
+        // }
+
+
+        if(this.postProcesses) {
+            mg.scene.overrideMaterial = this.postProcesses.mgDepthBuffer;
+            renderer.render( mg.scene, mg.camera, this.postProcesses.depthTarget, true );
+            mg.scene.overrideMaterial = null;
+            this.postProcesses.composer.render();
+            renderer.clear(false, true, false);
+            renderer.render( fg.scene, fg.camera );
+        }
+        else {
+            renderer.render( bg.scene, bg.camera );
+            renderer.render( mg.scene, mg.camera );
+            renderer.clear(false, true, false);
+            renderer.render( fg.scene, fg.camera );
+        }
+
+    };
+
+
+    Renderer.prototype.enablePostProcessing = function() {
+        if(this.postProcesses) return;
+
+        this.postProcesses = {};
+
+        this.postProcesses.depthShader = THREE.ShaderLib[ "depthRGBA" ];
+        this.postProcesses.depthUniforms = THREE.UniformsUtils.clone( this.postProcesses.depthShader.uniforms );
+
+        this.postProcesses.depthMaterial = new THREE.ShaderMaterial({
+            fragmentShader: this.postProcesses.depthShader.fragmentShader,
+            vertexShader: this.postProcesses.depthShader.vertexShader,
+            uniforms: this.postProcesses.depthUniforms
+        }) ;
+        this.postProcesses.depthMaterial.blending = THREE.NoBlending;
+
+
+        this.postProcesses.renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, {
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            format: THREE.RGBAFormat,
+            stencilBuffer: true
+        });
+        this.postProcesses.composer = new THREE.EffectComposer( this.renderer, this.postProcesses.renderTarget );
+
+        this.postProcesses.bgRenderPass = new THREE.RenderPass( this.sceneManager.background.scene, this.sceneManager.background.camera );
+        this.postProcesses.mgRenderPass = new THREE.RenderPass( this.sceneManager.middleground.scene, this.sceneManager.middleground.camera );
+        this.postProcesses.mgRenderPass.clear = false;
+
+        this.postProcesses.clearMask = new THREE.ClearMaskPass();
+        this.postProcesses.mgRenderMask = new THREE.MaskPass( this.sceneManager.middleground.scene, this.sceneManager.middleground.camera );
+        this.postProcesses.depthTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+            minFilter: THREE.NearestFilter,
+            magFilter: THREE.NearestFilter,
+            format: THREE.RGBAFormat
+        });
+
+
+        var bloomPass = new THREE.BloomPass( 1.2 );
+        var copyPass = new THREE.ShaderPass( THREE.CopyShader );
+        copyPass.renderToScreen = true;
+
+        this.bloomPass = bloomPass;
+
+        this.postProcesses.composer.addPass( this.postProcesses.bgRenderPass );
+        this.postProcesses.composer.addPass( this.postProcesses.mgRenderPass );
+        this.postProcesses.composer.addPass( this.postProcesses.mgRenderMask );
+        this.postProcesses.composer.addPass( this.postProcesses.clearMask );
+        this.postProcesses.composer.addPass( bloomPass );
+        this.postProcesses.composer.addPass( copyPass );
+    };
+
+
+
+    Renderer.prototype.setBloomLevel = function( level ) {
+        this.bloomPass.materialCopy.uniforms.opacity.value = level;
     };
 
 

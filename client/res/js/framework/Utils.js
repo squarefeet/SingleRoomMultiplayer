@@ -34,4 +34,11 @@ var utils = {
 		return Math.atan2( v2.y - v1.y, v2.x - v1.x );
 	},
 
+    rampDown: function( startAt, finishAt, numSteps, currentStep ) {
+        // var total = Math.abs(finishAt - startAt),
+        //     stepSize = total / numSteps,
+        //     currentValue = stepSize * currentStep;
+
+        //     return currentValue + stepSize;
+    }
 };

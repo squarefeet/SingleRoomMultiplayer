@@ -159,9 +159,11 @@ var renderer = new Renderer();
 
 // Tell the renderer to use the object manager we just created
 renderer.setSceneManager( sceneManager );
+renderer.enablePostProcessing();
 
 // Render the scene!
 renderer.start();
+
 
 
 
@@ -170,7 +172,6 @@ var overlayCanvas = document.getElementById('overlay'),
 
 overlayCanvas.width = window.innerWidth;
 overlayCanvas.height = window.innerHeight;
-
 overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
 
 
