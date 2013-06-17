@@ -65,8 +65,8 @@ var window = window || global;
 	    	else {
 	    		this.hud = new HUD();
 
-	    		this.primaryWeapon = new PrimaryWeapon();
-	    		sceneManager.addObjectTo( 'middleground', this.primaryWeapon );
+	    		// this.primaryWeapon = new PrimaryWeapon();
+	    		// sceneManager.addObjectTo( 'middleground', this.primaryWeapon );
 
 	    		this.target = sceneManager.middleground.camera;
 	    		this.backgroundTarget = sceneManager.background.camera;
@@ -246,7 +246,7 @@ var window = window || global;
 		mousedown: function( e ) {
 			// Fire!
 			if(this.primaryWeapon) {
-				this.primaryWeapon.fire();
+				// this.primaryWeapon.fire();
 			}
 		},
 

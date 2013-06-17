@@ -33,7 +33,7 @@
 		<script type="text/javascript" src="res/js/gameObjects/Player.js"></script>
 		<script type="text/javascript" src="res/js/gameObjects/Asteroid.js"></script>
 		<script type="text/javascript" src="res/js/gameObjects/Cube.js"></script>
-		<script type="text/javascript" src="res/js/gameObjects/PrimaryWeapon.js"></script>
+		<script type="text/javascript" src="res/js/gameObjects/PrimaryWeaponField.js"></script>
 
 		<script src="res/js/lib/shaders/allShaders.js"></script>
 		<script src="res/js/lib/postprocessing/EffectComposer.js"></script>
@@ -41,6 +41,28 @@
 		<script src="res/js/lib/postprocessing/RenderPass.js"></script>
 		<script src="res/js/lib/postprocessing/ShaderPass.js"></script>
 		<script src="res/js/lib/postprocessing/BloomPass.js"></script>
+
+
+		<!-- Audio -->
+		<script type="text/javascript" src="res/js/lib/Underscore-1.4.4.js"></script>
+		<script type="text/javascript" src="res/js/lib/Backbone-0.9.10.js"></script>
+
+		<script type="text/javascript" src="res/js/audio/audio.io.js"></script>
+		<script type="text/javascript" src="res/js/audio/audio.io.utils.js"></script>
+		<script type="text/javascript" src="res/js/audio/audio.io.Pool.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Node.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Audio.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Input.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Analyser.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Effects.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Envelope.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Equalizer.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Keyboard.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.LFO.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.MIDI.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.Oscillator.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.StereoPanPot.js"></script>
+		<script type="text/javascript" src="res/js/audio/models/audio.io.VolumeControl.js"></script>
 	</head>
 
 	<body>
@@ -84,6 +106,89 @@
 			</script>
 
 		<script type="text/javascript" src="res/js/app.js"></script>
+
+
+
+		<script type="text/javascript">
+		audio.io.initialize();
+
+
+		var volume = new audio.io.VolumeControl({
+			value: 30
+		});
+
+		var osc = new audio.io.Oscillator({
+			type: 4,
+			polyphony: 16,
+			numVoices: 1,
+			detune: 0
+		});
+
+		var keyboard = new audio.io.Keyboard();
+		keyboard.on('noteOn', function(channel, frequency, velocity) {
+			if(velocity !== 0) {
+				osc.start(frequency, velocity);
+			}
+			else {
+				osc.stop(frequency, velocity);
+			}
+		});
+
+
+		var lp = new audio.io.Filter({
+			frequency: 2000,
+			Q: 0,
+			dryWet: 100
+		});
+
+		var distortion = new audio.io.Waveshaper({
+			level: 0.999,
+			dryWet: 100
+		});
+
+
+		var distortion2 = new audio.io.Waveshaper({
+			level: 0.5
+		});
+
+		// var reverb = new audio.io.Reverb({
+		// 	impulse: 'FireworkReverbs/RoomEmptyHouse.wav',
+		// 	dryWet: 30
+		// });
+
+		var lp2 = new audio.io.Filter({
+			frequency: 500,
+			Q: 1,
+			poles: 4,
+			dryWet: 100
+		});
+
+
+		var lfo = new audio.io.LFO({
+			// audioParam: lp2.filters[0].frequency,
+			depth: 100,
+			rate: 0.1
+		});
+		lp2.connectMod(lfo, 'frequency');
+
+		var lp3 = new audio.io.Filter({
+			frequency: 90,
+			Q: 10,
+			poles: 4,
+			dryWet: 80
+		});
+
+		osc
+			.connectTo( lp )
+			.connectTo( distortion )
+			// .connectTo( reverb )
+			.connectTo( distortion2 )
+			.connectTo( lp2 )
+			.connectTo( lp3 )
+			.connectTo( volume )
+			.connectTo( audio.io.masterOut );
+
+	</script>
 	</body>
 
 </html>
