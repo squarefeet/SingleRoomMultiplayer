@@ -31,6 +31,8 @@
 		    this.particleSystem.dynamic = true;
 		    this.particleSystem.useQuaternion = true;
 
+		    this.fire = this.fire.bind(this);
+
 		    this.renderables.push( this.particleSystem );
 	    },
 
@@ -66,19 +68,34 @@
 	    	};
 	    },
 
-	    fire: function() {
+	    fire: function( position, quaternion ) {
 	    	var index = this.getFromPool(),
 	    		origin = this.origins[ index ],
 	    		obj3d = origin.object3d;
 
-	    	obj3d.position = sceneManager.middleground.camera.position.clone();
-	    	obj3d.quaternion = sceneManager.middleground.camera.quaternion.clone();
+	    	obj3d.position = position.clone();
+	    	obj3d.quaternion = quaternion.clone();
 	    	obj3d.translateZ( -50 );
-	    	origin.zPos = -50;
+	    	origin.zPos = -40; // Bullet speed
 	    	origin.player = players[userName];
-	    	this.geometry.vertices[index] = origin.position;
+	    	this.geometry.vertices[index] = obj3d.position;
 
 	    	this.hasFired.push(index);
+	    },
+
+	    burstFire: function( position, quaternion ) {
+	    	console.log('burst fire');
+	    	if(this.fireInterval) return;
+	    	var that = this;
+	    	this.fire( position, quaternion );
+	    	this.fireInterval = setInterval( function() {
+	    		that.fire( position, quaternion );
+	    	}, 100 );
+	    },
+
+	    stopFiring: function() {
+	    	clearInterval( this.fireInterval );
+	    	this.fireInterval = null;
 	    },
 
 	    tick: function() {
@@ -99,7 +116,7 @@
 	    				this.hasFired.splice(i, 1);
 	    			}
 	    			else {
-	    				origin.zPos -= 5;
+	    				// origin.zPos -= 0.01;
 	    				origin.object3d.translateZ( origin.zPos );
 	    			}
 	    		}

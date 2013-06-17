@@ -30,6 +30,11 @@ var window = window || global;
 			this.rotationVector = new THREE.Vector3( 0, 0, 0 );
 			this.velocityVector = new THREE.Vector3( 0, 0, 0 );
 			this.tmpQuaternion = new THREE.Quaternion();
+			this.serverPos = new THREE.Vector3();
+			this.serverQuaternion = new THREE.Quaternion();
+
+
+			this.isPrimaryWeaponFiring = 0;
 
 			this.moveState = {
 			    up: 0, down: 0,
@@ -37,7 +42,8 @@ var window = window || global;
 			    forward: 0, back: 0,
 			    pitchUp: 0, pitchDown: 0,
 			    yawLeft: 0, yawRight: 0,
-			    rollLeft: 0, rollRight: 0
+			    rollLeft: 0, rollRight: 0,
+			    isFiring: 0
 			};
 
 	        // Create state history store
@@ -182,44 +188,38 @@ var window = window || global;
 	    onServerStateReceived: function( state ) {
 	    	if(!this.target) return;
 
-	    	var newPos = new THREE.Vector3(state.pos.x, state.pos.y, state.pos.z);
+	    	this.serverPos.x = state.pos.x;
+	    	this.serverPos.y = state.pos.y;
+	    	this.serverPos.z = state.pos.z;
 
-	    	var newQuat = new THREE.Quaternion(
-	    		state.quaternion.x,
-	    		state.quaternion.y,
-	    		state.quaternion.z,
-	    		state.quaternion.w
-	    	);
+	    	this.serverQuaternion.x = state.quaternion.x;
+	    	this.serverQuaternion.y = state.quaternion.y;
+	    	this.serverQuaternion.z = state.quaternion.z;
+	    	this.serverQuaternion.w = state.quaternion.w;
 
-			this.target.position.lerp( newPos, 0.5);
-			this.target.quaternion.slerp( newQuat, 0.5);
-
-			// if(this.emitterLeft) {
-				// this.emitterLeft.emitterPos.lerp(newPos, 0.5);
-				// this.emitterLeft.object.quaternion.slerp( newQuat, 0.5);
-
-				// this.emitterLeft.emitterPos.x -= 100;
-	    		// this.emitterLeft.emitterPos.y -= 10;
-	    		// this.emitterLeft.emitterPos.z += 200;
-
-	    		// this.emitterRight.emitterPos.lerp(newPos, 0.5);
-	    		// this.emitterRight.object.quaternion.slerp( newQuat, 0.5);
-
-				// this.emitterRight.emitterPos.x -= 100;
-	    		// this.emitterRight.emitterPos.y -= 10;
-	    		// this.emitterRight.emitterPos.z += 200;
-	    	// }
+			this.target.position.lerp( this.serverPos, 0.5 );
+			this.target.quaternion.slerp( this.serverQuaternion, 0.5 );
 
 			if(this.backgroundTarget) {
-				// this.backgroundTarget.quaternion = this.target.quaternion;
-				this.backgroundTarget.quaternion.slerp( newQuat, 0.5);
+				this.backgroundTarget.quaternion.slerp(  this.serverQuaternion, 0.5 );
 			}
 
 			if(this.foregroundTarget) {
-				// this.foregroundTarget.position = this.target.position;
-				// this.foregroundTarget.quaternion = this.target.quaternion;
-				this.foregroundTarget.position.lerp( newPos, 0.5);
-				this.foregroundTarget.quaternion.slerp( newQuat, 0.5);
+				this.foregroundTarget.position.lerp( this.serverPos, 0.5 );
+				this.foregroundTarget.quaternion.slerp(  this.serverQuaternion, 0.5 );
+			}
+
+			if( state.isFiring && !this.isPrimaryWeaponFiring) {
+				if(primaryWeapon) {
+					this.isPrimaryWeaponFiring = 1;
+					primaryWeapon.burstFire( this.serverPos, this.serverQuaternion );
+				}
+			}
+			else if(!state.isFiring && this.isPrimaryWeaponFiring) {
+				if(primaryWeapon) {
+					primaryWeapon.stopFiring();
+					this.isPrimaryWeaponFiring = 0;
+				}
 			}
 	    },
 
@@ -229,20 +229,43 @@ var window = window || global;
 	    addEvents: function() {
 	    	document.addEventListener( 'mousedown', this, false );
 	    	document.addEventListener( 'mousemove', this, false );
+	    	document.addEventListener( 'mouseup', this, false );
 	    	document.addEventListener( 'keydown', this, false );
 	    	document.addEventListener( 'keyup', this, false );
 	    },
 
 		handleEvent: function ( event ) {
-			if ( typeof this[ event.type ] == 'function' ) {
+			if ( typeof this[ event.type ] === 'function' ) {
 				this[ event.type ]( event );
 			}
 		},
 
 		mousedown: function( e ) {
-			// Fire!
+
+			var camera = sceneManager.middleground.camera;
+
 			if(primaryWeapon) {
-				primaryWeapon.fire();
+				this.moveState.isFiring = 1;
+
+				comms.sendState({
+					name: userName,
+					moveState: this.moveState
+				});
+
+				// primaryWeapon.burstFire( camera.position, camera.quaternion );
+			}
+		},
+
+		mouseup: function() {
+			if(primaryWeapon) {
+				this.moveState.isFiring = 0;
+
+				comms.sendState({
+					name: userName,
+					moveState: this.moveState
+				});
+
+				// primaryWeapon.stopFiring();
 			}
 		},
 
@@ -252,8 +275,8 @@ var window = window || global;
 			var halfHeight = container.size[ 1 ] / 2;
 
 
-			this.moveState.yawLeft   = - ( ( event.pageX - container.offset[ 0 ] ) - halfWidth  ) / halfWidth;
-			this.moveState.pitchDown =   ( ( event.pageY - container.offset[ 1 ] ) - halfHeight ) / halfHeight;
+			this.moveState.yawLeft   = -( ( event.pageX - container.offset[ 0 ] ) - halfWidth  ) / halfWidth;
+			this.moveState.pitchDown =  ( ( event.pageY - container.offset[ 1 ] ) - halfHeight ) / halfHeight;
 
 
             var absYaw = Math.abs(this.moveState.yawLeft),
@@ -269,7 +292,7 @@ var window = window || global;
 
 			this.updateRotationVector();
 
-			comms.sendState( {
+			comms.sendState({
 				name: userName,
 				moveState: this.moveState
 			});
@@ -316,7 +339,6 @@ var window = window || global;
 		},
 
 		keyup: function( event ) {
-
 			switch( event.keyCode ) {
 
 				case 16: /* shift */ this.movementSpeedMultiplier = 1; break;
@@ -495,18 +517,6 @@ var window = window || global;
 				this.foregroundTarget.translateZ( z );
 				this.foregroundTarget.quaternion.multiply( this.tmpQuaternion );
 			}
-
-			// if(this.hasFired) {
-				// primaryWeapon.object3d.position = this.foregroundTarget.position.clone();
-			// if(typeof primaryWeapon !== 'undefined') {
-			// 	primaryWeapon.object3d.translateX( x );
-			// 	primaryWeapon.object3d.translateY( y );
-			// 	primaryWeapon.object3d.translateZ( z );
-			// 	primaryWeapon.object3d.quaternion.multiply( this.tmpQuaternion );
-			// }
-				// primaryWeapon.fire();
-				// this.hasFired = false;
-			// }
 
 			if(this.hud) {
 				this.hud.updateRoll( roll );
