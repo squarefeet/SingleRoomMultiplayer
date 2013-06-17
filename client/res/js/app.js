@@ -147,12 +147,9 @@ for( var i = 0; i < 25; ++i ) {
 }
 
 
-var primaryWeaponField = new PrimaryWeaponField();
-sceneManager.addObjectTo( 'middleground', primaryWeaponField );
 
-setInterval(function() {
-    primaryWeaponField.fire();
-}, 2000);
+var primaryWeapon = new PrimaryWeaponField();
+sceneManager.addObjectTo( 'middleground', primaryWeapon );
 
 
 // var cube = new Cube();
