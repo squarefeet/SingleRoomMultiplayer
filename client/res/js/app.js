@@ -147,6 +147,9 @@ for( var i = 0; i < 25; ++i ) {
 }
 
 
+var primaryWeapon = new PrimaryWeaponField();
+sceneManager.addObjectTo( 'middleground', primaryWeapon );
+
 
 // var cube = new Cube();
 // cube.mesh.position.z = -1;
@@ -159,7 +162,7 @@ var renderer = new Renderer();
 
 // Tell the renderer to use the object manager we just created
 renderer.setSceneManager( sceneManager );
-renderer.enablePostProcessing();
+// renderer.enablePostProcessing();
 
 // Render the scene!
 renderer.start();

@@ -65,9 +65,6 @@ var window = window || global;
 	    	else {
 	    		this.hud = new HUD();
 
-	    		this.primaryWeapon = new PrimaryWeapon();
-	    		sceneManager.addObjectTo( 'middleground', this.primaryWeapon );
-
 	    		this.target = sceneManager.middleground.camera;
 	    		this.backgroundTarget = sceneManager.background.camera;
 	    		this.foregroundTarget = sceneManager.foreground.camera;
@@ -245,8 +242,8 @@ var window = window || global;
 
 		mousedown: function( e ) {
 			// Fire!
-			if(this.primaryWeapon) {
-				this.primaryWeapon.fire();
+			if(primaryWeapon) {
+				primaryWeapon.fire();
 			}
 		},
 
@@ -500,12 +497,17 @@ var window = window || global;
 				this.foregroundTarget.quaternion.multiply( this.tmpQuaternion );
 			}
 
-			if(this.primaryWeapon) {
-				this.primaryWeapon.particleSystem.translateX( x );
-				this.primaryWeapon.particleSystem.translateY( y );
-				this.primaryWeapon.particleSystem.translateZ( z );
-				this.primaryWeapon.particleSystem.quaternion.multiply( this.tmpQuaternion );
-			}
+			// if(this.hasFired) {
+				// primaryWeapon.object3d.position = this.foregroundTarget.position.clone();
+			// if(typeof primaryWeapon !== 'undefined') {
+			// 	primaryWeapon.object3d.translateX( x );
+			// 	primaryWeapon.object3d.translateY( y );
+			// 	primaryWeapon.object3d.translateZ( z );
+			// 	primaryWeapon.object3d.quaternion.multiply( this.tmpQuaternion );
+			// }
+				// primaryWeapon.fire();
+				// this.hasFired = false;
+			// }
 
 			if(this.hud) {
 				this.hud.updateRoll( roll );
