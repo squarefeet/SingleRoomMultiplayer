@@ -50,10 +50,8 @@
 		        		Number.POSITIVE_INFINITY
 		        	)
 		        );
-
 		        this.origins.push( this.makeOrigin() );
-
-		        this.pool.push(i);
+		        this.pool.push( i );
 	    	}
 	    },
 
@@ -70,13 +68,14 @@
 
 	    fire: function() {
 	    	var index = this.getFromPool(),
-	    		vertex = this.geometry.vertices[ index ],
-	    		origin = this.origins[ index ].object3d;
+	    		origin = this.origins[ index ],
+	    		obj3d = origin.object3d;
 
-	    	origin.position = sceneManager.middleground.camera.position.clone();
-	    	origin.quaternion = sceneManager.middleground.camera.quaternion.clone();
-	    	origin.translateZ(-50);
-	    	this.origins[index].zPos = 0;
+	    	obj3d.position = sceneManager.middleground.camera.position.clone();
+	    	obj3d.quaternion = sceneManager.middleground.camera.quaternion.clone();
+	    	obj3d.translateZ( -50 );
+	    	origin.zPos = -50;
+	    	origin.player = players[userName];
 	    	this.geometry.vertices[index] = origin.position;
 
 	    	this.hasFired.push(index);

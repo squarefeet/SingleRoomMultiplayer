@@ -162,7 +162,7 @@ var renderer = new Renderer();
 
 // Tell the renderer to use the object manager we just created
 renderer.setSceneManager( sceneManager );
-// renderer.enablePostProcessing();
+renderer.enablePostProcessing();
 
 // Render the scene!
 renderer.start();
