@@ -73,7 +73,7 @@ var window = window || global;
 	    	};
 	    },
 
-	    fire: function( playerName, position, quaternion ) {
+	    fire: function( player, playerName, position, quaternion ) {
 	    	var index = this.getFromPool(),
 	    		origin = this.origins[ index ],
 	    		obj3d = origin.object3d;
@@ -81,23 +81,24 @@ var window = window || global;
 	    	obj3d.position = position.clone();
 	    	obj3d.quaternion = quaternion.clone();
 	    	obj3d.translateZ( -100 );
-	    	origin.zPos = -40; // Bullet speed
+	    	origin.zPos = -3000; // Bullet speed (will be multipled by dt)
 	    	origin.zPosCount = 0;
 	    	origin.playerName = playerName;
+	    	origin.player = player;
 	    	this.geometry.vertices[index] = obj3d.position;
 
 	    	this.hasFired.push(index);
 	    },
 
-	    burstFire: function( playerName, position, quaternion ) {
+	    burstFire: function( player, playerName, position, quaternion ) {
 	    	if( this.intervals[ playerName ] ) return;
 
 	    	var that = this;
 
-	    	this.fire( playerName, position, quaternion );
+	    	this.fire( player, playerName, position, quaternion );
 
 	    	this.intervals[ playerName ] = setInterval( function() {
-	    		that.fire( playerName, position, quaternion );
+	    		that.fire( player, playerName, position, quaternion );
 	    	}, 100 );
 	    },
 
@@ -106,7 +107,7 @@ var window = window || global;
 	    	this.intervals[ playerName ] = null;
 	    },
 
-	    tick: function() {
+	    tick: function( dt ) {
 	    	this.geometry.verticesNeedUpdate = true;
 
 	    	if(this.hasFired.length) {
@@ -125,9 +126,10 @@ var window = window || global;
 	    			}
 	    			else {
 	    				origin.zPosCount -= 40;
-	    				origin.object3d.translateZ( origin.zPos );
+	    				origin.object3d.translateZ( origin.zPos * dt );
 
 	    				if( this.checkCollision( origin ) ) {
+	    					console.log('collision');
 	    					origin.zPosCount = -8001;
 	    				}
 	    			}
@@ -138,15 +140,24 @@ var window = window || global;
 	    checkCollision: function( origin ) {
 	    	var objects = this.server ? this.server.getPlayerObjects() : sceneManager.getTargetableObjectsForLevel('middleground'),
 	    		i = objects.length,
-	    		obj, mesh;
+	    		obj, mesh, dist;
+
+	    	console.log(i);
 
 	    	while( --i >= 0 ) {
 	    		obj = objects[i];
+
+	    		if(obj === origin.player) continue;
+
 	    		mesh = this.server ? obj.middlegroundTarget : objects[i].mesh;
 
 	    		if(!mesh) continue;
 
-	    		if( origin.object3d.position.distanceToSquared( mesh.position ) < 100*100 ) {
+	    		dist = origin.object3d.position.distanceToSquared( mesh.position );
+
+	    		// console.log(dist);
+
+	    		if( dist < 1000*1000 ) {
 	    			if(this.server) {
 	    				obj.moveState.isHit = true;
 	    			}

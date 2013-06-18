@@ -212,7 +212,7 @@ var window = window || global;
 			if( state.isFiring && !this.isPrimaryWeaponFiring) {
 				if(primaryWeapon) {
 					this.isPrimaryWeaponFiring = 1;
-					primaryWeapon.burstFire( state.name, this.serverPos, this.serverQuaternion );
+					primaryWeapon.burstFire( this, state.name, this.serverPos, this.serverQuaternion );
 				}
 			}
 			else if(!state.isFiring && this.isPrimaryWeaponFiring) {
