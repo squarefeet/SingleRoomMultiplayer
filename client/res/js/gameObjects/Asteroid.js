@@ -33,6 +33,7 @@
 	        );
 
 	        this.mesh = null;
+	        this.targetable = 0;
 	    },
 
 		onModelLoaded: function( dae, skin ) {

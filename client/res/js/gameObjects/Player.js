@@ -49,7 +49,7 @@ var window = window || global;
 	        // Create state history store
 	        this.history = [];
 
-	        this.target = null;
+	        this.middlegroundTarget = null;
 	        this.backgroundTarget = null;
 	        this.foregroundTarget = null;
 
@@ -58,8 +58,8 @@ var window = window || global;
 	        this.options = options || {};
 
 	        if(this.options.isServer) {
-	        	this.target = new THREE.Object3D();
-	        	this.target.useQuaternion = true;
+	        	this.middlegroundTarget = new THREE.Object3D();
+	        	this.middlegroundTarget.useQuaternion = true;
 	        	this.updateMovementVector();
 	        	this.updateRotationVector();
 	        }
@@ -70,11 +70,11 @@ var window = window || global;
 
 	    	else {
 	    		this.hud = new HUD();
-	    		this.target = sceneManager.middleground.camera;
+	    		this.middlegroundTarget = sceneManager.middleground.camera;
 	    		this.backgroundTarget = sceneManager.background.camera;
 	    		this.foregroundTarget = sceneManager.foreground.camera;
 
-	    		this.target.useQuaternion = true;
+	    		this.middlegroundTarget.useQuaternion = true;
 	    		this.backgroundTarget.useQuaternion = true;
 	    		this.foregroundTarget.useQuaternion = true;
 
@@ -152,7 +152,7 @@ var window = window || global;
 	    	// sceneManager.middleground.scene.add( this.emitterLeft.object );
 	    	// sceneManager.middleground.scene.add( this.emitterRight.object );
 
-        	this.target = this.mesh;
+        	this.middlegroundTarget = this.mesh;
         	this.updateMovementVector();
         	this.updateRotationVector();
 	    },
@@ -168,12 +168,12 @@ var window = window || global;
 
 	    tick: function( dt ) {
 	    	if(this.emitterLeft) {
-	    		// this.emitterLeft.emitterPos = this.target.position.clone();
+	    		// this.emitterLeft.emitterPos = this.middlegroundTarget.position.clone();
 	    		// this.emitterLeft.emitterPos.x -= 100;
 	    		// this.emitterLeft.emitterPos.y -= 10;
 	    		// this.emitterLeft.emitterPos.z += 200;
 
-	    		// this.emitterRight.emitterPos = this.target.position.clone();
+	    		// this.emitterRight.emitterPos = this.middlegroundTarget.position.clone();
 	    		// this.emitterRight.emitterPos.x -= 100;
 	    		// this.emitterRight.emitterPos.y -= 10;
 	    		// this.emitterRight.emitterPos.z += 200;
@@ -186,7 +186,7 @@ var window = window || global;
 	    },
 
 	    onServerStateReceived: function( state ) {
-	    	if(!this.target) return;
+	    	if(!this.middlegroundTarget) return;
 
 	    	this.serverPos.x = state.pos.x;
 	    	this.serverPos.y = state.pos.y;
@@ -197,8 +197,8 @@ var window = window || global;
 	    	this.serverQuaternion.z = state.quaternion.z;
 	    	this.serverQuaternion.w = state.quaternion.w;
 
-			this.target.position.lerp( this.serverPos, 0.5 );
-			this.target.quaternion.slerp( this.serverQuaternion, 0.5 );
+			this.middlegroundTarget.position.lerp( this.serverPos, 0.5 );
+			this.middlegroundTarget.quaternion.slerp( this.serverQuaternion, 0.5 );
 
 			if(this.backgroundTarget) {
 				this.backgroundTarget.quaternion.slerp(  this.serverQuaternion, 0.5 );
@@ -481,7 +481,7 @@ var window = window || global;
 		},
 
 		updateMatrix: function( delta ) {
-			if(!this.target) return;
+			if(!this.middlegroundTarget) return;
 
 	        this.updateVelocity();
 
@@ -493,9 +493,9 @@ var window = window || global;
 			    roll = this.rollSpeedLeftRight * delta;
 
 
-			this.target.translateX( x );
-			this.target.translateY( y );
-			this.target.translateZ( z );
+			this.middlegroundTarget.translateX( x );
+			this.middlegroundTarget.translateY( y );
+			this.middlegroundTarget.translateZ( z );
 
 			this.tmpQuaternion.set(
 			    this.rotationVector.x * rotMult,
@@ -504,7 +504,7 @@ var window = window || global;
 			    1
 			).normalize();
 
-			this.target.quaternion.multiply( this.tmpQuaternion );
+			this.middlegroundTarget.quaternion.multiply( this.tmpQuaternion );
 
 
 			if(this.backgroundTarget) {
@@ -517,6 +517,13 @@ var window = window || global;
 				this.foregroundTarget.translateZ( z );
 				this.foregroundTarget.quaternion.multiply( this.tmpQuaternion );
 			}
+
+			if(this.isTargeted) {
+		    	var quaternion = sceneManager.middleground.camera.quaternion;
+
+		    	this.boundingSphere.mesh.position = this.mesh.position;
+		    	this.boundingSphere.mesh.quaternion = quaternion;
+		    }
 
 			if(this.hud) {
 				this.hud.updateRoll( roll );

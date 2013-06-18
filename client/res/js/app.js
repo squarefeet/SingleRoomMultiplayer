@@ -207,7 +207,7 @@ document.addEventListener('keydown', function(e) {
         }
 
         for(var i = 0; i < gameObjects.length; ++i) {
-            if(i === currentTargetIndex && typeof gameObjects[i].target === 'function') {
+            if(i === currentTargetIndex && gameObjects[i] !== players[userName].player && typeof gameObjects[i].target === 'function') {
                 gameObjects[i].target();
             }
             else {

@@ -66,7 +66,8 @@
 	    		object3d: obj3d,
 	    		player: null,
 	    		zPos: 0,
-	    		zPosCount: 0
+	    		zPosCount: 0,
+	    		power: 10
 	    	};
 	    },
 
@@ -79,6 +80,7 @@
 	    	obj3d.quaternion = quaternion.clone();
 	    	obj3d.translateZ( -50 );
 	    	origin.zPos = -40; // Bullet speed
+	    	origin.zPosCount = 0;
 	    	origin.player = playerName;
 	    	this.geometry.vertices[index] = obj3d.position;
 
@@ -112,7 +114,7 @@
 	    			var index = this.hasFired[i],
 	    				origin = this.origins[ index ];
 
-	    			if( origin.zPosCount < -500 ) {
+	    			if( origin.zPosCount < -8000 ) {
 	    				origin.object3d.position.x = -Number.POSITIVE_INFINITY;
 	    				origin.object3d.position.y = -Number.POSITIVE_INFINITY;
 	    				origin.object3d.position.z = -Number.POSITIVE_INFINITY;
@@ -122,10 +124,31 @@
 	    			else {
 	    				origin.zPosCount -= 40;
 	    				origin.object3d.translateZ( origin.zPos );
+
+	    				if( this.checkCollision( origin ) ) {
+	    					origin.zPosCount = -8001;
+	    				}
 	    			}
 	    		}
 	    	}
+	    },
 
+	    checkCollision: function( origin ) {
+	    	var objects = sceneManager.getTargetableObjectsForLevel('middleground'),
+	    		i = objects.length,
+	    		obj, mesh;
+
+	    	while( --i >= 0 ) {
+	    		obj = objects[i];
+	    		mesh = objects[i].mesh;
+
+	    		if(!mesh) continue;
+
+	    		if( origin.object3d.position.distanceToSquared( mesh.position ) < 100*100 ) {
+	    			obj.hit( origin );
+	    			return true;
+	    		}
+	    	}
 	    },
 
 	    getGeometry: function() {

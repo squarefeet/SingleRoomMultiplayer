@@ -20,13 +20,14 @@ var window = window || global;
         this.boundingSphere = null;
         this.targetOutline = null;
 
+        this.health = 100;
+
         // Call the initialization function
 		this.initialize.apply(this, arguments);
     }
 
 
     GameObject.prototype = {
-
         // The default, no-op tick function. Required by the Renderer. Override
         // with your own if necessary.
         tick: noop,
@@ -43,8 +44,6 @@ var window = window || global;
         sceneLevel: null,
 
         loadCollada: function(url, callback) {
-            var camera, scene, renderer, objects;
-        	var particleLight, pointLight;
         	var dae, skin;
 
         	var loader = new THREE.ColladaLoader();
@@ -73,8 +72,9 @@ var window = window || global;
 
             if(!this.boundingSphere) {
                 geometry.computeBoundingBox();
+
                 this.boundingSphere = {
-                    size: geometry.boundingSphere.radius * 2,
+                    size: geometry.boundingSphere.radius,
                     material: new THREE.MeshBasicMaterial({
                         wireframe: true,
                         wireframeLinewidth: 1,
@@ -109,6 +109,21 @@ var window = window || global;
 
         remove: function(obj) {
             this.sceneManager.removeRenderable(this.sceneLevel, obj);
+        },
+
+        hit: function( bullet ) {
+            if(this.health <= 0) return;
+
+            this.health -= bullet.power;
+            console.log(this.health);
+
+            if(this.health <= 0) {
+                this.kill();
+            }
+        },
+
+        kill: function() {
+            console.log('killed');
         }
     };
 
