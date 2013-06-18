@@ -8,6 +8,8 @@
         parent = parent || document.body;
 
         this.active = false;
+        this.rampBloom = false;
+        this.bloomLevel = 1.5;
 
         this.init(width, height, parent);
     }
@@ -26,9 +28,9 @@
     	that.renderer.autoClear = false;
         // that.renderer.sortObjects = false;
 
-        that.renderer.gammaInput = true;
-        that.renderer.gammaOutput = true;
-        that.renderer.physicallyBasedShading = true;
+        // that.renderer.gammaInput = true;
+        // that.renderer.gammaOutput = true;
+        // that.renderer.physicallyBasedShading = true;
 
     	parent.appendChild( that.renderer.domElement );
 
@@ -127,35 +129,16 @@
 	    mg.tick.call(mg, dt);
 	    // fg.tick.call(fg, dt);
 
+        if(this.rampBloom) {
+            this.bloomLevel = utils.lerp( this.bloomLevel, 1.5, 0.1 );
 
-        // Render the scenes
-        // if(this.postProcesses['background']) {
-        //     this.postProcesses['background'].composer.render();
-        // }
-        // else {
-            // renderer.render(bg.scene, bg.camera);
-        // }
+            if(this.bloomLevel <= 1.7 ) {
+                this.bloomLevel = 1.5;
+                this.rampBloom = false;
+            }
 
-        // if(this.postProcesses['middleground']) {
-        //     this.postProcesses['middleground'].composer.render();
-        // }
-        // else {
-            // renderer.render(mg.scene, mg.camera);
-        // }
-
-        // Clear only the depth buffer we've accumulated so far, so anything
-        // in the foreground scene is drawn on top of the background
-        // and middleground scenes.
-        // renderer.clear(false, true, false);
-
-
-        // if(this.postProcesses['foreground']) {
-        //     this.postProcesses['foreground'].composer.render();
-        // }
-        // else {
-        //     renderer.render(fg.scene, fg.camera);
-        // }
-
+            this.setBloomLevel( this.bloomLevel );
+        }
 
         if(this.postProcesses) {
             mg.scene.overrideMaterial = this.postProcesses.mgDepthBuffer;
@@ -171,6 +154,8 @@
             renderer.clear(false, true, false);
             renderer.render( fg.scene, fg.camera );
         }
+
+
 
     };
 
@@ -212,7 +197,7 @@
         });
 
 
-        var bloomPass = new THREE.BloomPass( 1.2 );
+        var bloomPass = new THREE.BloomPass( this.bloomLevel );
         var copyPass = new THREE.ShaderPass( THREE.CopyShader );
         copyPass.renderToScreen = true;
 
@@ -229,7 +214,13 @@
 
 
     Renderer.prototype.setBloomLevel = function( level ) {
+        this.bloomLevel = level;
         this.bloomPass.materialCopy.uniforms.opacity.value = level;
+    };
+
+    Renderer.prototype.renderHit = function() {
+        this.setBloomLevel( 5 );
+        this.rampBloom = true;
     };
 
 

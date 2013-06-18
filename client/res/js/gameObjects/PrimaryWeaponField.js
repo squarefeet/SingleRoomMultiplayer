@@ -142,22 +142,19 @@ var window = window || global;
 	    		i = objects.length,
 	    		obj, mesh, dist;
 
-	    	console.log(i);
-
 	    	while( --i >= 0 ) {
 	    		obj = objects[i];
 
+	    		// Don't collide with the firer
 	    		if(obj === origin.player) continue;
 
 	    		mesh = this.server ? obj.middlegroundTarget : objects[i].mesh;
 
 	    		if(!mesh) continue;
 
-	    		dist = origin.object3d.position.distanceToSquared( mesh.position );
+	    		dist = origin.object3d.position.distanceTo( mesh.position );
 
-	    		// console.log(dist);
-
-	    		if( dist < 1000*1000 ) {
+	    		if( dist < 500 ) {
 	    			if(this.server) {
 	    				obj.moveState.isHit = true;
 	    			}

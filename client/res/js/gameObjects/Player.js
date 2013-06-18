@@ -222,8 +222,9 @@ var window = window || global;
 				}
 			}
 
-			if( state.isHit ) {
-				console.log('server detected a hit');
+			if( state.isHit && this.options.hasControls ) {
+				console.log('oww');
+				renderer.renderHit();
 			}
 	    },
 

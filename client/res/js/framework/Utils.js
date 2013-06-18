@@ -40,5 +40,9 @@ var utils = {
         //     currentValue = stepSize * currentStep;
 
         //     return currentValue + stepSize;
+    },
+
+    lerp: function( start, end, amount ) {
+    	return (start + ((end - start) * amount));
     }
 };
