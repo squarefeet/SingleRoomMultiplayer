@@ -1,6 +1,10 @@
 /**
 *   @requires Inheritance
 */
+
+// This is here so this file can be used both server- and client-side.
+var window = window || global;
+
 (function(attachTo) {
 
 
@@ -13,18 +17,7 @@
 	    	this.intervals = {};
 
 	        this.geometry = new THREE.Geometry();
-	        this.material = new THREE.ParticleBasicMaterial({
-		        color: 0xFFFFFF,
-		        size: 10
-		    });
-
-	        this.geometry.vertices.push(
-	        	new THREE.Vector3(
-	        		Number.POSITIVE_INFINITY,
-	        		Number.POSITIVE_INFINITY,
-	        		Number.POSITIVE_INFINITY
-	        	)
-	        );
+	        this.material = this.makeMaterial();
 
 	        this.createVertices();
 
@@ -35,6 +28,15 @@
 		    this.fire = this.fire.bind(this);
 
 		    this.renderables.push( this.particleSystem );
+
+		    this.server = options ? options.server : undefined;
+	    },
+
+	    makeMaterial: function() {
+	    	return new THREE.ParticleBasicMaterial({
+		        color: 0xFFFFFF,
+		        size: 10
+		    });
 	    },
 
 	    getFromPool: function() {
@@ -78,10 +80,10 @@
 
 	    	obj3d.position = position.clone();
 	    	obj3d.quaternion = quaternion.clone();
-	    	obj3d.translateZ( -50 );
+	    	obj3d.translateZ( -100 );
 	    	origin.zPos = -40; // Bullet speed
 	    	origin.zPosCount = 0;
-	    	origin.player = playerName;
+	    	origin.playerName = playerName;
 	    	this.geometry.vertices[index] = obj3d.position;
 
 	    	this.hasFired.push(index);
@@ -134,18 +136,20 @@
 	    },
 
 	    checkCollision: function( origin ) {
-	    	var objects = sceneManager.getTargetableObjectsForLevel('middleground'),
+	    	var objects = this.server ? this.server.getPlayerObjects() : sceneManager.getTargetableObjectsForLevel('middleground'),
 	    		i = objects.length,
 	    		obj, mesh;
 
 	    	while( --i >= 0 ) {
 	    		obj = objects[i];
-	    		mesh = objects[i].mesh;
+	    		mesh = this.server ? obj.middlegroundTarget : objects[i].mesh;
 
 	    		if(!mesh) continue;
 
 	    		if( origin.object3d.position.distanceToSquared( mesh.position ) < 100*100 ) {
-	    			obj.hit( origin );
+	    			if(this.server) {
+	    				obj.moveState.isHit = true;
+	    			}
 	    			return true;
 	    		}
 	    	}

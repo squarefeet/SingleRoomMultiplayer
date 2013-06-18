@@ -43,7 +43,7 @@ var window = window || global;
 			    pitchUp: 0, pitchDown: 0,
 			    yawLeft: 0, yawRight: 0,
 			    rollLeft: 0, rollRight: 0,
-			    isFiring: 0
+			    isFiring: 0, isHit: 0
 			};
 
 	        // Create state history store
@@ -220,6 +220,10 @@ var window = window || global;
 					primaryWeapon.stopFiring( state.name );
 					this.isPrimaryWeaponFiring = 0;
 				}
+			}
+
+			if( state.isHit ) {
+				console.log('server detected a hit');
 			}
 	    },
 

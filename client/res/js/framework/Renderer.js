@@ -41,10 +41,21 @@
 
 
     Renderer.prototype.onWindowResize = function() {
-        var SCREEN_HEIGHT = window.innerHeight;
-		var SCREEN_WIDTH  = window.innerWidth;
+        var height = window.innerHeight,
+            width = window.innerWidth,
+            aspect = width / height;
 
-		this.renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+		this.renderer.setSize( width, height );
+
+        if(this.sceneManager) {
+            this.sceneManager.background.camera.aspect = aspect;
+            this.sceneManager.middleground.camera.aspect = aspect;
+            this.sceneManager.foreground.camera.aspect = aspect;
+
+            this.sceneManager.background.camera.updateProjectionMatrix();
+            this.sceneManager.middleground.camera.updateProjectionMatrix();
+            this.sceneManager.foreground.camera.updateProjectionMatrix();
+        }
     };
 
 
