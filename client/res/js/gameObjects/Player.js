@@ -226,6 +226,10 @@ var window = window || global;
 				console.log('oww');
 				renderer.renderHit();
 			}
+
+			if( state.hasCollided ) {
+
+			}
 	    },
 
 
@@ -528,6 +532,9 @@ var window = window || global;
 
 		    	this.boundingSphere.mesh.position = this.mesh.position;
 		    	this.boundingSphere.mesh.quaternion = quaternion;
+
+		    	this.boundingSphere.meshClone.position = sceneManager.middleground.camera.position.clone();
+		    	this.boundingSphere.meshClone.translateZ(-100);
 		    }
 
 			if(this.hud) {

@@ -63,9 +63,10 @@ var window = window || global;
         },
 
         target: function() {
-            var geometry = this.getGeometry();
+            var geometry = this.getGeometry(),
+                cloneMesh = this.mesh;
 
-            if(!geometry) {
+            if(!geometry || !cloneMesh) {
                 console.log('!geometry for target()')
                 return;
             }
@@ -83,8 +84,8 @@ var window = window || global;
                 };
 
                 this.boundingSphere.geometry = new THREE.PlaneGeometry(
-                    this.boundingSphere.size,
-                    this.boundingSphere.size
+                    this.boundingSphere.size/2,
+                    this.boundingSphere.size/2
                 );
 
                 this.boundingSphere.mesh = new THREE.Mesh(
@@ -93,9 +94,17 @@ var window = window || global;
                 );
 
                 this.boundingSphere.mesh.useQuaternion = true;
+
+                this.boundingSphere.meshClone = this.mesh.clone();
+                this.boundingSphere.meshClone.scale.x =
+                    this.boundingSphere.meshClone.scale.y =
+                    this.boundingSphere.meshClone.scale.z = 0.01;
             }
 
             sceneManager.foreground.scene.add(this.boundingSphere.mesh);
+            sceneManager.foreground.scene.add(this.boundingSphere.meshClone);
+
+
             this.isTargeted = 1;
         },
 
