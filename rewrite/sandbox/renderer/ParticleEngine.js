@@ -124,11 +124,12 @@ Particle.prototype.update = function(dt)
 	if ( this.sizeTween.times.length > 0 )
 		this.size = this.sizeTween.lerp( this.age );
 
-	if ( this.colorTween.times.length > 0 )
-	{
+
+	if ( this.colorTween.times.length > 0 ) {
 		var colorHSL = this.colorTween.lerp( this.age );
 		this.color = new THREE.Color().setHSL( colorHSL.x, colorHSL.y, colorHSL.z );
 	}
+
 
 	if ( this.opacityTween.times.length > 0 )
 		this.opacity = this.opacityTween.lerp( this.age );
@@ -288,9 +289,21 @@ ParticleEngine.prototype.randomValue = function(base, spread)
 {
 	return base + spread * (Math.random() - 0.5);
 }
-ParticleEngine.prototype.randomVector3 = function(base, spread)
-{
+
+
+ParticleEngine.prototype.randomVector3 = function(base, spread) {
 	var rand3 = new THREE.Vector3( Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 );
+
+	var randX = Math.random() - 0.5,
+		randY = Math.random() - 0.5,
+		randZ = Math.random() - 0.5;
+
+
+	var spreadX = this.options.p
+
+	var resultX = baseX
+
+
 	return new THREE.Vector3().addVectors( base, new THREE.Vector3().multiplyVectors( spread, rand3 ) );
 }
 
