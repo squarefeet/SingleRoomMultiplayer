@@ -299,11 +299,6 @@ ParticleEngine.prototype.randomVector3 = function(base, spread) {
 		randZ = Math.random() - 0.5;
 
 
-	var spreadX = this.options.p
-
-	var resultX = baseX
-
-
 	return new THREE.Vector3().addVectors( base, new THREE.Vector3().multiplyVectors( spread, rand3 ) );
 }
 
