@@ -1,0 +1,131 @@
+<html>
+<head>
+	<title>Particle Tests</title>
+
+	<style type="text/css">
+		* { margin: 0; padding: 0; }
+	</style>
+
+	<script type="text/javascript" src="../res/js/lib/THREE-r58.min.js"></script>
+	<script type="text/javascript" src="../res/js/lib/Stats.min.js"></script>
+	<script type="text/javascript" src="Particles.js"></script>
+</head>
+<body>
+
+	<script type="text/javascript">
+
+		var enabled = 1;
+		var clock = new THREE.Clock();
+		var stats = new Stats();
+		var renderer = new THREE.WebGLRenderer({
+			antialias: true
+		});
+		var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 10000);
+		var scene = new THREE.Scene();
+
+
+
+		// .. add particles
+		var particleGroup = new ParticleGroup({
+			blending: THREE.AdditiveBlending,
+			texture: THREE.ImageUtils.loadTexture( '../res/textures/smokeparticle.png')
+		});
+
+
+		var emitter = new ParticleEmitter({
+			autoInitialize: 	true,
+
+			particlesPerSecond: 100,
+			maxAge: 			10,
+
+			position: 			new THREE.Vector3( 0, 0, 0 ),
+			positionSpread: 	new THREE.Vector3( 0, 0, 0 ),
+
+			velocity: 			new THREE.Vector3( 0, 100, 0 ),
+			velocitySpread: 	new THREE.Vector3( 50, 0, 50 ),
+
+			acceleration: 		new THREE.Vector3( 0, -50, 0 ),
+			accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+
+			angle: 				90,
+			angleSpread: 		90,
+
+			size: 				50,
+			sizeSpread: 		50,
+
+			opacity: 			1,
+			opacitySpread: 		1,
+
+			color: 				new THREE.Vector3( 1, 0.5, 0.5 ),
+			colorSpread: 		new THREE.Vector3( 1, 0, 0 ),
+
+			opacityTweenTo: 	1,
+			// sizeTweenTo: 		,
+			// colorTweenTo: 		new THREE.Vector3( 0.2, 1, 0.5 )
+		});
+
+
+		particleGroup.addEmitter( emitter );
+
+
+		// Setup
+		camera.position.setZ( -300 );
+		camera.position.setY( 0 );
+		camera.lookAt( scene.position );
+		scene.add( camera );
+		scene.add( particleGroup.mesh );
+
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.top = '0';
+		stats.domElement.style.left = '0';
+
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.setClearColor( 0x000000 );
+
+		// Append elements
+		document.body.appendChild( renderer.domElement );
+		document.body.appendChild( stats.domElement );
+
+
+		document.addEventListener('mousemove', function(e) {
+			// emitter.position.setX( (window.innerWidth/4) - (e.pageX/2) );
+			// emitter.position.setY( (window.innerHeight/4) - (e.pageY/2) );
+		}, false);
+
+
+		window.onblur = function() {
+			enabled = 0;
+		};
+
+		window.onfocus = function() {
+			clock.getDelta();
+			enabled = 1;
+			animate();
+		};
+
+
+		function animate() {
+			if(!enabled) return;
+			requestAnimationFrame( animate );
+			render();
+			stats.update();
+		}
+
+
+		function render() {
+
+			var dt = clock.getDelta();
+
+			particleGroup.update( dt );
+
+
+			renderer.render( scene, camera );
+		}
+
+
+		animate();
+
+	</script>
+
+</body>
+</html>

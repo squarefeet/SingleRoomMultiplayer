@@ -1,5 +1,5 @@
 var flames = [],
-    particleEngine;
+    particleGroup;
 
 var mouseHandler = new MouseHandler();
 var keyboardHandler = new KeyboardHandler();
@@ -25,6 +25,7 @@ var layerManager = new LayerManager({
 });
 layerManager.setCameraLookAtForLayer( 'background', layerManager.getLayerWithName('background').scene.position );
 
+layerManager.addFogToLayer( 'middleground', 0x111111, 0.0001 );
 
 
 var cameraControls = new CameraControls({
@@ -32,30 +33,28 @@ var cameraControls = new CameraControls({
     keyboardHandler: keyboardHandler,
     targetCameras: layerManager.getAllCameras()
 });
+
 layerManager.addTickToLayer( 'background', function( layerObjects, dt ) {
     cameraControls.tick( dt );
 
-    // particleEngine.update( dt );
 
-    // var camPos = layerManager.getLayerWithName( 'middleground' ).camera.position,
-        // camRot = layerManager.getLayerWithName( 'middleground' ).camera.quaternion;
-
-    // cameraShip.position.lerp( camPos, 0.5 );
-    // cameraShip.quaternion.slerp( camRot, 0.3 );
-
-    // cameraShip.translateZ( -1000 );
-    // cameraShip.translateY( -150 );
+    var camPos = layerManager.getLayerWithName( 'middleground' ).camera.position,
+        camRot = layerManager.getLayerWithName( 'middleground' ).camera.quaternion;
 
 
-    // particleEngine.particleMesh.position.lerp( camPos, 0.5 );
-    // particleEngine.particleMesh.quaternion.slerp( camRot, 0.3 );
+    cameraShip.position.lerp( camPos, 0.5 );
+    cameraShip.quaternion.slerp( camRot, 0.3 );
 
-    // particleEngine.particleMesh.translateZ( -500 );
-    // particleEngine.particleMesh.translateY( -150 );
+    cameraShip.translateZ( -1000 );
+    cameraShip.translateY( -150 );
 
-    // for( var i = 0; i < flames.length; ++i ) {
-    //     flames[i].update( dt );
-    // }
+
+    // Passing a fixed-step here to stop the particles getting out of sync
+    particleGroup.update( 0.016 );
+
+
+    light.position.x = Math.cos( Date.now() * 0.005 ) * 400;
+    light.position.y = Math.sin( Date.now() * 0.005 ) * 400;
 });
 
 
@@ -97,8 +96,6 @@ var bgStarfield = new Starfield({
 layerManager.addObjectToLayer( 'background', bgStarfield );
 
 
-renderer.start();
-
 
 var makeShield = function( mesh ) {
     var boundingSphere = mesh.children[0].geometry.boundingSphere;
@@ -121,15 +118,6 @@ var makeShield = function( mesh ) {
     mesh.add( shield );
 };
 
-var makeFlame = function( mesh ) {
-    return;
-    var flame = new Flame();
-    flame.mesh.position.z = 590;
-    flame.mesh.rotation.x = Math.PI/2;
-    flames.push(flame);
-    mesh.add(flame.mesh);
-};
-
 var cameraShip;
 
 var assetLoader = new AssetLoader({
@@ -137,7 +125,12 @@ var assetLoader = new AssetLoader({
         '../../res/models/crosswing6.dae'
     ],
     textures: [
-        '../../res/textures/phobos2k.jpg'
+        '../../res/textures/phobos2k.jpg',
+        '../../res/textures/phobos2k_NRM.png',
+        '../../res/textures/phobos2k_SPEC.png',
+        '../../res/textures/phobos2k_COLOR.png',
+        '../../res/textures/booster.png',
+        '../../res/textures/smokeparticle.png'
     ],
     onModelsLoaded: function( models ) {
 
@@ -148,7 +141,6 @@ var assetLoader = new AssetLoader({
 
         for(var i in models) {
             // makeShield( models[i].dae );
-            // makeFlame( models[i].dae );
             layerManager.addObject3dToLayer( 'middleground', models[i].dae );
         }
 
@@ -162,49 +154,54 @@ var assetLoader = new AssetLoader({
         var asteroid = new Asteroid( 5000 );
         layerManager.addObjectToLayer( 'middleground', asteroid );
 
-        particleEngine = new ParticleEngine();
-
-        particleEngine.setValues({
-            positionStyle    : Type.CUBE,
-            positionBase     : new THREE.Vector3( 0, 0, 0 ),
-            positionSpread   : new THREE.Vector3( 10, 0, 10 ),
-
-            velocityStyle    : Type.CUBE,
-            velocityBase     : new THREE.Vector3( 0, 0, 300 ),
-            velocitySpread   : new THREE.Vector3( 80, 50, 80 ),
-            accelerationBase : new THREE.Vector3( 0, 0, -100 ),
-
-            particleTexture : THREE.ImageUtils.loadTexture( '../../res/textures/smokeparticle.png'),
-
-            angleBase               : 0,
-            angleSpread             : 720,
-            angleVelocityBase       : 0,
-            angleVelocitySpread     : 720,
-
-            sizeTween    : new Tween( [0, 1], [32, 128] ),
-            opacityTween : new Tween( [0.8, 2], [0.5, 0] ),
-            colorTween   : new Tween( [0.4, 1], [ new THREE.Vector3(0,0,0.2), new THREE.Vector3(0, 0, 0.5) ] ),
-
-            particlesPerSecond : 200,
-            particleDeathAge   : 8.0,
-            emitterDeathAge    : 60,
-
-            scene: layerManager.getLayerWithName( 'middleground' ).scene
+        particleGroup = new ParticleGroup({
+            blending: THREE.AdditiveBlending,
+            depthTest: true,
+            texture: assets.textures['../../res/textures/smokeparticle.png']
         });
 
-        particleEngine.positionBase = cameraShip.position;
 
-        console.log(particleEngine)
+        var emitter = new ParticleEmitter({
+            autoInitialize:     true,
 
-        particleEngine.initialize();
+            particlesPerSecond: 100,
+            maxAge:             1,
 
-        setTimeout(renderer.start, 1000);
+            position:           new THREE.Vector3( 0, 0, 0 ),
+            positionSpread:     new THREE.Vector3( 0, 0, 0 ),
+
+            velocity:           new THREE.Vector3( 0, 50, 0 ),
+            velocitySpread:     new THREE.Vector3( 50, 50, 50 ),
+
+            acceleration:       new THREE.Vector3( 0, 0, 0 ),
+            accelerationSpread: new THREE.Vector3( 20, 20, 20 ),
+
+            angle:              90,
+            angleSpread:        90,
+
+            size:               100,
+            sizeSpread:         100,
+
+            opacity:            1,
+            opacitySpread:      1,
+
+            color:              new THREE.Vector3( 0.51, 0.3, 0.5 ),
+            colorSpread:        new THREE.Vector3( 0.05, 0, 0 ),
+
+            opacityTweenTo:     0,
+            sizeTweenTo:        500,
+            colorTweenTo:       new THREE.Vector3( 0.5, 1, 0.5 )
+        });
+
+        particleGroup.addEmitter( emitter );
+
+        layerManager.addObject3dToLayer('middleground', particleGroup.mesh)
+
+        emitter.position = cameraShip.position;
+
+        renderer.start();
     }
 });
 document.body.appendChild(assetLoader.domElement);
 
-// assetLoader.loadAll();
-
-
-
-console.log( layerManager.getLayerWithName( 'middleground' ) );
+assetLoader.loadAll();

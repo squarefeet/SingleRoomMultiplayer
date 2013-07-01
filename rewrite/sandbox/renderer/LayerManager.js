@@ -53,6 +53,10 @@ function LayerManager( opts ) {
 		store[ name ] = [];
 	};
 
+	var addFogToLayer = function( layerName, color, dropoff ) {
+		layers[ layerName ].scene.fog = new THREE.FogExp2( color, dropoff );
+	};
+
 
 	// Utils...
 	var addObject3dToLayer = function( layerName, obj ) {
@@ -157,6 +161,7 @@ function LayerManager( opts ) {
 
 	this.addObjectToLayer = addObjectToLayer;
 	this.addObject3dToLayer = addObject3dToLayer;
+	this.addFogToLayer = addFogToLayer;
 	this.getRenderablesForLayer = getRenderablesForLayer;
 	this.getLayers = getLayers;
 	this.getLayerWithName = getLayerWithName;

@@ -1,3 +1,38 @@
+var Vector3Pool = function( length ) {
+    var pool = [];
+
+    this.get = function(x, y, z) {
+        var vec;
+
+        if( pool.length ) {
+            vec = pool.pop();
+        }
+        else {
+            vec = new THREE.Vector3();
+        }
+
+        vec.set(x || 0, y || 0, z || 0);
+        return vec;
+    };
+
+
+    this.release = function( v ) {
+        this.reset( v );
+        pool.push(v)
+    };
+
+    this.reset = function( v ) {
+        v.set( 0, 0, 0 );
+    };
+
+
+    while( --length >= 0 ) {
+        pool.push( new THREE.Vector3() );
+    }
+};
+
+
+
 function TypedVector3Pool( length ) {
     this.size = size;
 

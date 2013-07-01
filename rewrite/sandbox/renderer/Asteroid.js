@@ -8,8 +8,12 @@ function getDistance3d( vertex1, vertex2 ) {
 function Asteroid( size ) {
     var start = Date.now();
 
+    console.log(assetLoader.loaded.textures['../../res/textures/phobos2k.jpg']);
+
     this.material = new THREE.MeshPhongMaterial({
-        map: assetLoader.loaded.textures['../../res/textures/phobos2k.jpg']
+        map: assetLoader.loaded.textures['../../res/textures/phobos2k_COLOR.png'],
+        normalMap: assetLoader.loaded.textures['../../res/textures/phobos2k_NRM.png'],
+        specularMap: assetLoader.loaded.textures['../../res/textures/phobos2k_SPEC.png']
     });
 
     this.geometry = new THREE.Geometry();
@@ -34,11 +38,11 @@ function Asteroid( size ) {
 
         sphere = new THREE.SphereGeometry(sphereRadius, 32, 32);
 
-        matrix = new THREE.Matrix4().makeScale(
-            Math.random() + 0.5,
-            Math.random() + 0.5,
-            Math.random() + 0.5
-        );
+        // matrix = new THREE.Matrix4().makeScale(
+        //     Math.random() + 0.5,
+        //     Math.random() + 0.5,
+        //     Math.random() + 0.5
+        // );
 
 
         // for(var k = 0; k < 10; ++k) {
@@ -70,16 +74,16 @@ function Asteroid( size ) {
             //     vertices[j].z += ( (magnet[k].z - vertices[j].z) * power ) * factor;
 
             // }
-            vertices[j].x += offsetX;
-            vertices[j].y += offsetY;
-            vertices[j].z += offsetZ;
+            // vertices[j].x += offsetX;
+            // vertices[j].y += offsetY;
+            // vertices[j].z += offsetZ;
 
-            vertices[j].x += (Math.random() * morphMax);
-            vertices[j].y += (Math.random() * morphMax);
-            vertices[j].z += (Math.random() * morphMax);
+            // vertices[j].x += (Math.random() * morphMax);
+            // vertices[j].y += (Math.random() * morphMax);
+            // vertices[j].z += (Math.random() * morphMax);
         }
 
-        sphere.applyMatrix( matrix )
+        // sphere.applyMatrix( matrix )
 
         geometries.push( sphere );
     }
