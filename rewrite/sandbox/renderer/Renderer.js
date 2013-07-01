@@ -91,7 +91,7 @@ function Renderer( opts ) {
 	var start = function() {
 		if( isRendering === 0 && layerManager !== null ) {
 			isRendering = 1;
-			animate();
+			requestAnimationFrame( animate );
 		}
 	};
 
@@ -105,22 +105,21 @@ function Renderer( opts ) {
 		if( isRendering === 0 ) return;
 
 		requestAnimationFrame( animate );
-		deltaTime = clock.getDelta();
-		render( deltaTime );
+		render();
 
 		if( statsInstance ) {
 			statsInstance.update();
 		}
 	};
 
-	var render = function( deltaTime ) {
+	var render = function( ) {
 		var layers = layerManager.getLayers(),
 			i = 0, il = layers.length,
 			layer, scene, camera;
 
 		if( !options.autoClear ) renderer.clear();
 
-
+		deltaTime = clock.getDelta();
 
 		if(postProcesses) {
 			for( i; i < il; ++i ) {

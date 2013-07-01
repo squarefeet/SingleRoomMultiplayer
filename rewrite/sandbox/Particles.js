@@ -10,6 +10,7 @@ function Particle() {
 	this.acceleration = null;
 
 	this.color = new THREE.Color();
+	this.colorVector = new THREE.Vector3();
 	this.opacity = 1;
 
 	this.angle = 0.0;
@@ -48,7 +49,7 @@ function ParticleEmitter( options ) {
 	this.velocity 			= 	options.velocity 		|| new THREE.Vector3();
 	this.angle 				= 	options.angle 			|| new THREE.Vector3();
 	this.size 				=	options.size 			|| new THREE.Vector3();
-	this.opacity 			= 	options.opacity 		|| new THREE.Vector3();
+	this.opacity 			= 	options.opacity 		|| 0;
 	this.color 				=	options.color 			|| new THREE.Vector3();
 
 	this.positionSpread		=	options.positionSpread;
@@ -61,6 +62,7 @@ function ParticleEmitter( options ) {
 
 	this.opacityTweenTo 	=	options.opacityTweenTo;
 	this.sizeTweenTo 		= 	options.sizeTweenTo;
+	this.colorTweenTo 		=	options.colorTweenTo;
 
 	this.particleCount = this.particlesPerSecond * this.maxAge;
 	this.lerpAmount = 1 / (this.maxAge * 10);
@@ -122,10 +124,10 @@ ParticleEmitter.prototype = {
 		particle.acceleration = new THREE.Vector3( this.acceleration.x, this.acceleration.y, this.acceleration.z );
 
 		particle.size = this.size;
+		particle.colorVector.copy( this.color );
 		particle.color.setHSL( this.color.x, this.color.y, this.color.z );
 		particle.opacity = this.opacity;
 		particle.angle = this.angle;
-
 
 		this.applySpreads( particle );
 
@@ -156,6 +158,18 @@ ParticleEmitter.prototype = {
 
 				if( typeof this.sizeTweenTo === 'number' ) {
 					particle.size = this._lerp( particle.size, this.sizeTweenTo, this.lerpAmount );
+				}
+
+				if( this.colorTweenTo ) {
+					particle.colorVector.x = this._lerp( particle.colorVector.x, this.colorTweenTo.x, this.lerpAmount );
+					particle.colorVector.y = this._lerp( particle.colorVector.y, this.colorTweenTo.y, this.lerpAmount );
+					particle.colorVector.z = this._lerp( particle.colorVector.z, this.colorTweenTo.z, this.lerpAmount );
+
+					particle.color.setHSL(
+						particle.colorVector.x,
+						particle.colorVector.y,
+						particle.colorVector.z
+					);
 				}
 
 				this.materialAttributes.customVisible.value[i + this.groupStartIndex] = particle.alive;
@@ -195,6 +209,7 @@ ParticleEmitter.prototype = {
 		p.age = 0;
 		p.opacity = this.opacity;
 		p.size = this.size;
+		p.colorVector.copy( this.color );
 		p.color.setHSL( this.color.x, this.color.y, this.color.z );
 
 		this.applySpreads( p );

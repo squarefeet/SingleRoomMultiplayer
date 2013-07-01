@@ -35,8 +35,8 @@
 		var emitter = new ParticleEmitter({
 			autoInitialize: 	true,
 
-			particlesPerSecond: 500,
-			maxAge: 			10,
+			particlesPerSecond: 100,
+			maxAge: 			5,
 
 			position: 			new THREE.Vector3( 0, 0, 0 ),
 			positionSpread: 	new THREE.Vector3( 0, 0, 0 ),
@@ -44,24 +44,24 @@
 			velocity: 			new THREE.Vector3( 0, 50, 0 ),
 			velocitySpread: 	new THREE.Vector3( 50, 50, 50 ),
 
-			acceleration: 		new THREE.Vector3( 0, -50, 0 ),
-			accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+			acceleration: 		new THREE.Vector3( 0, 0, 0 ),
+			accelerationSpread: new THREE.Vector3( 20, 20, 20 ),
 
 			angle: 				90,
 			angleSpread: 		90,
 
-			size: 				50,
-			sizeSpread: 		10,
+			size: 				100,
+			sizeSpread: 		100,
 
 			opacity: 			1,
-			opacitySpread: 		0,
+			opacitySpread: 		1,
 
-			color: 				new THREE.Vector3( 1, 1, 0.5 ),
-			colorSpread: 		new THREE.Vector3( 0.2, 0, 0 ),
+			color: 				new THREE.Vector3( 0.1, 0.3, 0.5 ),
+			colorSpread: 		new THREE.Vector3( 0.05, 0, 0 ),
 
 			opacityTweenTo: 	0,
-			sizeTweenTo: 		1,
-			colorTweenTo: 		new THREE.Vector3( 0, 0, 0 )
+			// sizeTweenTo: 		1,
+			colorTweenTo: 		new THREE.Vector3( 0.02, 1, 0.5 )
 		});
 
 		particleGroup.addEmitter( emitter );

@@ -1,5 +1,5 @@
 var flames = [],
-    particleEngine;
+    particleGroup;
 
 var mouseHandler = new MouseHandler();
 var keyboardHandler = new KeyboardHandler();
@@ -35,8 +35,6 @@ var cameraControls = new CameraControls({
 layerManager.addTickToLayer( 'background', function( layerObjects, dt ) {
     cameraControls.tick( dt );
 
-    particleEngine.update( dt );
-
     var camPos = layerManager.getLayerWithName( 'middleground' ).camera.position,
         camRot = layerManager.getLayerWithName( 'middleground' ).camera.quaternion;
 
@@ -45,6 +43,10 @@ layerManager.addTickToLayer( 'background', function( layerObjects, dt ) {
 
     cameraShip.translateZ( -1000 );
     cameraShip.translateY( -150 );
+
+
+    // Passing a fixed-step here to stop the particles getting out of sync
+    particleGroup.update( 0.016 );
 
 
     // particleEngine.particleMesh.position.lerp( camPos, 0.5 );
@@ -119,15 +121,6 @@ var makeShield = function( mesh ) {
     mesh.add( shield );
 };
 
-var makeFlame = function( mesh ) {
-    return;
-    var flame = new Flame();
-    flame.mesh.position.z = 590;
-    flame.mesh.rotation.x = Math.PI/2;
-    flames.push(flame);
-    mesh.add(flame.mesh);
-};
-
 var cameraShip;
 
 var assetLoader = new AssetLoader({
@@ -146,7 +139,6 @@ var assetLoader = new AssetLoader({
 
         for(var i in models) {
             // makeShield( models[i].dae );
-            // makeFlame( models[i].dae );
             layerManager.addObject3dToLayer( 'middleground', models[i].dae );
         }
 
@@ -160,43 +152,51 @@ var assetLoader = new AssetLoader({
         var asteroid = new Asteroid( 5000 );
         layerManager.addObjectToLayer( 'middleground', asteroid );
 
-        particleEngine = new ParticleEngine();
-
-        particleEngine.setValues({
-            positionStyle    : Type.CUBE,
-            positionBase     : new THREE.Vector3( 0, 0, 0 ),
-            positionSpread   : new THREE.Vector3( 10, 0, 10 ),
-
-            velocityStyle    : Type.CUBE,
-            velocityBase     : new THREE.Vector3( 0, 0, 300 ),
-            velocitySpread   : new THREE.Vector3( 80, 50, 80 ),
-            accelerationBase : new THREE.Vector3( 0, 0, -100 ),
-
-            particleTexture : THREE.ImageUtils.loadTexture( '../../res/textures/smokeparticle.png'),
-
-            angleBase               : 0,
-            angleSpread             : 720,
-            angleVelocityBase       : 0,
-            angleVelocitySpread     : 720,
-
-            sizeTween    : new Tween( [0, 1], [32, 128] ),
-            opacityTween : new Tween( [0.8, 2], [0.5, 0] ),
-            colorTween   : new Tween( [0.4, 1], [ new THREE.Vector3(0,0,0.2), new THREE.Vector3(0, 0, 0.5) ] ),
-
-            particlesPerSecond : 200,
-            particleDeathAge   : 8.0,
-            emitterDeathAge    : 60,
-
-            scene: layerManager.getLayerWithName( 'middleground' ).scene
+        particleGroup = new ParticleGroup({
+            blending: THREE.NormalBlending,
+            texture: THREE.ImageUtils.loadTexture( '../../res/textures/smokeparticle.png')
         });
 
-        particleEngine.positionBase = cameraShip.position;
 
-        console.log(particleEngine)
+        var emitter = new ParticleEmitter({
+            autoInitialize:     true,
 
-        particleEngine.initialize();
+            particlesPerSecond: 200,
+            maxAge:             5,
 
-        setTimeout(renderer.start, 1000);
+            position:           new THREE.Vector3( 0, 0, 0 ),
+            positionSpread:     new THREE.Vector3( 0, 0, 0 ),
+
+            velocity:           new THREE.Vector3( 0, 50, 0 ),
+            velocitySpread:     new THREE.Vector3( 50, 50, 50 ),
+
+            acceleration:       new THREE.Vector3( 0, 0, 0 ),
+            accelerationSpread: new THREE.Vector3( 20, 20, 20 ),
+
+            angle:              90,
+            angleSpread:        90,
+
+            size:               50,
+            sizeSpread:         20,
+
+            opacity:            1,
+            opacitySpread:      1,
+
+            color:              new THREE.Vector3( 0.6, 0.3, 0.5 ),
+            colorSpread:        new THREE.Vector3( 0.05, 0, 0 ),
+
+            opacityTweenTo:     0,
+            sizeTweenTo:        200,
+            colorTweenTo:       new THREE.Vector3( 0.5, 1, 0.5 )
+        });
+
+        particleGroup.addEmitter( emitter );
+
+        layerManager.addObject3dToLayer('middleground', particleGroup.mesh)
+
+        emitter.position = cameraShip.position;
+
+        renderer.start();
     }
 });
 document.body.appendChild(assetLoader.domElement);
