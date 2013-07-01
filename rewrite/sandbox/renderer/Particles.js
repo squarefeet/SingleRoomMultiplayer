@@ -15,10 +15,6 @@
     An emitter will detail base position.
 
 
-
-
-
-
     One ParticleRenderer
         - Add particle group
 */
@@ -54,14 +50,14 @@ Particle.prototype.update = function( dt ) {
         this.position,
         this.vectorPool.getX( this.velocity ) * dt,
         this.vectorPool.getY( this.velocity ) * dt,
-        this.vectorPool.getZ( this.velocity ) * dt,
+        this.vectorPool.getZ( this.velocity ) * dt
     );
 
     this.vectorPool.set(
         this.velocity,
         this.vectorPool.getX( this.acceleration ) * dt,
         this.vectorPool.getY( this.acceleration ) * dt,
-        this.vectorPool.getZ( this.acceleration ) * dt,
+        this.vectorPool.getZ( this.acceleration ) * dt
     );
 
     this.angle         += this.angleVelocity     * 0.01745329251 * dt;
@@ -152,8 +148,15 @@ function ParticleGroup( options ) {
 
 
 ParticleGroup.prototype = {
-    addEmitter: function( particleEmitter ) {
+    _addParticlesToGeometry: function( particles ) {
+        for( var i = 0, il = particles.length; i < il; ++i ) {
+            this.geometry.vertices[i] = particles[i]
+        }
+    },
 
+    addEmitter: function( particleEmitter ) {
+        // Add emitter's particles to this group's geometry
+        this._addParticlesToGeometry( particleEmitter.particles );
     }
 }
 
@@ -162,7 +165,7 @@ ParticleGroup.prototype = {
 
 
 function ParticleManager( numVectors ) {
-    this.vectorPool = new TypedVector3Pool( numVectors );
+    this.vectorPool = new Vector3Pool( numVectors );
 }
 
 
@@ -178,7 +181,7 @@ ParticleManager.prototype = {
         pool.set( randomVec, resultX, resultY, resultZ );
 
         return randomVec;
-    }
+    },
 
 
     createParticle: function() {
@@ -188,7 +191,7 @@ ParticleManager.prototype = {
 
 
 
-Particles.shaders = {
+ParticleManager.shaders = {
     vertex: [
         "attribute vec3  customColor;",
         "attribute float customOpacity;",

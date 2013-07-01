@@ -35,16 +35,16 @@ var cameraControls = new CameraControls({
 layerManager.addTickToLayer( 'background', function( layerObjects, dt ) {
     cameraControls.tick( dt );
 
-    particleEngine.update( dt );
+    // particleEngine.update( dt );
 
-    var camPos = layerManager.getLayerWithName( 'middleground' ).camera.position,
-        camRot = layerManager.getLayerWithName( 'middleground' ).camera.quaternion;
+    // var camPos = layerManager.getLayerWithName( 'middleground' ).camera.position,
+        // camRot = layerManager.getLayerWithName( 'middleground' ).camera.quaternion;
 
-    cameraShip.position.lerp( camPos, 0.5 );
-    cameraShip.quaternion.slerp( camRot, 0.3 );
+    // cameraShip.position.lerp( camPos, 0.5 );
+    // cameraShip.quaternion.slerp( camRot, 0.3 );
 
-    cameraShip.translateZ( -1000 );
-    cameraShip.translateY( -150 );
+    // cameraShip.translateZ( -1000 );
+    // cameraShip.translateY( -150 );
 
 
     // particleEngine.particleMesh.position.lerp( camPos, 0.5 );
@@ -96,6 +96,8 @@ var bgStarfield = new Starfield({
 });
 layerManager.addObjectToLayer( 'background', bgStarfield );
 
+
+renderer.start();
 
 
 var makeShield = function( mesh ) {
@@ -201,7 +203,8 @@ var assetLoader = new AssetLoader({
 });
 document.body.appendChild(assetLoader.domElement);
 
-assetLoader.loadAll();
+// assetLoader.loadAll();
+
 
 
 console.log( layerManager.getLayerWithName( 'middleground' ) );

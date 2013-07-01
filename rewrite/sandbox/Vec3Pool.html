@@ -1,0 +1,54 @@
+<html>
+<head>
+    <title>vec3 pool</title>
+
+    <script type="text/javascript" src="../res/js/lib/THREE-r58.min.js"></script>
+
+    <script type="text/javascript">
+        function Vector3Pool( size ) {
+            var memory = [];
+
+            this.get = function() {
+                return memory.pop();
+            };
+
+            this.release = function( v ) {
+                v.set( 0, 0, 0 );
+                memory.push( v );
+            };
+
+            while( --size >= 0 ) {
+                memory.push( new THREE.Vector3() );
+            }
+        }
+    </script>
+
+</head>
+<body>
+
+
+    <script type="text/javascript">
+        var pool = new Vector3Pool( 160000 );
+
+        function doStuff() {
+            var start = Date.now();
+            var vec, i = 0;
+
+            for( i; i < 160000; ++i ) {
+                vec = pool.get();
+                vec.addScalar( 120 );
+                pool.release(vec);
+            }
+            var end = Date.now();
+            console.log( end - start );
+        }
+
+        setInterval( doStuff, 1000 );
+
+
+
+
+    </script>
+
+</body>
+</html>
