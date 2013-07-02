@@ -147,7 +147,7 @@ function Renderer( opts ) {
 				renderer.render( layer.scene, layer.camera );
 
 				if( !options.autoClear ) {
-					renderer.clear( false, true, false );
+					renderer.clear( false, true, true );
 				}
 			}
         }

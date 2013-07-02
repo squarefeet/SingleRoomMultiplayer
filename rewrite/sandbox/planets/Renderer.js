@@ -37,7 +37,9 @@ function Renderer( opts ) {
 		deltaTime = 0,
 		layerManager = null,
 		statsInstance = null,
-		postProcesses = null;
+		postProcesses = null,
+		preTicks = [],
+		numPreTicks = 0;
 
 
 
@@ -86,6 +88,13 @@ function Renderer( opts ) {
 		options.parent.appendChild( renderer.domElement );
 	};
 
+	var addPreRenderTickFunction = function( fn ) {
+		if( typeof fn === 'function' ) {
+			preTicks.push( fn );
+			numPreTicks = preTicks.length;
+		}
+	};
+
 
 	// Create start/stop/animate
 	var start = function() {
@@ -121,14 +130,11 @@ function Renderer( opts ) {
 
 		deltaTime = clock.getDelta();
 
-		if(postProcesses) {
-			for( i; i < il; ++i ) {
-				layer = layers[i];
-				if( typeof layer.tick === 'function' ) {
-					layer.tick( deltaTime );
-				}
-			}
+		for( i; i < numPreTicks; ++i ) {
+			preTicks[i]( deltaTime );
+		}
 
+		if(postProcesses) {
             layers[1].scene.overrideMaterial = postProcesses.depthMaterial;
             renderer.render( layers[1].scene, layers[1].camera, postProcesses.depthTarget, true );
             layers[1].scene.overrideMaterial = null;
@@ -137,12 +143,8 @@ function Renderer( opts ) {
             renderer.render( layers[2].scene, layers[2].camera );
         }
         else {
-        	for( i; i < il; ++i ) {
+        	for( i = 0; i < il; ++i ) {
 				layer = layers[i];
-
-				if( typeof layer.tick === 'function' ) {
-					layer.tick( deltaTime );
-				}
 
 				renderer.render( layer.scene, layer.camera );
 
@@ -210,11 +212,9 @@ function Renderer( opts ) {
             format: THREE.RGBAFormat
         });
 
-	    var bloomPass = new THREE.BloomPass( 2 );
+	    var bloomPass = new THREE.BloomPass( 0.5 );
 	    var copyPass = new THREE.ShaderPass( THREE.CopyShader );
 	    copyPass.renderToScreen = true;
-
-	    var bloomPass = bloomPass;
 
 	    for( var i = 0; i < postProcesses.renderPasses.length; ++i ) {
 	    	postProcesses.composer.addPass( postProcesses.renderPasses[i] );
@@ -224,6 +224,8 @@ function Renderer( opts ) {
 	    postProcesses.composer.addPass( postProcesses.clearMask );
 	    postProcesses.composer.addPass( bloomPass );
 	    postProcesses.composer.addPass( copyPass );
+
+	    this.bloomPass = bloomPass;
 	};
 
 
@@ -233,7 +235,8 @@ function Renderer( opts ) {
 	this.setLayerManager = setLayerManager;
 	this.addStats = addStats;
 	this.addToDOM = addToDOM;
-	this.enablePostProcessing = enablePostProcessing
+	this.addPreRenderTickFunction = addPreRenderTickFunction;
+	this.enablePostProcessing = enablePostProcessing;
 }
 
 Renderer.prototype.setBloomLevel = function( level ) {

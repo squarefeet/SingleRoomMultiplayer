@@ -5,7 +5,8 @@ function Starfield( opts ) {
 		depth: 100000,
 		stars: 1000000,
 		color: 0xffffff,
-		size: 1
+		size: 1,
+		minDistance: 0
 	};
 
 	if( opts ) {
@@ -17,19 +18,35 @@ function Starfield( opts ) {
 
 	var makeMaterial = function() {
 		return new THREE.ParticleBasicMaterial({
-	        color: options.color,
-	        size: options.size
+	        size: options.size,
+	        map: assetLoader.loaded.textures['../../res/textures/star.png'],
+	        blending: THREE.AdditiveBlending,
+	        depthTest: true,
+	        transparent : true
 	    });
 	};
 
+	var getRandomPoint = function() {
+		var value = (Math.random() * options.width) - (options.width/2);
+
+
+		if(value > 0 && value < options.minDistance) {
+			value += options.minDistance
+		}
+		else if(value < 0 && value > -options.minDistance) {
+			value -= options.minDistance
+		}
+
+		return value;
+	}
 
 	var createVertices = function() {
 		for( var i = 0; i < options.stars; ++i ) {
 			geometry.vertices.push(
 	        	new THREE.Vector3(
-	        		(Math.random() * options.width) - (options.width/2),
-	        		(Math.random() * options.height) - (options.height/2),
-	        		(Math.random() * options.depth) - (options.depth/2)
+	        		getRandomPoint(),
+	        		getRandomPoint(),
+	        		getRandomPoint()
 	        	)
 	        );
 		}

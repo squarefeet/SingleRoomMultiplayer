@@ -35,6 +35,15 @@ function AssetLoader( opts ) {
 
     this._makeLoaderElements();
 
+    this.options.parent.appendChild( this.domElement );
+
+    // Bind scope
+
+    for(var i in this) {
+        if( typeof this[i] === 'function' ) {
+            this[i] = this[i].bind( this );
+        }
+    }
 }
 
 
@@ -93,7 +102,9 @@ AssetLoader.prototype = {
                 that.options.onAllLoaded( that.loaded );
             }
             else if(assets && assets.length) {
-                fn.call(that, loadNext);
+                setTimeout(function() {
+                    fn.call(that, loadNext);
+                }, 250);
             }
             else {
                 loadNext();
@@ -130,7 +141,9 @@ AssetLoader.prototype = {
                     };
 
                     if(i < il) {
-                        loadCollada( models[i] );
+                        setTimeout(function() {
+                            loadCollada( models[i] );
+                        }, 50);
                     }
                     else if( typeof cb === 'function' ) {
                         cb();
@@ -173,7 +186,9 @@ AssetLoader.prototype = {
                     that.loaded.textures[ image ] = tex;
 
                     if(i < il) {
-                        loadImage( images[i] );
+                        setTimeout(function() {
+                            loadImage( images[i] );
+                        }, 50);
                     }
                     else if( typeof cb === 'function' ) {
                         cb();

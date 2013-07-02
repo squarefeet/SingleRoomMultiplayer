@@ -106,16 +106,6 @@ function LayerManager( opts ) {
 		return cams;
 	};
 
-	var addTickToLayer = function( layerName, fn ) {
-		layers[ layerName ].tick = (function() {
-			var objs = store[ layerName ];
-
-			return function( dt ) {
-				fn( objs, dt );
-			};
-		}());
-	};
-
 
 
 	// Camera helpers
@@ -169,6 +159,5 @@ function LayerManager( opts ) {
 	this.setCameraRotationForLayer = setCameraRotationForLayer;
 	this.setCameraPositionForLayer = setCameraPositionForLayer;
 	this.setCameraLookAtForLayer = setCameraLookAtForLayer;
-	this.addTickToLayer = addTickToLayer;
 	this.getAllCameras = getAllCameras;
 }

@@ -11,12 +11,12 @@ function Planet( options ) {
         io: {
             size: 3642 * options.scale,
             distance: 421800 * options.scale * internalScale,
-            period: 1.769 * options.scale * internalScale
+            period: (4 - 1.769) * options.scale * internalScale
         },
         europa: {
             size: 3121 * options.scale,
             distance: 671100 * options.scale * internalScale,
-            period: 3.551 * options.scale * internalScale
+            period: (4 - 3.551) * options.scale * internalScale
         },
         ganymede: {
             size: 5262 * options.scale,
@@ -40,6 +40,14 @@ function Planet( options ) {
         map: assetLoader.loaded.textures['../../res/textures/jupiter.jpg']
     });
 
+    this.jupiterAtmosphereMaterial = new THREE.MeshPhongMaterial({
+        transparent: true,
+        map: assetLoader.loaded.textures['../../res/textures/atmosphere1.jpg'],
+        color: 0xffffff,
+        blending: THREE.AdditiveBlending,
+        opacity: 0.8
+    });
+
     this.ioMaterial = new THREE.MeshPhongMaterial({
         color: 0xffffff,
         shininess: 10,
@@ -52,16 +60,25 @@ function Planet( options ) {
         map: assetLoader.loaded.textures['../../res/textures/europa.jpg']
     });
 
-    this.jupiterGeometry    = new THREE.SphereGeometry( this.details.jupiter.size,  32, 32 );
-    this.ioGeometry         = new THREE.SphereGeometry( this.details.io.size,       32, 32 );
-    this.europaGeometry     = new THREE.SphereGeometry( this.details.europa.size ,  32, 32 );
+    this.jupiterGeometry                = new THREE.SphereGeometry( this.details.jupiter.size,       32, 32 );
+    this.jupiterAtmosphereGeometry      = new THREE.SphereGeometry( this.details.jupiter.size + 2,  32, 32 );
+    this.jupiterAtmosphereGeometry2     = new THREE.SphereGeometry( this.details.jupiter.size + 4,  32, 32 );
+    this.ioGeometry                     = new THREE.SphereGeometry( this.details.io.size,            32, 32 );
+    this.europaGeometry                 = new THREE.SphereGeometry( this.details.europa.size ,       32, 32 );
 
     this.jupiter = new THREE.Mesh( this.jupiterGeometry, this.jupiterMaterial );
+    this.jupiterAtmosphere = new THREE.Mesh( this.jupiterAtmosphereGeometry, this.jupiterAtmosphereMaterial );
+    this.jupiterAtmosphere2 = new THREE.Mesh( this.jupiterAtmosphereGeometry2, this.jupiterAtmosphereMaterial );
     this.io = new THREE.Mesh( this.ioGeometry, this.ioMaterial );
     this.europa = new THREE.Mesh( this.europaGeometry, this.europaMaterial );
 
 
+
+
     this.jupiter.position = options.position;
+    this.jupiterAtmosphere.position = this.jupiterAtmosphere2.position = this.jupiter.position;
+
+    this.jupiterAtmosphere2.rotation.y = Math.PI/2;
 
     this.io.position = options.position.clone();
     this.io.position.z += this.details.io.distance;
@@ -71,6 +88,8 @@ function Planet( options ) {
 
     this.renderables = [];
     this.renderables.push( this.jupiter );
+    this.renderables.push( this.jupiterAtmosphere );
+    this.renderables.push( this.jupiterAtmosphere2 );
     this.renderables.push( this.io );
     this.renderables.push( this.europa );
 }
@@ -83,6 +102,8 @@ Planet.prototype = {
 
 
         this.jupiter.rotation.y += 0.02 * dt;
+        this.jupiterAtmosphere.rotation.y += 0.05 * dt;
+        this.jupiterAtmosphere2.rotation.y += 0.1 * dt;
 
         this.io.rotation.y -= 0.09 * dt;
         this.io.position.z = center + Math.sin( now * this.details.io.period ) * this.details.io.distance;
@@ -117,7 +138,7 @@ function Sun( options ) {
     this.renderables = [];
     this.renderables.push( this.mesh );
 
-    this.addLensFlare();
+    // this.addLensFlare();
 }
 
 Sun.prototype = {
@@ -147,24 +168,24 @@ Sun.prototype = {
 
 
         var flareColor = new THREE.Color( 0xffffff );
-        var lensFlare = new THREE.LensFlare( textureFlare0, 1024, 0.0, THREE.AdditiveBlending, flareColor );
+        var lensFlare = new THREE.LensFlare( textureFlare0, 256, 0.0, THREE.AdditiveBlending, flareColor );
 
 
-        lensFlare.add( textureFlare2, 512, 0.0, THREE.AdditiveBlending );
-        lensFlare.add( textureFlare2, 512, 0.05, THREE.AdditiveBlending );
-        lensFlare.add( textureFlare2, 256, 0.0, THREE.AdditiveBlending );
+        lensFlare.add( textureFlare2, 512, 0.0,     THREE.AdditiveBlending );
+        lensFlare.add( textureFlare2, 512, 0.05,    THREE.AdditiveBlending );
+        lensFlare.add( textureFlare2, 256, 0.0,     THREE.AdditiveBlending );
 
-        lensFlare.add( textureFlare3, 60, 0.6, THREE.AdditiveBlending );
-        lensFlare.add( textureFlare3, 70, 0.7, THREE.AdditiveBlending );
-        lensFlare.add( textureFlare3, 120, 0.9, THREE.AdditiveBlending );
-        lensFlare.add( textureFlare3, 30, 0.3, THREE.AdditiveBlending );
-        lensFlare.add( textureFlare3, 83, 0.5, THREE.AdditiveBlending );
-        lensFlare.add( textureFlare3, 100, 1.0, THREE.AdditiveBlending );
+        lensFlare.add( textureFlare3, 60, 0.6,      THREE.AdditiveBlending );
+        lensFlare.add( textureFlare3, 70, 0.7,      THREE.AdditiveBlending );
+        lensFlare.add( textureFlare3, 120, 0.9,     THREE.AdditiveBlending );
+        lensFlare.add( textureFlare3, 30, 0.3,      THREE.AdditiveBlending );
+        lensFlare.add( textureFlare3, 83, 0.5,      THREE.AdditiveBlending );
+        lensFlare.add( textureFlare3, 100, 1.0,     THREE.AdditiveBlending );
 
-        lensFlare.customUpdateCallback = lensFlareUpdateCallback;
+        // lensFlare.customUpdateCallback = lensFlareUpdateCallback;
 
         lensFlare.position = this.mesh.position.clone();
-        lensFlare.position.lerp( new THREE.Vector3(), 0.1 );
+        lensFlare.position.lerp( new THREE.Vector3(), 0.5 );
 
         this.renderables.push( lensFlare );
     },
