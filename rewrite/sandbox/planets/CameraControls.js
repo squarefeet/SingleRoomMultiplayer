@@ -36,11 +36,23 @@ function CameraControls( opts ) {
 		rollRight = false,
 		rollRotation = 0,
 		yaw = 0,
-		pitch = 0;
+		pitch = 0,
 		rotationVector = new THREE.Vector3(),
 		rotationQuaternion = new THREE.Quaternion(),
-		positionVector = new THREE.Vector3();
+		positionVector = new THREE.Vector3(),
+		hasInput = !!(options.keyboardHandler && options.mouseHandler),
+		controls = CONFIG.controls;
 
+
+	for(var i = 0; i < options.targetCameras.length; ++i) {
+		options.targetCameras[i].useQuaternion = true;
+	}
+
+	for(var i in this) {
+		if(typeof this[i] === 'function') {
+			this[i] = this[i].bind(this);
+		}
+	}
 
 
 	var updateRotation = function() {
@@ -66,8 +78,14 @@ function CameraControls( opts ) {
 			rollRotation = -max;
 		}
 
-		rotationVector.y = (-(mouseX - centerX) / centerX) / options.rotationDamping;
-		rotationVector.x = (-(mouseY - centerY) / centerY) / options.rotationDamping;
+		if( centerX && centerY ) {
+			rotationVector.y = (-(mouseX - centerX) / centerX) / options.rotationDamping;
+			rotationVector.x = (-(mouseY - centerY) / centerY) / options.rotationDamping;
+		}
+
+		inc = null;
+		dec = null;
+		max = null;
 	};
 
 
@@ -111,6 +129,10 @@ function CameraControls( opts ) {
 		else if( positionVector.x < -max ) {
 			positionVector.x = -max;
 		}
+
+		inc = null;
+		dec = null;
+		max = null;
 	};
 
 
@@ -131,7 +153,10 @@ function CameraControls( opts ) {
 		var velX = positionVector.x * dt,
 			velY = positionVector.y * dt,
 			velZ = positionVector.z * dt,
-			roll = rollRotation * dt;
+			roll = rollRotation * dt,
+			cams = options.targetCameras,
+			numCams = cams.length,
+			i;
 
 		rotationQuaternion.set(
 			rotationVector.x,
@@ -140,30 +165,81 @@ function CameraControls( opts ) {
 			1
 		).normalize();
 
-		for( var i = 0; i < options.targetCameras.length; ++i ) {
-			updateSingleCamera( options.targetCameras[i], velX, velY, velZ );
+		for( i = 0; i < numCams; ++i ) {
+			updateSingleCamera( cams[i], velX, velY, velZ );
 		}
+
+		velX = null;
+		velY = null;
+		velZ = null;
+		roll = null;
+		cams = null;
+		numCams = null;
+		i = null;
 	};
 
 
+	var handleInput = function() {
+		var m = options.mouseHandler,
+			k = options.keyboardHandler;
+
+		mouseX = m.x;
+		mouseY = m.y;
+		centerX = m.centerX;
+		centerY = m.centerY;
+
+		forward = k.isPressed( controls.FORWARD );
+		back = (!forward && k.isPressed( controls.BACKWARD ));
+
+		left = k.isPressed( controls.LEFT );
+		right = (!left && k.isPressed( controls.RIGHT ));
+
+		rollLeft = k.isPressed( controls.ROLL_LEFT );
+		rollRight = (!rollLeft && k.isPressed( controls.ROLL_RIGHT ) );
+	};
+
 
 	this.tick = function( dt ) {
-		mouseX = options.mouseHandler.x;
-		mouseY = options.mouseHandler.y;
-		centerX = options.mouseHandler.centerX;
-		centerY = options.mouseHandler.centerY;
-
-		forward = options.keyboardHandler.isPressed( 'w' );
-		back = (!forward && options.keyboardHandler.isPressed( 's' ));
-
-		left = options.keyboardHandler.isPressed( 'a' );
-		right = (!left && options.keyboardHandler.isPressed( 'd' ));
-
-		rollLeft = options.keyboardHandler.isPressed( 'q' );
-		rollRight = (!rollLeft && options.keyboardHandler.isPressed( 'e' ) );
+		if( hasInput ) {
+			handleInput();
+		}
 
 		updateRotation();
 		updatePosition();
 		updateCameras( dt );
+	};
+
+
+	this.set = function() {};
+
+	this.setForward = function( state ) {
+		forward = state;
+	};
+	this.setBackward = function( state ) {
+		backward = state;
+	};
+	this.setLeft = function( state ) {
+		left = state;
+	};
+	this.setRight = function( state ) {
+		right = state;
+	};
+	this.setRollLeft = function( state ) {
+		rollLeft = state;
+	};
+	this.setRollRight = function( state ) {
+		rollRight = state;
+	};
+	this.setX = function( state ) {
+		mouseX = state;
+	};
+	this.setY = function( state ) {
+		mouseY = state;
+	};
+	this.setCenterX = function( state ) {
+		centerX = state;
+	};
+	this.setCenterY = function( state ) {
+		centerY = state;
 	};
 }

@@ -1,5 +1,21 @@
 const CONFIG = {
 
+	// Controls
+	controls: {
+		UP: 'r',
+		DOWN: 'f',
+		LEFT: 'a',
+		RIGHT: 'd',
+		ROLL_LEFT: 'q',
+		ROLL_RIGHT: 'e',
+		FORWARD: 'w',
+		BACKWARD: 's',
+		TARGET: 't',
+		CHAT: 'y',
+		TEAM_CHAT: 'u'
+	},
+
+
 	layerManager: {
 	    layers: {
 	        background: {
@@ -25,7 +41,7 @@ const CONFIG = {
 		parent: document.body,
 
 	    models: [
-	        '../../res/models/crosswing6.dae'
+	        '../../res/models/crosswing6-recentered.dae'
 	    ],
 	    textures: [
 	        '../../res/textures/universe_sml_darker.jpg',
