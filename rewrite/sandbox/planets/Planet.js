@@ -138,7 +138,7 @@ function Sun( options ) {
     this.renderables = [];
     this.renderables.push( this.mesh );
 
-    // this.addLensFlare();
+    this.addLensFlare();
 }
 
 Sun.prototype = {
@@ -168,7 +168,7 @@ Sun.prototype = {
 
 
         var flareColor = new THREE.Color( 0xffffff );
-        var lensFlare = new THREE.LensFlare( textureFlare0, 256, 0.0, THREE.AdditiveBlending, flareColor );
+        var lensFlare = new THREE.LensFlare( textureFlare0, 1024, 0.0, THREE.AdditiveBlending, flareColor );
 
 
         lensFlare.add( textureFlare2, 512, 0.0,     THREE.AdditiveBlending );

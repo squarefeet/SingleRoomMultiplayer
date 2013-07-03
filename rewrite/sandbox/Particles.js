@@ -64,6 +64,8 @@ function ParticleEmitter( options ) {
 	this.sizeTweenTo 		= 	options.sizeTweenTo;
 	this.colorTweenTo 		=	options.colorTweenTo;
 
+	this.emitterDuration 	= options.emitterDuration;
+
 	this.particleCount = this.particlesPerSecond * this.maxAge;
 	this.lerpAmount = 1 / (this.maxAge * 10);
 
@@ -81,10 +83,18 @@ function ParticleEmitter( options ) {
 
 ParticleEmitter.prototype = {
 
-	_randomizeVector: function( vector, spread ) {
-		vector.x += spread.x * (Math.random() - 0.5);
-		vector.y += spread.y * (Math.random() - 0.5);
-		vector.z += spread.z * (Math.random() - 0.5);
+	_randomizeVector: function( vector, spread, invert ) {
+		if( !invert ) {
+			vector.x += spread.x * (Math.random() - 0.5);
+			vector.y += spread.y * (Math.random() - 0.5);
+			vector.z += spread.z * (Math.random() - 0.5);
+		}
+
+		else {
+			vector.x = spread.x * -invert.x / 200;
+			vector.y = spread.y * -invert.y / 200;
+			vector.z = spread.z * -invert.z / 200;
+		}
 	},
 
 	_randomizeColor: function( vector, spread ) {
@@ -135,8 +145,11 @@ ParticleEmitter.prototype = {
 	},
 
 	update: function( dt ) {
+		if(!this.alive) return;
+
 		var i = this.particleCount,
 			recycled = this.recycledIndices,
+			aliveCount = 0,
 			particle;
 
 		recycled.length = 0;
@@ -145,6 +158,7 @@ ParticleEmitter.prototype = {
 			particle = this.particles[i];
 
 			if( particle.alive ) {
+				++aliveCount;
 				particle.update( dt );
 
 				if( particle.age >= this.maxAge ) {
@@ -178,6 +192,13 @@ ParticleEmitter.prototype = {
 				this.materialAttributes.customSize.value[i + this.groupStartIndex]    = particle.size;
 				this.materialAttributes.customAngle.value[i + this.groupStartIndex]   = particle.angle;
 			}
+		}
+
+		if( this.age > this.emitterDuration ) {
+			if(aliveCount === 0) {
+				this.alive = 0;
+			}
+			return;
 		}
 
 		if( this.age < this.maxAge ) {
@@ -222,6 +243,7 @@ ParticleEmitter.prototype = {
 
 		if( this.velocitySpread ) {
 			this._randomizeVector( p.velocity, this.velocitySpread );
+			// this._randomizeVector( p.acceleration, this.velocitySpread, p.velocity );
 		}
 
 		if( this.accelerationSpread ) {

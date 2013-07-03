@@ -35,6 +35,8 @@ const CONFIG = {
 	        '../../res/textures/universe4_sml.jpg',
 	        '../../res/textures/smokeparticle.png',
 
+	        '../../res/textures/booster.jpg',
+
 	        '../../res/textures/jupiter.jpg',
 	        '../../res/textures/io.jpg',
 	        '../../res/textures/europa.jpg',

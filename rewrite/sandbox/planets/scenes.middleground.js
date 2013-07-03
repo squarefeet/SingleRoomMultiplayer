@@ -5,9 +5,11 @@ scenes.middleground = {
 	models: [],
 
 	initialize: function() {
-		// this.makeStarfield();
+        this.boosters = [];
 
-		this.addEmitters();
+		this.makeStarfield();
+
+		// this.addEmitters();
 		this.addTemporaryShips();
 		this.addLighting();
 
@@ -15,7 +17,12 @@ scenes.middleground = {
 	},
 
 	tick: function( dt ) {
-		scenes.middleground.particleGroup.update( 0.016 );
+		// scenes.middleground.particleGroup.update( 0.016 );
+        var boosters = scenes.middleground.boosters;
+
+        for(var i = 0; i < boosters.length; ++i) {
+            boosters[i].rotation.y += 1;
+        }
 	},
 
 	addEmitters: function() {
@@ -26,6 +33,77 @@ scenes.middleground = {
         });
 	},
 
+    makeShip: function( model ) {
+
+        function rand() {
+            return Math.random() * spread - halfSpread;
+        }
+
+        // model.position.set( rand(), rand(), rand() );
+
+        var cylinder = new THREE.Mesh(
+            new THREE.CylinderGeometry( 10, 30, 400, 8, 3, true ),
+            new THREE.MeshBasicMaterial({
+                map: assetLoader.loaded.textures['../../res/textures/booster.jpg'],
+                transparent: true,
+                blending: THREE.AdditiveBlending
+            })
+        );
+        cylinder.rotation.x = -Math.PI/2;
+        cylinder.position.z += 545;
+        cylinder.position.y += 2;
+
+        model.add( cylinder );
+
+        this.boosters.push( cylinder );
+
+        layerManager.addObject3dToLayer( 'middleground', model );
+
+
+        // var emitter = new ParticleEmitter({
+        //     particlesPerSecond: 10,
+        //     maxAge:             5,
+
+        //     position:           new THREE.Vector3( 0, 0, 0 ),
+        //     positionSpread:     new THREE.Vector3( 0, 0, 0 ),
+
+        //     velocity:           new THREE.Vector3( 0, 0, 220 ),
+        //     velocitySpread:     new THREE.Vector3( 0, 0, 50 ),
+
+        //     acceleration:       new THREE.Vector3( 0, 0, 0 ),
+        //     accelerationSpread: new THREE.Vector3( 20, 20, 0 ),
+
+        //     angle:              90,
+        //     angleSpread:        90,
+
+        //     size:               100,
+        //     // sizeSpread:         0,
+
+        //     opacity:            1,
+        //     // opacitySpread:      1,
+
+        //     color:              new THREE.Vector3( 0.58, 0.5, 0.5 ),
+        //     // colorSpread:        new THREE.Vector3( 0.05, 0, 0 ),
+
+        //     opacityTweenTo:     0,
+        //     sizeTweenTo:        500,
+        //     colorTweenTo:       new THREE.Vector3( 0.65, 0.5, 0.5 )
+        // });
+
+        // emitter.position.copy( model.position );
+        // emitter.position.z += 360;
+        // emitter.position.y += 6;
+
+        // emitter.initialize();
+
+        // Lights are too expensive :(
+        // var light = new THREE.DirectionalLight( 0x66ee11, 1, 500 );
+        // light.position = emitter.position;
+        // layerManager.addObject3dToLayer('middleground', light )
+
+        // this.particleGroup.addEmitter( emitter );
+    },
+
 	addTemporaryShips: function() {
 		var models = assetLoader.loaded.models;
 
@@ -34,66 +112,17 @@ scenes.middleground = {
         var spread = 7000,
         	halfSpread = spread/2;
 
-
-        function rand() {
-        	return Math.random() * spread - halfSpread;
-        }
-
-        for(var k = 0; k < 16; ++k) {
+        for(var k = 0; k < 1; ++k) {
         	var model = models[i].dae.clone();
-        	model.position.set( rand(), rand(), rand() );
-        	layerManager.addObject3dToLayer( 'middleground', model );
 
-
-        	var emitter = new ParticleEmitter({
-	            particlesPerSecond: 20,
-	            maxAge:             5,
-
-	            position:           new THREE.Vector3( 0, 0, 0 ),
-	            positionSpread:     new THREE.Vector3( 0, 0, 0 ),
-
-	            velocity:           new THREE.Vector3( 0, 0, 220 ),
-	            velocitySpread:     new THREE.Vector3( 0, 0, 50 ),
-
-	            acceleration:       new THREE.Vector3( 0, 0, 0 ),
-	            accelerationSpread: new THREE.Vector3( 20, 20, 0 ),
-
-	            angle:              90,
-	            angleSpread:        90,
-
-	            size:               100,
-	            // sizeSpread:         0,
-
-	            opacity:            1,
-	            // opacitySpread:      1,
-
-	            color:              new THREE.Vector3( 0.58, 0.5, 0.5 ),
-	            // colorSpread:        new THREE.Vector3( 0.05, 0, 0 ),
-
-	            opacityTweenTo:     0,
-	            sizeTweenTo:        200,
-	            colorTweenTo:       new THREE.Vector3( 0.65, 0.5, 0.5 )
-	        });
-
-			emitter.position.copy( model.position );
-			emitter.position.z += 360;
-			emitter.position.y += 6;
-
-			emitter.initialize();
-
-			// Lights are too expensive :(
-			// var light = new THREE.DirectionalLight( 0x66ee11, 1, 500 );
-			// light.position = emitter.position;
-			// layerManager.addObject3dToLayer('middleground', light )
-
-			this.particleGroup.addEmitter( emitter );
+            this.makeShip( model );
         }
 
-        layerManager.addObject3dToLayer('middleground', this.particleGroup.mesh )
+        // layerManager.addObject3dToLayer('middleground', this.particleGroup.mesh )
 	},
 
 	addLighting: function() {
-		var sunLight = new THREE.DirectionalLight( 0xfffea6, 1 );
+		var sunLight = new THREE.DirectionalLight( 0xfffea6, 3 );
 	    sunLight.position.copy( sunPosition );
 	    sunLight.position.x -= 1000;
 
