@@ -75,6 +75,7 @@ function ParticleEmitter( options ) {
 	this.age = 0;
 	this.materialAttributes = null;
 	this.groupStartIndex = 0;
+	this.firstRun = 1;
 
 	if( options.autoInitialize ) {
 		this.initialize();
@@ -158,10 +159,11 @@ ParticleEmitter.prototype = {
 			particle = this.particles[i];
 
 			if( particle.alive ) {
+
 				++aliveCount;
 				particle.update( dt );
 
-				if( particle.age >= this.maxAge ) {
+				if( particle.age >= this.maxAge || this.firstRun ) {
 					particle.alive = 0.0;
 					recycled.push( i );
 				}
@@ -193,6 +195,8 @@ ParticleEmitter.prototype = {
 				this.materialAttributes.customAngle.value[i + this.groupStartIndex]   = particle.angle;
 			}
 		}
+
+		this.firstRun = 0;
 
 		if( this.age > this.emitterDuration ) {
 			if(aliveCount === 0) {
@@ -320,6 +324,7 @@ ParticleGroup.prototype = {
 		}
 
 		var mesh = this.mesh = new THREE.ParticleSystem( this.geometry, this.material );
+		// mesh.frustrumCulled = true;
 		mesh.dynamic = true;
 		mesh.sortParticles = true;
 	},

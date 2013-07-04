@@ -5,4 +5,5 @@ renderer.addToDOM();
 renderer.addStats( new Stats() );
 renderer.addPreRenderTickFunction( cameraControls.tick );
 
+
 setTimeout(assetLoader.loadAll, 500);

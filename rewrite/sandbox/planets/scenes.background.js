@@ -18,7 +18,7 @@ scenes.background = {
 	        radius: 4096,
 	        segmentsWidth: 32,
 	        segmentsHeight: 32,
-	        texture: assetLoader.loaded.textures['../../res/textures/universe4_lrg.jpg']
+	        texture: assetLoader.loaded.textures['../../res/textures/universe_sml_darker.jpg']
 	    });
 
 	    layerManager.addObjectToLayer( 'background', skybox );
@@ -37,7 +37,7 @@ scenes.background = {
 
 	makePlanet: function() {
 	    var planet = scenes.background.planet = new Planet({
-	        position: new THREE.Vector3(0, 0, -900),
+	        position: new THREE.Vector3(0, 0, -400),
 	        scale: 0.005
 	    });
 

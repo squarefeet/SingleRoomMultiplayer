@@ -132,7 +132,6 @@ AssetLoader.prototype = {
                     var dae = collada.scene,
                         skin = collada.skins[ 0 ];
 
-                    dae.scale.x = dae.scale.y = dae.scale.z = 0.1;
                     dae.updateMatrix();
 
                     that.loaded.models[ model ] = {
