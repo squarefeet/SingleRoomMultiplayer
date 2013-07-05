@@ -1,11 +1,9 @@
 function Rocket() {
-    this.material = new THREE.MeshPhongMaterial({
-        color: 0xff00000,
-        shininess: 10,
-        specular: 0xffffff
+    this.material = new THREE.MeshBasicMaterial({
+        color: 0xffffff
     });
 
-    this.geometry = new THREE.CubeGeometry( 10, 100, 100 );
+    this.geometry = new THREE.CubeGeometry( 50, 50, 50 );
 
     this.mesh = new THREE.Mesh( this.geometry, this.material );
     this.mesh.useQuaternion = true;
@@ -25,9 +23,12 @@ Rocket.prototype = {
         this.mesh.position.copy( source.position );
         this.mesh.quaternion.copy( source.quaternion );
 
-        if(this.target) {
+        if(target) {
             this.target = target;
         }
+
+        console.log(this.target)
+
         this.fired = true;
     },
 
