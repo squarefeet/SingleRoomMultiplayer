@@ -1,5 +1,9 @@
 const CONFIG = {
 
+    // Performance
+    resolutionScaling: 1.5,
+
+
 	// Controls
 	controls: {
 		UP: 'r',
@@ -77,15 +81,22 @@ const CONFIG = {
 	    onAllLoaded: function( assets ) {
 	        var models = assets.models;
 
-	        var plasmaCannon = new PlasmaCannon({
-				numBullets: 1000
-			});
-			renderer.addPreRenderTickFunction( plasmaCannon.tick );
-			layerManager.addObject3dToLayer( 'middleground', plasmaCannon.mesh );
+	        // var plasmaCannon = new PlasmaCannon({
+				// numBullets: 1000
+			// });
+			// renderer.addPreRenderTickFunction( plasmaCannon.tick );
+			// layerManager.addObject3dToLayer( 'middleground', plasmaCannon.mesh );
 
+            var rocket = new Rocket();
+            renderer.addPreRenderTickFunction( rocket.tick );
+            layerManager.addObject3dToLayer( 'middleground', rocket.mesh );
+
+            var target = new THREE.Object3D();
+            target.position.set(1000, 500, -1000);
 
 			document.addEventListener('mousedown', function() {
-				plasmaCannon.fire( null, layerManager.getLayerWithName('middleground').camera )
+                rocket.fire( null, layerManager.getLayerWithName('middleground').camera, target );
+				// plasmaCannon.fire( null, layerManager.getLayerWithName('middleground').camera )
 			}, false);
 
 	        scenes.background.initialize();

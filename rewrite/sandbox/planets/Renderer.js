@@ -3,6 +3,8 @@ function Renderer( opts ) {
 	var options = {
 		width: window.innerWidth,
 		height: window.innerHeight,
+		elementWidth: window.innerWidth,
+		elementHeight: window.innerHeight,
 		parent: document.body,
 
 		// Renderer settings
@@ -57,6 +59,8 @@ function Renderer( opts ) {
 	renderer.setFaceCulling( options.faceCulling );
 	renderer.setClearColor( options.clearColor, options.clearAlpha );
 	renderer.setSize( options.width, options.height );
+	renderer.domElement.style.width = options.elementWidth + 'px';
+	renderer.domElement.style.height = options.elementHeight + 'px';
 	renderer.autoClear = options.autoClear;
 	renderer.gammaInput = options.gammaInput;
 	renderer.gammaOutput = options.gammaOutput;

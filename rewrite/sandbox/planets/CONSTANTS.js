@@ -16,4 +16,9 @@ const cameraControls = new CameraControls({
 });
 
 // Create renderer instance.
-const renderer = new Renderer();
+const renderer = new Renderer({
+    width: window.innerWidth/CONFIG.resolutionScaling,
+    height: window.innerHeight/CONFIG.resolutionScaling,
+    elementWidth: window.innerWidth,
+    elementHeight: window.innerHeight
+});
