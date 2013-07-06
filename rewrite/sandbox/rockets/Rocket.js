@@ -1,6 +1,7 @@
 function Rocket( options ) {
 
     this.pool = [];
+    this.emitterPool = [];
     this.activeRockets = [];
     this.launchTimes = {};
 
@@ -9,13 +10,16 @@ function Rocket( options ) {
     // Create a parent mesh that'll hold all the rockets
     this.mesh = new THREE.Object3D();
 
+    // Create a particle system for the rockets.
+    this.particleGroup = new ParticleGroup({
+        blending: THREE.AdditiveBlending,
+        depthTest: true,
+        texture: assetLoader.loaded.textures['../../res/textures/smokeparticle.png']
+    });
+
+
     // Create a pool of rockets
     this._makeRockets();
-
-    // TEMPORARY
-    this.targetMesh = new THREE.Mesh( new THREE.CubeGeometry(100, 100, 100), this.material );
-    this.targetMesh.position.set(-1000, 2000, 1000);
-    this.mesh.add( this.targetMesh );
 
     // Reused objects
     this.targetMatrix = new THREE.Matrix4();
@@ -32,8 +36,16 @@ function Rocket( options ) {
     this.maxAge             = CONFIG.rocket.maxAge;
     this.launchGap          = CONFIG.rocket.launchGap;
 
+    // Add objects to the scene
     this.renderables = [];
     this.renderables.push( this.mesh );
+    layerManager.addObject3dToLayer('middleground', this.particleGroup.mesh );
+
+    // Add particle group tick to renderer
+    var that = this;
+    renderer.addPreRenderTickFunction( function() {
+        that.particleGroup.update(0.016);
+    });
 
     // Bind scope
     this.tick = this.tick.bind(this);
@@ -58,10 +70,19 @@ Rocket.prototype = {
         return model;
     },
 
+    _makeEmitter: function() {
+        var emitter = new ParticleEmitter( CONFIG.rocketEmitter );
+        emitter.initialize();
+        this.particleGroup.addEmitter( emitter );
+        return emitter;
+    },
+
     _makeRockets: function() {
-        for(var i = 0, rocket; i < 10; ++i) {
+        for(var i = 0, rocket, emitter; i < 10; ++i) {
             rocket = this._makeSingleRocket();
+            emitter = this._makeEmitter();
             this.pool.push( rocket );
+            this.emitterPool.push( emitter );
             this.mesh.add( rocket );
         }
     },
@@ -91,11 +112,33 @@ Rocket.prototype = {
         this.mesh.remove( rocket );
     },
 
-    _setupRocket: function( rocket, source ) {
+    _getFromEmitterPool: function() {
+        var p = this.emitterPool,
+            r;
+
+        // Grab a rocket from the pool if one is available.
+        if( p.length ) {
+            r = p.pop();
+        }
+
+        return r;
+    },
+
+    _returnToEmitterPool: function( emitter ) {
+        this.emitterPool.push( emitter );
+    },
+
+    _setupRocket: function( rocket, source, emitter ) {
         rocket.position.copy( source.position );
         rocket.quaternion.copy( source.quaternion );
         rocket.quaternion.multiply( this.invertXAxisQuaternion );
         rocket.translateY(50);
+
+        if( emitter ) {
+            emitter.position = rocket.position;
+            emitter.initialize();
+            rocket.userData.emitter = emitter;
+        }
 
         this._resetRocket( rocket );
     },
@@ -117,9 +160,15 @@ Rocket.prototype = {
         this._resetRocket( rocket );
 
         this._returnToPool( rocket );
+
+        if( rocket.userData.emitter ) {
+            this._returnToEmitterPool( rocket.userData.emitter );
+        }
     },
 
     fire: function( playerID, source, target ) {
+        if( !target || !(target instanceof THREE.Object3D) ) return;
+
         // Make sure we're not firing too often
         if( Date.now() - this.launchTimes[ playerID ] < this.launchGap ) {
             return;
@@ -128,11 +177,12 @@ Rocket.prototype = {
         this.launchTimes[ playerID ] = Date.now();
 
         var rocket = this._getFromPool();
+        var emitter = this._getFromEmitterPool();
 
-        this._setupRocket( rocket, source );
+        this._setupRocket( rocket, source, emitter );
         this.activeRockets.push( rocket );
 
-        rocket.userData.target = this.targetMesh;
+        rocket.userData.target = target;
     },
 
     tick: function( dt ) {

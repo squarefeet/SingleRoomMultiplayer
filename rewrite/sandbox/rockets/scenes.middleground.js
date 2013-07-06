@@ -14,11 +14,15 @@ scenes.middleground = {
 		this.addRocket();
 
 
+		// TEMPORARY
+	    var targetMesh = new THREE.Mesh( new THREE.CubeGeometry(100, 100, 100), this.material );
+	    targetMesh.position.set(-1000, 2000, 1000);
+	    layerManager.addObject3dToLayer( 'middleground', targetMesh );
 
         var that = this;
 
         document.addEventListener('mousedown', function() {
-            that.rocket.fire( 'host', layerManager.getLayerWithName('middleground').camera );
+            that.rocket.fire( 'host', layerManager.getLayerWithName('middleground').camera, targetMesh );
 		}, false);
 	},
 

@@ -41,6 +41,7 @@ Particle.prototype = {
 
 
 function ParticleEmitter( options ) {
+	this.hasInitialized = false;
 	this.particlesPerSecond = 	options.particlesPerSecond || 10;
 	this.maxAge 			= 	options.maxAge || 5;
 
@@ -64,7 +65,7 @@ function ParticleEmitter( options ) {
 	this.sizeTweenTo 		= 	options.sizeTweenTo;
 	this.colorTweenTo 		=	options.colorTweenTo;
 
-	this.emitterDuration 	= options.emitterDuration;
+	this.emitterDuration 	= 	options.emitterDuration;
 
 	this.particleCount = this.particlesPerSecond * this.maxAge;
 	this.lerpAmount = 1 / (this.maxAge * 10);
@@ -121,10 +122,14 @@ ParticleEmitter.prototype = {
 	},
 
 	initialize: function() {
+		if( this.hasInitialized ) return;
+
 		for( var i = 0, particle; i < this.particleCount; ++i ) {
 			particle = this.createParticle();
 			this.particles.push( particle );
 		}
+
+		this.hasInitialized = true;
 	},
 
 	createParticle: function() {
@@ -157,6 +162,8 @@ ParticleEmitter.prototype = {
 
 		while( --i >= 0 ) {
 			particle = this.particles[i];
+
+			if( !particle ) return;
 
 			if( particle.alive ) {
 
@@ -299,6 +306,8 @@ function ParticleGroup( options ) {
 
 	this.geometry = new THREE.Geometry();
 	this.emitters = [];
+
+	this.update = this.update.bind(this);
 }
 
 

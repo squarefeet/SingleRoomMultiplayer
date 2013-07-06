@@ -151,6 +151,36 @@ const CONFIG = {
 	    lerpAmount: 0.07,
 	    maxAge: 10,
 	    launchGap: 1000
-    }
+    },
+
+    rocketEmitter: {
+        particlesPerSecond: 100,
+        maxAge:             3,
+
+        position:           new THREE.Vector3( Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ),
+        positionSpread:     new THREE.Vector3( 0, 0, 0 ),
+
+        velocity:           new THREE.Vector3( 0, 0, 0 ),
+        velocitySpread:     new THREE.Vector3( 0, 0, 0 ),
+
+        acceleration:       new THREE.Vector3( 0, 0, 0 ),
+        accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+
+        angle:              90,
+        angleSpread:        90,
+
+        size:               50,
+        // sizeSpread:         0,
+
+        opacity:            1,
+        // opacitySpread:      1,
+
+        color:              new THREE.Vector3( 0.58, 0.5, 0.5 ),
+        // colorSpread:        new THREE.Vector3( 0.05, 0, 0 ),
+
+        opacityTweenTo:     0,
+        sizeTweenTo:        10,
+        colorTweenTo:       new THREE.Vector3( 0.65, 0.5, 0.5 )
+    },
 
 };
