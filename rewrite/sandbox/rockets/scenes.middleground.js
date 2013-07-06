@@ -27,7 +27,9 @@ scenes.middleground = {
 	},
 
 	addRocket: function() {
-		this.rocket = new Rocket();
+		this.rocket = new Rocket({
+			model: assetLoader.loaded.models['../../res/models/rocket.dae'].dae
+		});
 		renderer.addPreRenderTickFunction( this.rocket.tick );
 		layerManager.addObjectToLayer( 'middleground', this.rocket );
 	},

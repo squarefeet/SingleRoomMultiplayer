@@ -45,7 +45,8 @@ const CONFIG = {
 		parent: document.body,
 
 	    models: [
-	        '../../res/models/crosswing6-recentered.dae'
+	        '../../res/models/crosswing6-recentered.dae',
+	        '../../res/models/rocket.dae'
 	    ],
 	    textures: [
 	        '../../res/textures/universe_sml_darker.jpg',
@@ -87,7 +88,10 @@ const CONFIG = {
 			// renderer.addPreRenderTickFunction( plasmaCannon.tick );
 			// layerManager.addObject3dToLayer( 'middleground', plasmaCannon.mesh );
 
-            var rocket = new Rocket();
+            var rocket = new Rocket({
+            	model: models['../../res/models/rocket.dae']
+            });
+
             renderer.addPreRenderTickFunction( rocket.tick );
             layerManager.addObject3dToLayer( 'middleground', rocket.mesh );
 

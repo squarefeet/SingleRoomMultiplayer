@@ -42,6 +42,9 @@ const CONFIG = {
 
 
 	assetLoader: {
+		models: [
+	        '../../res/models/rocket.dae'
+	    ],
 		textures: [
 	        '../../res/textures/universe_sml_darker.jpg',
 	        '../../res/textures/universe.jpg',
