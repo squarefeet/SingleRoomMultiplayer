@@ -18,7 +18,7 @@ scenes.middleground = {
         var that = this;
 
         document.addEventListener('mousedown', function() {
-            that.rocket.fire( null, layerManager.getLayerWithName('middleground').camera );
+            that.rocket.fire( 'host', layerManager.getLayerWithName('middleground').camera );
 		}, false);
 	},
 

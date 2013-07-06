@@ -141,6 +141,16 @@ const CONFIG = {
     	speed: 5000,
     	power: 10,
     	maxAge: 5
+    },
+
+    rocket: {
+    	acceleration: 5,
+	    velocity: 1000,
+	    maxVelocity: 1500,
+	    freeFlightDuration: 1,
+	    lerpAmount: 0.07,
+	    maxAge: 10,
+	    launchGap: 1000
     }
 
 };

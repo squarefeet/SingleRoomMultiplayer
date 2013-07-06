@@ -2,6 +2,8 @@ function Rocket( options ) {
 
     this.pool = [];
     this.activeRockets = [];
+    this.launchTimes = {};
+
     this.model = options.model;
 
     // Create a parent mesh that'll hold all the rockets
@@ -22,12 +24,13 @@ function Rocket( options ) {
 
 
     // Base settings
-    this.acceleration = 5;
-    this.velocity = 1000;
-    this.maxVelocity = 1500;
-    this.freeFlightDuration = 1;
-    this.lerpAmount = 0.07;
-    this.maxAge = 10;
+    this.acceleration       = CONFIG.rocket.acceleration;
+    this.velocity           = CONFIG.rocket.velocity;
+    this.maxVelocity        = CONFIG.rocket.maxVelocity;
+    this.freeFlightDuration = CONFIG.rocket.freeFlightDuration;
+    this.lerpAmount         = CONFIG.rocket.lerpAmount;
+    this.maxAge             = CONFIG.rocket.maxAge;
+    this.launchGap          = CONFIG.rocket.launchGap;
 
     this.renderables = [];
     this.renderables.push( this.mesh );
@@ -117,6 +120,13 @@ Rocket.prototype = {
     },
 
     fire: function( playerID, source, target ) {
+        // Make sure we're not firing too often
+        if( Date.now() - this.launchTimes[ playerID ] < this.launchGap ) {
+            return;
+        }
+
+        this.launchTimes[ playerID ] = Date.now();
+
         var rocket = this._getFromPool();
 
         this._setupRocket( rocket, source );
