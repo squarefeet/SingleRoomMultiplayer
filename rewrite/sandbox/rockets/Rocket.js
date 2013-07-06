@@ -73,6 +73,7 @@ Rocket.prototype = {
     _makeEmitter: function() {
         var emitter = new ParticleEmitter( CONFIG.rocketEmitter );
         emitter.initialize();
+        // emitter.alive = 0;
         this.particleGroup.addEmitter( emitter );
         return emitter;
     },
@@ -125,6 +126,7 @@ Rocket.prototype = {
     },
 
     _returnToEmitterPool: function( emitter ) {
+        // emitter.alive = 0;
         this.emitterPool.push( emitter );
     },
 
@@ -137,6 +139,7 @@ Rocket.prototype = {
         if( emitter ) {
             emitter.position = rocket.position;
             emitter.initialize();
+            emitter.alive = 1;
             rocket.userData.emitter = emitter;
         }
 
@@ -212,7 +215,7 @@ Rocket.prototype = {
             }
 
             userData.distanceToTarget = rocket.position.distanceTo( userData.target.position );
-            userData.lerpAmount = min( this.lerpAmount, 50 / userData.distanceToTarget );
+            userData.lerpAmount = min( this.lerpAmount, 30 / userData.distanceToTarget );
 
             if( userData.age > this.freeFlightDuration ) {
                 this.targetMatrix.lookAt( userData.target.position, rocket.position, rocket.up );

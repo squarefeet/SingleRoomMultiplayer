@@ -301,7 +301,8 @@ function ParticleGroup( options ) {
         transparent: true,
         alphaTest: 0.5,
         blending: (options.blending || THREE.NormalBlending),
-        depthTest: (typeof options.depthTest !== 'undefined' ? options.depthTest : ((options.blending && options.blending === THREE.AdditiveBlending) ? false : true))
+        depthTest: (typeof options.depthTest !== 'undefined' ? options.depthTest : ((options.blending && options.blending === THREE.AdditiveBlending) ? false : true)),
+        depthWrite: false
 	});
 
 	this.geometry = new THREE.Geometry();
