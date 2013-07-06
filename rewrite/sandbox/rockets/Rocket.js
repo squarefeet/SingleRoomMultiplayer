@@ -76,14 +76,16 @@ Rocket.prototype = {
         // parent mesh.
         else {
             r = this._makeSingleRocket();
-            this.mesh.add( r );
         }
+
+        this.mesh.add( r );
 
         return r;
     },
 
     _returnToPool: function( rocket ) {
         this.pool.push( rocket );
+        this.mesh.remove( rocket );
     },
 
     _setupRocket: function( rocket, source ) {
@@ -110,6 +112,8 @@ Rocket.prototype = {
 
         rocket.position.set( pos, pos, pos );
         this._resetRocket( rocket );
+
+        this._returnToPool( rocket );
     },
 
     fire: function( playerID, source, target ) {
