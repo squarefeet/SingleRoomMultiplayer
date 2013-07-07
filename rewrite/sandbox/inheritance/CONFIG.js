@@ -43,7 +43,8 @@ const CONFIG = {
 
 	assetLoader: {
 		models: [
-	        '../../res/models/rocket.dae'
+	        '../../res/models/rocket.dae',
+	        '../../res/models/crosswing6-recentered.dae'
 	    ],
 		textures: [
 	        '../../res/textures/universe_sml_darker.jpg',
@@ -90,7 +91,10 @@ const CONFIG = {
 	ship: {
 		model: '../../res/models/crosswing6-recentered.dae',
 		scale: 0.1,
-		useEmitter: true
+		useEmitter: true,
+		x: 0,
+		y: 0,
+		z: 0
 	},
 
 	engineEmitter: {
@@ -150,8 +154,9 @@ const CONFIG = {
 	    freeFlightDuration: 1,
 	    lerpAmount: 0.07,
 	    maxAge: 10,
-	    launchGap: 1
+	    launchGap: 1000
     },
+
 
     rocketEmitter: {
         particlesPerSecond: 100,

@@ -150,49 +150,17 @@ ParticleEmitter.prototype = {
 		return particle;
 	},
 
-	enable: function() {
-		this.alive = 1;
-		this.age = 0;
-
-		for(var i = 0; i < this.particleCount; ++i) {
-			this.resetParticle( this.particles[i] );
-			this.particles[i].alive = 0.0;
-			// this.particles[i].position.set( Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY );
-		}
-
-		if( this.age < this.maxAge ) {
-			// determine indices of particles to activate
-			var startIndex 	= Math.round( this.particlesPerSecond * this.age );
-			var endIndex 	= Math.round( this.particlesPerSecond * (this.age + 0.016) );
-
-			if( endIndex > this.particleCount ) {
-				endIndex = this.particleCount;
-			}
-
-			for( i = startIndex; i < endIndex; i++ ) {
-				this.resetParticle( this.particles[i] );
-				this.particles[i].alive = 1.0;
-			}
-		}
-	},
-
-	disable: function() {
-		this.alive = 0;
-	},
-
 	update: function( dt ) {
-		var i = this.particleCount,
-			recycled = this.recycledIndices,
-			a = this.materialAttributes,
+		if(!this.alive) return;
+
+		var recycled = this.recycledIndices,
 			aliveCount = 0,
-			particle,
-			startIndex = 0;
+			particle;
 
 		recycled.length = 0;
 
 		for( var i = 0; i < this.particleCount; ++i ) {
 			particle = this.particles[i];
-			startIndex = i + this.groupStartIndex;
 
 			if( !particle ) return;
 
@@ -226,19 +194,15 @@ ParticleEmitter.prototype = {
 					);
 				}
 
-				a.customVisible.value[startIndex] = particle.alive;
-				a.customColor.value[startIndex]   = particle.color;
-				a.customOpacity.value[startIndex] = particle.opacity;
-				a.customSize.value[startIndex]    = particle.size;
-				a.customAngle.value[startIndex]   = particle.angle;
+				this.materialAttributes.customVisible.value[i + this.groupStartIndex] = particle.alive;
+				this.materialAttributes.customColor.value[i + this.groupStartIndex]   = particle.color;
+				this.materialAttributes.customOpacity.value[i + this.groupStartIndex] = particle.opacity;
+				this.materialAttributes.customSize.value[i + this.groupStartIndex]    = particle.size;
+				this.materialAttributes.customAngle.value[i + this.groupStartIndex]   = particle.angle;
 			}
 		}
 
 		this.firstRun = 0;
-
-		if(!this.alive) {
-			return;
-		}
 
 		if( this.age > this.emitterDuration ) {
 			if(aliveCount === 0) {
@@ -255,12 +219,12 @@ ParticleEmitter.prototype = {
 			if( endIndex > this.particleCount ) {
 				endIndex = this.particleCount;
 			}
-
-			for( i = startIndex; i < endIndex; i++ ) {
-				this.particles[i].alive = 1.0;
-			}
 		}
 
+
+		for( i = startIndex; i < endIndex; i++ ) {
+			this.particles[i].alive = 1.0;
+		}
 
 		for( var j = 0; j < recycled.length; ++j ) {
 			this.resetParticle( this.particles[ recycled[j] ] );
@@ -344,6 +308,9 @@ function ParticleGroup( options ) {
 	this.emitters = [];
 
 	this.update = this.update.bind(this);
+
+	this.worker = new Worker( 'ParticleGroupWorker.js' );
+	this.worker.addEventListener( 'message', this.onWorkerMessage.bind(this), false );
 }
 
 
@@ -376,8 +343,16 @@ ParticleGroup.prototype = {
 
 	update: function( dt ) {
 		for( var i = 0; i < this.emitters.length; ++i ) {
+			// this.worker.postMessage({
+			// 	message: 'update',
+			// 	dt: dt
+			// });
 			this.emitters[i].update( dt );
 		}
+	},
+
+	onWorkerMessage: function( e ) {
+		console.log('particles received message', e);
 	}
 };
 

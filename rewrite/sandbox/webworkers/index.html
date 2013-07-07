@@ -1,0 +1,19 @@
+<html>
+<head>
+	<title>Workers</title>
+</head>
+<body>
+
+	<script type="text/javascript">
+		var worker = new Worker('worker.js');
+
+		worker.addEventListener( 'message', function( e ) {
+			console.log(e);
+		});
+
+		worker.postMessage('Hello!');
+
+	</script>
+
+</body>
+</html>

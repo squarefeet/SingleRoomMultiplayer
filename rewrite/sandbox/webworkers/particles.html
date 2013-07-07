@@ -6,13 +6,43 @@
 		* { margin: 0; padding: 0; }
 	</style>
 
-	<script type="text/javascript" src="../res/js/lib/THREE-r58.min.js"></script>
-	<script type="text/javascript" src="../res/js/lib/Stats.min.js"></script>
+	<script type="text/javascript" src="../../res/js/lib/THREE-r58.min.js"></script>
+	<script type="text/javascript" src="../../res/js/lib/Stats.min.js"></script>
 	<script type="text/javascript" src="Particles.js"></script>
 </head>
 <body>
 
 	<script type="text/javascript">
+
+		var worker = new Worker('ParticleGroupWorker.js');
+
+		worker.addEventListener( 'message', function( e ) {
+			console.log(e);
+		});
+
+		worker.postMessage({
+			message: 'createEmitter',
+			options: {
+				autoInitialize: 	true,
+				particlesPerSecond: 500,
+				maxAge: 			3,
+				position: 			new THREE.Vector3( 0, 0, 0 ),
+				positionSpread: 	new THREE.Vector3( 0, 0, 0 ),
+				velocity: 			new THREE.Vector3( 0, 0, 0 ),
+				velocitySpread: 	new THREE.Vector3( 400, 400, 400 ),
+				acceleration: 		new THREE.Vector3( 0, 0, 0 ),
+				accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+				angle: 				90,
+				angleSpread: 		90,
+				size: 				50,
+				opacity: 			1,
+				color: 				new THREE.Vector3( 1, 1, 0.5 ),
+				// colorSpread: 		new THREE.Vector3( 1, 0, 0 ),
+				opacityTweenTo: 	0,
+				// sizeTweenTo: 		1,
+				colorTweenTo: 		new THREE.Vector3( 1, 1, 1 )
+			}
+		});
 
 		var enabled = 1;
 		var clock = new THREE.Clock();
@@ -28,21 +58,21 @@
 		// .. add particles
 		var particleGroup = new ParticleGroup({
 			blending: THREE.AdditiveBlending,
-			texture: THREE.ImageUtils.loadTexture( '../res/textures/smokeparticle.png')
+			texture: THREE.ImageUtils.loadTexture( '../../res/textures/smokeparticle.png')
 		});
 
 
 		var emitter = new ParticleEmitter({
 			autoInitialize: 	true,
 
-			particlesPerSecond: 100,
-			maxAge: 			5,
+			particlesPerSecond: 500,
+			maxAge: 			3,
 
 			position: 			new THREE.Vector3( 0, 0, 0 ),
-			positionSpread: 	new THREE.Vector3( 40, 40, 40 ),
+			positionSpread: 	new THREE.Vector3( 0, 0, 0 ),
 
 			velocity: 			new THREE.Vector3( 0, 0, 0 ),
-			velocitySpread: 	new THREE.Vector3( 10, 10, 10 ),
+			velocitySpread: 	new THREE.Vector3( 400, 400, 400 ),
 
 			acceleration: 		new THREE.Vector3( 0, 0, 0 ),
 			accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
@@ -50,20 +80,20 @@
 			angle: 				90,
 			angleSpread: 		90,
 
-			size: 				100,
+			size: 				50,
 			// sizeSpread: 		0,
 
-			opacity: 			0,
+			opacity: 			1,
 			// opacitySpread: 		1,
 
-			color: 				new THREE.Vector3( 1, 0.5, 0.5 ),
+			color: 				new THREE.Vector3( 1, 1, 0.5 ),
 			// colorSpread: 		new THREE.Vector3( 1, 0, 0 ),
 
-			opacityTweenTo: 	1,
+			opacityTweenTo: 	0,
 			// sizeTweenTo: 		1,
-			// colorTweenTo: 		new THREE.Vector3( 1, 1, 1 )
+			colorTweenTo: 		new THREE.Vector3( 1, 1, 1 )
 		});
-		// emitter.disable();
+
 
 		particleGroup.addEmitter( emitter );
 
@@ -88,30 +118,21 @@
 
 
 		document.addEventListener('mousemove', function(e) {
-			emitter.position.setX( (window.innerWidth/4) - (e.pageX/2) );
-			emitter.position.setY( (window.innerHeight/4) - (e.pageY/2) );
+			// emitter.position.setX( (window.innerWidth/4) - (e.pageX/2) );
+			// emitter.position.setY( (window.innerHeight/4) - (e.pageY/2) );
 		}, false);
 
 
-		// window.onblur = function() {
-		// 	enabled = 0;
-		// };
+		window.onblur = function() {
+			// enabled = 0;
+		};
 
-		// window.onfocus = function() {
-		// 	clock.getDelta();
-		// 	enabled = 1;
-		// 	animate();
-		// };
+		window.onfocus = function() {
+			clock.getDelta();
+			enabled = 1;
+			animate();
+		};
 
-		// setInterval(function() {
-		// 	if( emitter.alive ) {
-		// 		emitter.disable();
-		// 	}
-		// 	else {
-		// 		emitter.enable();
-		// 	}
-		// 	console.log(emitter.alive)
-		// }, 2000);
 
 		function animate() {
 			if(!enabled) return;
@@ -121,11 +142,13 @@
 		}
 
 
+		var time = 0.016;
+
 		function render() {
 
-			var dt = clock.getDelta();
+			// var dt = clock.getDelta();
 
-			particleGroup.update( 0.016 );
+			particleGroup.update( time );
 
 
 			renderer.render( scene, camera );
