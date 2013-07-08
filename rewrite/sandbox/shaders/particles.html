@@ -9,55 +9,85 @@
 </head>
 <body>
     <script type="text/x-shader" id="vertex">
-        attribute float acceleration;
-        attribute float velocity;
-        uniform float dt;
+        uniform float duration;
+        uniform vec3 customColor;
+        uniform vec3 customColorEnd;
+        uniform int hasPerspective;
 
-        varying vec4 pos;
+        attribute vec3 acceleration;
+        attribute vec3 velocity;
+        attribute float alive;
+        attribute float age;
+        attribute float size;
 
-        void main() {
+        varying vec4 vColor;
+
+        // float Lerp() {
+            //
+        // }
+
+        float GetSize( float newSize, vec4 mvPosition ) {
+            if( hasPerspective == 1 ) {
+                newSize = newSize * (300.0 / length( mvPosition.xyz) );
+            }
+
+            return newSize;
+        }
+
+        vec4 GetPos() {
             vec3 newPos = vec3( position );
-
-            newPos = newPos * dt;
-
+            vec3 v = velocity * age;
+            vec3 a = acceleration * age;
+            newPos = newPos + v + a;
             vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );
 
-            float size = 30.0;
+            gl_PointSize = GetSize( size, mvPosition );
 
-            gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
-            gl_Position = projectionMatrix * mvPosition;
+            return mvPosition;
+        }
 
-            pos = mvPosition;
+        void main() {
+            if( alive > 0.5 ) {
+                // Integrate color "tween"
+                vec3 color = (customColor * age) - (customColorEnd * age);
+                vColor = vec4( customColor - color, duration - age );
+                gl_Position = projectionMatrix * GetPos();
+            }
+            else {
+                // Hide particle and set its position to the glsl equivalent of Number.POSITIVE_INFINITY
+                vColor = vec4( customColor, 0.0 );
+                gl_Position = vec4(1e20, 1e20, 1e20, 0);
+            }
         }
     </script>
 
     <script type="text/x-shader" id="fragment">
-        uniform vec3 customColor;
         uniform sampler2D texture;
-        uniform float dt;
-        varying vec4 pos;
+        uniform int colorize;
+
+        varying vec4 vColor;
 
         void main() {
-
-            vec4 col = vec4( customColor, 0.5 );
-
-            gl_FragColor = col;
-
             float c = cos(0.0);
             float s = sin(0.0);
 
-            vec2 rotatedUV = vec2(
-                c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,
-                c * (gl_PointCoord.y - 0.5) + s * (gl_PointCoord.x - 0.5) + 0.5
-            );
-            vec4 tex = texture2D( texture, rotatedUV );
+            vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,
+                                  c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);
+            vec4 rotatedTexture = texture2D( texture,  rotatedUV );
 
-
-            gl_FragColor = gl_FragColor * tex;
+            if( colorize == 1 ) {
+                gl_FragColor = vColor * rotatedTexture;
+            }
+            else {
+                gl_FragColor = rotatedTexture;
+            }
         }
     </script>
 
     <script type="text/javascript">
+
+        // General
+        var mouseX = 0, mouseY = 0;
 
         // variables used in init()
         var scene, camera, renderer, stats, stats2, clock;
@@ -65,65 +95,53 @@
         // variables used in initShader()
         var shaderMaterial, cubeGeometry, cubeMesh, uniforms, attributes;
 
-        var workers = [],
-            numParticles = 20000,
-            numWorkers = 0,
-            particlesPerWorker = numParticles / numWorkers | 0;
+        var basePos = new THREE.Vector3(); // starting position
+        var duration = 1, // seconds
+            dtInc = 1 / duration, // step size in seconds
+            particlesPerSecond = 30000;
 
-        var onWorkerMessage = function( worker, index ) {
-            return function( e ) {
-                // if( e.data.message === 'result' ) {
-                //     for(var i = 0; i < particlesPerWorker; ++i) {
-                //         cubeGeometry.vertices[i + worker.offset] = e.data.vertices[i];
-                //     }
 
-                //     if( index === 0 ) {
-                //         stats.update();
-                //     }
-                //     else if( index === 1 ) {
-                //         stats2.update();
-                //     }
-                // }
-            };
-        };
+        var numParticles = particlesPerSecond * duration;
+        var emitterAge = 0.0;
+        var recycled = [];
+
 
 
         // Setup uniforms and attributes used by vertex and fragment shaders.
         uniforms = {
-            customColor: { type: 'c', value: (new THREE.Color()).setHSL(0.2, 1.0, 0.5) },
-            dt: { type: 'f', value: 0.0 },
-            texture: { type: 't', value: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png') }
+            customColor: { type: 'c', value: (new THREE.Color('white')) },
+            customColorEnd: { type: 'c', value: (new THREE.Color('blue')) },
+            duration: { type: 'f', value: duration },
+            texture: { type: 't', value: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png') },
+            hasPerspective: { type: 'i', value: 1 },
+            colorize: { type: 'i', value: 1 }
         };
         attributes = {
-            acceleration: { type: 'f', value: 1.0 },
-            velocity: { type: 'f', value: 1.0 }
+            acceleration: { type: 'v3', value: [] },
+            velocity: { type: 'v3', value: [] },
+            alive: { type: 'f', value: [] },
+            age: { type: 'f', value: [] },
+            size: { type: 'f', value: [] },
+            needsRepositioning: { type: 'i', value: [] }
         };
+
+
 
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
-            camera.position.z = 100;
+            camera.position.z = 300;
             renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
             renderer.setClearColor(0x000000)
             stats = new Stats();
-            stats2 = new Stats();
-            stats3 = new Stats();
             clock = new THREE.Clock();
 
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.top = '0';
 
-            stats2.domElement.style.position = 'absolute';
-            stats2.domElement.style.top = '50px';
-
-            stats3.domElement.style.position = 'absolute';
-            stats3.domElement.style.top = '100px';
-
             document.body.appendChild( renderer.domElement );
             document.body.appendChild( stats.domElement );
-            document.body.appendChild( stats2.domElement );
-            document.body.appendChild( stats3.domElement );
         }
 
         function randVec3( base, spread ) {
@@ -134,11 +152,36 @@
             );
         }
 
+        function randPositionOnSphere( base, radius ) {
+            var z = 2 * Math.random() - 1;
+            var t = 6.2832 * Math.random();
+            var r = Math.sqrt( 1 - z*z );
+            var vec3 = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
+            return new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
+        }
+
         function randValue( base, spread ) {
             return Math.random() * base - spread;
         }
 
         function initShader() {
+            cubeGeometry = new THREE.Geometry();
+
+            var a = attributes;
+
+            for(var i = 0; i < numParticles; ++i) {
+                cubeGeometry.vertices[i] = new THREE.Vector3();
+                a.acceleration.value.push( randPositionOnSphere(basePos, 50) );
+                a.velocity.value.push( new THREE.Vector3(0, 0, 0) );
+                a.needsRepositioning.value.push( 0 );
+                a.size.value.push( Math.random() * 10 );
+
+                a.age.value.push(0.0);
+                a.alive.value.push( 0.0 );
+            }
+
+            console.log( numParticles );
+
             shaderMaterial = new THREE.ShaderMaterial({
                 uniforms: uniforms,
                 attributes: attributes,
@@ -150,62 +193,91 @@
                 depthWrite: false
             });
 
-            cubeGeometry = new THREE.Geometry();
-
-            for(var i = 0; i < numParticles; ++i) {
-                cubeGeometry.vertices.push( randVec3( 100, 50 ) );
-            }
-
             cubeMesh = new THREE.ParticleSystem( cubeGeometry, shaderMaterial );
             cubeMesh.dynamic = true;
-
-            for(var i = 0; i < numWorkers; ++i) {
-                workers[i] = new Worker('worker.js');
-                workers[i].offset = i * particlesPerWorker;
-                workers[i].addEventListener('message', onWorkerMessage( workers[i], i ), false );
-
-                var vertices = cubeGeometry.vertices.slice( workers[i].offset, workers[i].offset + particlesPerWorker );
-
-                workers[i].postMessage({
-                    message: 'start',
-                    vertices: vertices
-                });
-            }
 
             scene.add( cubeMesh );
         }
 
 
+        document.addEventListener('mousemove', function(e) {
+            mouseX = e.pageX - (window.innerWidth/2);
+            mouseY = e.pageY - (window.innerHeight/2);
+        }, false);
 
 
         function animate() {
             requestAnimationFrame( animate );
-            render( clock.getDelta() );
-
-            stats3.update();
+            render( 0.016 );
+            stats.update();
         }
 
-        function updateUniforms() {
-            uniforms.dt.value = Math.sin(Date.now() * 0.00005) * 5 + 10;
+        function updateSingleAttribute() {
+
         }
 
-        function updateAttributes() {
+        function updateAttributes( dt ) {
+            var a = shaderMaterial.attributes,
+                alive = a.alive.value,
+                age = a.age.value,
+                velocity = a.velocity.value;
 
+            recycled.length = 0;
+
+            for( var i = 0; i < numParticles; ++i ) {
+
+                if( alive[i] === 1.0 ) {
+                    age[i] += dt;
+                }
+
+                if(age[i] >= duration) {
+                    age[i] = 0.0;
+                    alive[i] = 0.0;
+                    recycled.push(i);
+                }
+            }
+
+            if( emitterAge <= duration ) {
+                // determine indices of particles to activate
+                var startIndex  = Math.round( particlesPerSecond * emitterAge );
+                var endIndex    = Math.round( particlesPerSecond * (emitterAge + dt) );
+
+                if( endIndex > numParticles ) {
+                    endIndex = numParticles;
+                }
+
+                for( var i = startIndex; i < endIndex; i++ ) {
+                    alive[i] = 1.0;
+                }
+            }
+
+            for(var i = 0; i < recycled.length; ++i) {
+                alive[ recycled[i] ] = 1.0;
+                cubeGeometry.vertices[ recycled[i] ].set(mouseX, -mouseY, 0);
+            }
+
+            // Set flags to update (causes less garbage than ParticleSystem.sortParticles = true);
+            attributes.age.needsUpdate = true;
+            attributes.alive.needsUpdate = true;
         }
 
         function updateCamera() {
-            camera.position.x = Math.cos( Date.now() * 0.0005 ) * 1000;
-            camera.position.z = Math.sin( Date.now() * 0.0005 ) * 1000;
+            camera.position.x = Math.cos( Date.now() * 0.0005 ) * 100;
+            camera.position.y = Math.sin( Date.now() * 0.0005 ) * 100;
+            // camera.position.z = Math.sin( Date.now() * 0.0005 ) * 50;
             camera.lookAt( scene.position );
         }
 
 
         function render( dt ) {
-            updateUniforms();
-            // updateAttributes();
-            updateCamera();
+            updateAttributes( dt );
+            // updateCamera();
+
             cubeGeometry.verticesNeedUpdate = true;
+
             renderer.render( scene, camera );
+
+            emitterAge += dt;
         }
 
 
