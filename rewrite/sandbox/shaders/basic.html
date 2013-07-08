@@ -1,0 +1,124 @@
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+    </style>
+    <script type="text/javascript" src="../../res/js/lib/THREE-r58.min.js"></script>
+    <script type="text/javascript" src="../../res/js/lib/Stats.min.js"></script>
+</head>
+<body>
+    <script type="text/x-shader" id="vertex">
+        uniform float amp;
+        varying vec3 vNormal;
+
+        void main() {
+            vNormal = normal;
+            // vec3 newPosition = position + normal * vec3( amp );
+
+            vec3 newPosition = position + vec3( cos(position.x), sin(position.y), sin(position.z) );
+
+            gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+        }
+    </script>
+
+    <script type="text/x-shader" id="fragment">
+        varying vec3 vNormal;
+        uniform float lightX;
+        uniform float lightY;
+        uniform float lightZ;
+
+        void main() {
+            vec3 light = vec3(lightX, lightY, lightZ);
+            light = normalize( light );
+
+            float dotProd = max(0.0, dot(vNormal, light));
+
+            gl_FragColor = vec4( dotProd, dotProd, dotProd, 1.0 );
+        }
+    </script>
+
+    <script type="text/javascript">
+        // variables used in init()
+        var scene, camera, renderer, stats, clock;
+
+        // variables used in initShader()
+        var shaderMaterial, cubeGeometry, cubeMesh, uniforms, attributes;
+
+
+        // Setup uniforms and attributes used by vertex and fragment shaders.
+        uniforms = {
+            amp: { type: 'f', value: 0.0 },
+            lightX: { type: 'f', value: 0.0 },
+            lightY: { type: 'f', value: 0.0 },
+            lightZ: { type: 'f', value: 0.0 },
+        };
+        attributes = {};
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 100;
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+        function initShader() {
+            shaderMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                attributes: attributes,
+                vertexShader: document.getElementById('vertex').textContent,
+                fragmentShader: document.getElementById('fragment').textContent
+            });
+
+            cubeGeometry = new THREE.IcosahedronGeometry(50, 4);
+            cubeMesh = new THREE.Mesh( cubeGeometry, shaderMaterial );
+
+            scene.add( cubeMesh );
+        }
+
+
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+            render( clock.getDelta() );
+            stats.update();
+        }
+
+        function updateUniforms() {
+            uniforms.amp.value = Math.sin( Date.now() * 0.005 );
+            uniforms.lightX.value = Math.cos( Date.now() * 0.005 ) * 10;
+            uniforms.lightY.value = Math.sin( Date.now() * 0.001 ) * 10;
+            uniforms.lightZ.value = Math.sin( Date.now() * 0.005 ) * 10;
+        }
+
+        function updateCamera() {
+            camera.position.x = Math.cos( Date.now() * 0.001 ) * 100;
+            camera.position.z = Math.sin( Date.now() * 0.001 ) * 100;
+            camera.lookAt( scene.position );
+        }
+
+        function render( dt ) {
+            updateUniforms();
+            // updateCamera();
+            renderer.render( scene, camera );
+        }
+
+
+
+        init();
+        initShader();
+        animate();
+
+    </script>
+</body>
+</html>

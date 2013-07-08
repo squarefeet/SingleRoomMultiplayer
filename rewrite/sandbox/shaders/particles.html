@@ -1,0 +1,221 @@
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+    </style>
+    <script type="text/javascript" src="../../res/js/lib/THREE-r58.min.js"></script>
+    <script type="text/javascript" src="../../res/js/lib/Stats.min.js"></script>
+</head>
+<body>
+    <script type="text/x-shader" id="vertex">
+        attribute float acceleration;
+        attribute float velocity;
+        uniform float dt;
+
+        varying vec4 pos;
+
+        void main() {
+            vec3 newPos = vec3( position );
+
+            newPos = newPos * dt;
+
+            vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );
+
+            float size = 30.0;
+
+            gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+            gl_Position = projectionMatrix * mvPosition;
+
+            pos = mvPosition;
+        }
+    </script>
+
+    <script type="text/x-shader" id="fragment">
+        uniform vec3 customColor;
+        uniform sampler2D texture;
+        uniform float dt;
+        varying vec4 pos;
+
+        void main() {
+
+            vec4 col = vec4( customColor, 0.5 );
+
+            gl_FragColor = col;
+
+            float c = cos(0.0);
+            float s = sin(0.0);
+
+            vec2 rotatedUV = vec2(
+                c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,
+                c * (gl_PointCoord.y - 0.5) + s * (gl_PointCoord.x - 0.5) + 0.5
+            );
+            vec4 tex = texture2D( texture, rotatedUV );
+
+
+            gl_FragColor = gl_FragColor * tex;
+        }
+    </script>
+
+    <script type="text/javascript">
+
+        // variables used in init()
+        var scene, camera, renderer, stats, stats2, clock;
+
+        // variables used in initShader()
+        var shaderMaterial, cubeGeometry, cubeMesh, uniforms, attributes;
+
+        var workers = [],
+            numParticles = 20000,
+            numWorkers = 0,
+            particlesPerWorker = numParticles / numWorkers | 0;
+
+        var onWorkerMessage = function( worker, index ) {
+            return function( e ) {
+                // if( e.data.message === 'result' ) {
+                //     for(var i = 0; i < particlesPerWorker; ++i) {
+                //         cubeGeometry.vertices[i + worker.offset] = e.data.vertices[i];
+                //     }
+
+                //     if( index === 0 ) {
+                //         stats.update();
+                //     }
+                //     else if( index === 1 ) {
+                //         stats2.update();
+                //     }
+                // }
+            };
+        };
+
+
+        // Setup uniforms and attributes used by vertex and fragment shaders.
+        uniforms = {
+            customColor: { type: 'c', value: (new THREE.Color()).setHSL(0.2, 1.0, 0.5) },
+            dt: { type: 'f', value: 0.0 },
+            texture: { type: 't', value: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png') }
+        };
+        attributes = {
+            acceleration: { type: 'f', value: 1.0 },
+            velocity: { type: 'f', value: 1.0 }
+        };
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 100;
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000)
+            stats = new Stats();
+            stats2 = new Stats();
+            stats3 = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            stats2.domElement.style.position = 'absolute';
+            stats2.domElement.style.top = '50px';
+
+            stats3.domElement.style.position = 'absolute';
+            stats3.domElement.style.top = '100px';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+            document.body.appendChild( stats2.domElement );
+            document.body.appendChild( stats3.domElement );
+        }
+
+        function randVec3( base, spread ) {
+            return new THREE.Vector3(
+                Math.random() * base - spread,
+                Math.random() * base - spread,
+                Math.random() * base - spread
+            );
+        }
+
+        function randValue( base, spread ) {
+            return Math.random() * base - spread;
+        }
+
+        function initShader() {
+            shaderMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                attributes: attributes,
+                vertexShader: document.getElementById('vertex').textContent,
+                fragmentShader: document.getElementById('fragment').textContent,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                alphaTest: 0.5,
+                depthWrite: false
+            });
+
+            cubeGeometry = new THREE.Geometry();
+
+            for(var i = 0; i < numParticles; ++i) {
+                cubeGeometry.vertices.push( randVec3( 100, 50 ) );
+            }
+
+            cubeMesh = new THREE.ParticleSystem( cubeGeometry, shaderMaterial );
+            cubeMesh.dynamic = true;
+
+            for(var i = 0; i < numWorkers; ++i) {
+                workers[i] = new Worker('worker.js');
+                workers[i].offset = i * particlesPerWorker;
+                workers[i].addEventListener('message', onWorkerMessage( workers[i], i ), false );
+
+                var vertices = cubeGeometry.vertices.slice( workers[i].offset, workers[i].offset + particlesPerWorker );
+
+                workers[i].postMessage({
+                    message: 'start',
+                    vertices: vertices
+                });
+            }
+
+            scene.add( cubeMesh );
+        }
+
+
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+            render( clock.getDelta() );
+
+            stats3.update();
+        }
+
+        function updateUniforms() {
+            uniforms.dt.value = Math.sin(Date.now() * 0.00005) * 5 + 10;
+        }
+
+        function updateAttributes() {
+
+        }
+
+        function updateCamera() {
+            camera.position.x = Math.cos( Date.now() * 0.0005 ) * 1000;
+            camera.position.z = Math.sin( Date.now() * 0.0005 ) * 1000;
+            camera.lookAt( scene.position );
+        }
+
+
+        function render( dt ) {
+            updateUniforms();
+            // updateAttributes();
+            updateCamera();
+            cubeGeometry.verticesNeedUpdate = true;
+            renderer.render( scene, camera );
+        }
+
+
+
+        init();
+        initShader();
+
+
+        setTimeout(animate, 100);
+
+    </script>
+</body>
+</html>
