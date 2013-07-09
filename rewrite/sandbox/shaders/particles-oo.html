@@ -1,0 +1,512 @@
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+    </style>
+
+    <script type="text/javascript">
+        if(typeof Function.prototype.bind === 'undefined') {
+            Function.prototype.bind = function (oThis) {
+                if (typeof this !== "function") {
+                  // closest thing possible to the ECMAScript 5 internal IsCallable function
+                  throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+                }
+
+                var aArgs = Array.prototype.slice.call(arguments, 1),
+                    fToBind = this,
+                    fNOP = function () {},
+                    fBound = function () {
+                      return fToBind.apply(this instanceof fNOP && oThis
+                                             ? this
+                                             : oThis,
+                                           aArgs.concat(Array.prototype.slice.call(arguments)));
+                    };
+
+                fNOP.prototype = this.prototype;
+                fBound.prototype = new fNOP();
+
+                return fBound;
+            };
+        }
+
+
+
+        (function() {
+            var lastTime = 0;
+            var vendors = ['ms', 'moz', 'webkit', 'o'];
+            for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+                window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+                window.cancelAnimationFrame =
+                  window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+            }
+
+            if (!window.requestAnimationFrame)
+                window.requestAnimationFrame = function(callback, element) {
+                    var currTime = new Date().getTime();
+                    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                    var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                      timeToCall);
+                    lastTime = currTime + timeToCall;
+                    return id;
+                };
+
+            if (!window.cancelAnimationFrame)
+                window.cancelAnimationFrame = function(id) {
+                    clearTimeout(id);
+                };
+        }());
+
+    </script>
+
+
+    <script type="text/javascript" src="../../res/js/lib/THREE-r58.min.js"></script>
+    <script type="text/javascript" src="../../res/js/lib/Stats.min.js"></script>
+</head>
+<body>
+    <script type="text/x-shader" id="vertex">
+        uniform float duration;
+        uniform vec3 customColor;
+        uniform vec3 customColorEnd;
+        uniform int hasPerspective;
+        uniform float opacity;
+        uniform float opacityEnd;
+
+        attribute vec3 acceleration;
+        attribute vec3 velocity;
+        attribute float alive;
+        attribute float age;
+        attribute float size;
+
+        varying vec4 vColor;
+
+        // Linearly lerp a float
+        float Lerp( float start, float end ) {
+            return (start + (end - start) * (age / duration));
+        }
+
+        // Linearly lerp a vector3
+        vec3 Lerp( vec3 start, vec3 end ) {
+            return (start + (end - start) * (age/duration));
+        }
+
+        // Return the size of the particle
+        float GetSize( float newSize, vec4 mvPosition ) {
+            if( hasPerspective == 1 ) {
+                newSize = newSize * (300.0 / length( mvPosition.xyz) );
+            }
+
+            return newSize;
+        }
+
+
+        // Integrate acceleration into velocity and apply it to the particle's position
+        vec4 GetPos() {
+            vec3 newPos = vec3( position );
+
+            float positionInTime = age / duration;
+
+            // Move acceleration & velocity vectors to the value they should be at the current age
+            vec3 a = acceleration * positionInTime;
+            vec3 v = velocity * positionInTime;
+
+            // Move velocity vector to correct values at this age
+            v = v + (a * age);
+
+            newPos = newPos + v;
+            vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );
+
+            gl_PointSize = GetSize( size, mvPosition );
+
+            return mvPosition;
+        }
+
+
+        void main() {
+            if( alive > 0.5 ) {
+                // Integrate color "tween"
+                vec3 color = vec3( customColor );
+
+                if( customColor != customColorEnd ) {
+                    color = Lerp( customColor, customColorEnd );
+                }
+
+                // Store the color of this particle in the varying vColor, so frag shader can access it.
+                if( opacity != opacityEnd ) {
+                    vColor = vec4( color, Lerp( opacity, opacityEnd ) );
+                }
+                else {
+                    vColor = vec4( color, opacity );
+                }
+
+                // Set the position of this particle
+                gl_Position = projectionMatrix * GetPos();
+            }
+            else {
+                // Hide particle and set its position to the glsl equivalent of Number.POSITIVE_INFINITY
+                vColor = vec4( customColor, 0.0 );
+                gl_Position = vec4(1e20, 1e20, 1e20, 0);
+            }
+        }
+    </script>
+
+    <script type="text/x-shader" id="fragment">
+        uniform sampler2D texture;
+        uniform int colorize;
+
+        varying vec4 vColor;
+
+        void main() {
+            float c = cos(0.0);
+            float s = sin(0.0);
+
+            vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,
+                                  c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);
+            vec4 rotatedTexture = texture2D( texture,  rotatedUV );
+
+            if( colorize == 1 ) {
+                gl_FragColor = vColor * rotatedTexture;
+            }
+            else {
+                gl_FragColor = rotatedTexture;
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+
+        // General
+        var mouseX = 0, mouseY = 0;
+
+        // variables used in init()
+        var scene, camera, renderer, stats, stats2, clock;
+
+
+        function ParticleEmitter( options ) {
+            options = options || {};
+
+            this.particlesPerSecond     = options.particlesPerSecond || 100;
+
+            // Attribute properties ( per particle settings )
+            this.position               = options.position || new THREE.Vector3();
+            this.positionSpread         = options.positionSpread || new THREE.Vector3();
+
+            this.acceleration           = options.acceleration || new THREE.Vector3();
+            this.accelerationSpread     = options.accelerationSpread || new THREE.Vector3();
+
+            this.velocity               = options.velocity || new THREE.Vector3();
+            this.velocitySpread         = options.velocitySpread || new THREE.Vector3();
+
+            this.size                   = options.size || 10;
+            this.sizeSpread             = options.sizeSpread || 5;
+
+            this.numParticles           = null;
+
+            this.attributes             = null;
+            this.vertices               = null;
+            this.verticesIndex          = 0;
+            this.age                    = 0;
+            this.maxAge                 = null;
+            this.recycled               = [];
+        }
+
+        ParticleEmitter.prototype.tick = function( dt ) {
+
+            var a = this.attributes,
+                alive = a.alive.value,
+                age = a.age.value,
+                velocity = a.velocity.value,
+                start = this.verticesIndex,
+                end = start + this.numParticles;
+
+            this.recycled.length = 0;
+
+            for( var i = start; i < end; ++i ) {
+                if( alive[i] === 1.0 ) {
+                    age[i] += dt;
+                }
+
+                if(age[i] >= this.maxAge) {
+                    age[i] = 0.0;
+                    alive[i] = 0.0;
+                    this.recycled.push(i);
+                }
+            }
+
+            if( this.age <= this.maxAge ) {
+                // determine indices of particles to activate
+                var startIndex  = start + Math.round( this.particlesPerSecond * this.age );
+                var endIndex    = start + Math.round( this.particlesPerSecond * (this.age + dt) );
+
+                if( endIndex > start + this.numParticles ) {
+                    endIndex = start + this.numParticles;
+                }
+
+                for( var i = startIndex; i < endIndex; i++ ) {
+                    alive[i] = 1.0;
+                    this.vertices[ i ].set(this.position.x, this.position.y, this.position.z);
+                }
+            }
+
+            for(var i = 0; i < this.recycled.length; ++i) {
+                alive[ this.recycled[i] ] = 1.0;
+                this.vertices[ this.recycled[i] ].set(this.position.x, this.position.y, this.position.z);
+            }
+
+            this.age += dt;
+        };
+
+
+        function ParticleGroup( options ) {
+            this.fixedTimeStep          = options.fixedTimeStep || 0.016;
+
+            // Uniform properties ( applied to all particles )
+            this.maxAge                 = options.maxAge || 3;
+            this.colorStart             = options.colorStart || new THREE.Color( 'white' );
+            this.colorEnd               = options.colorEnd || new THREE.Color( 'blue' );
+
+            this.opacityStart           = options.opacityStart || 1;
+            this.opacityEnd             = options.opacityEnd || 0;
+
+            this.texture                = options.texture || null;
+            this.hasPerspective         = options.hasPerspective || 1;
+            this.colorize               = options.colorize || 1;
+
+            // Create uniforms
+            this.uniforms = {
+                customColor:    { type: 'c', value: this.colorStart },
+                customColorEnd: { type: 'c', value: this.colorEnd },
+                duration:       { type: 'f', value: parseFloat(3) },
+                texture:        { type: 't', value: this.texture },
+                hasPerspective: { type: 'i', value: parseInt( this.hasPerspective ) },
+                colorize:       { type: 'i', value: parseInt( this.colorize ) },
+                opacity:        { type: 'f', value: parseFloat(this.opacityStart) },
+                opacityEnd:     { type: 'f', value: parseFloat(this.opacityEnd) }
+            };
+
+            this.attributes = {
+                acceleration:   { type: 'v3', value: [] },
+                velocity:       { type: 'v3', value: [] },
+                alive:          { type: 'f', value: [] },
+                age:            { type: 'f', value: [] },
+                size:           { type: 'f', value: [] }
+            };
+
+            this.emitters   = [];
+            this.geometry   = null;
+            this.material   = null;
+            this.mesh       = null;
+
+            this._createGeometry();
+            this._createMaterial();
+            this._createMesh();
+
+        }
+
+        ParticleGroup.prototype = {
+            _createGeometry: function() {
+                this.geometry = new THREE.Geometry();
+            },
+
+            _createMaterial: function() {
+                this.material = new THREE.ShaderMaterial({
+                    uniforms:       this.uniforms,
+                    attributes:     this.attributes,
+                    vertexShader:   document.getElementById('vertex').textContent,
+                    fragmentShader: document.getElementById('fragment').textContent,
+                    blending:       THREE.AdditiveBlending,
+                    transparent:    true,
+                    alphaTest:      0.5,
+                    depthWrite:     false
+                });
+            },
+
+            _createMesh: function() {
+                this.mesh = new THREE.ParticleSystem( this.geometry, this.material );
+                this.mesh.dynamic = true;
+            },
+
+            _randomVector3: function( base, spread ) {
+                var v = new THREE.Vector3();
+
+                v.copy( base );
+
+                v.x += Math.random() * spread.x - (spread.x/2);
+                v.y += Math.random() * spread.y - (spread.y/2);
+                v.z += Math.random() * spread.z - (spread.z/2);
+
+                return v;
+
+                // return new THREE.Vector3(
+                //     Math.random() * base.x - spread.x,
+                //     Math.random() * base.y - spread.y,
+                //     Math.random() * base.z - spread.z
+                // );
+            },
+
+            _randomFloat: function( base, spread ) {
+                return Math.random() * base - spread;
+            },
+
+            _randomizeExistingVector3: function( vector, base, spread ) {
+                vector.set(
+                    Math.random() * base.x - spread.x,
+                    Math.random() * base.y - spread.y,
+                    Math.random() * base.z - spread.z
+                );
+            },
+
+            addEmitter: function( emitter ) {
+                emitter.numParticles = emitter.particlesPerSecond * this.maxAge;
+
+
+                var vertices = this.geometry.vertices,
+                    start = vertices.length,
+                    end = emitter.numParticles + start,
+                    a = this.attributes,
+                    acceleration = a.acceleration.value,
+                    velocity = a.velocity.value,
+                    alive = a.alive.value,
+                    age = a.age.value,
+                    size = a.size.value;
+
+                // Create the values
+                for( var i = start; i < end; ++i ) {
+                    vertices[i]     = this._randomVector3( emitter.position, emitter.positionSpread );
+                    acceleration[i] = this._randomVector3( emitter.acceleration, emitter.accelerationSpread );
+                    velocity[i]     = this._randomVector3( emitter.velocity, emitter.velocitySpread );
+                    size[i]         = Math.max( 0.1, this._randomFloat( emitter.size, emitter.sizeSpread ) );
+                    age[i]          = 0.0;
+                    alive[i]        = 0.0;
+                }
+
+                // Cache properties on the emitter so we can access
+                // them from its tick function.
+                emitter.verticesIndex   = start;
+                emitter.attributes      = this.attributes;
+                emitter.vertices        = this.geometry.vertices;
+                emitter.maxAge          = this.maxAge;
+
+                // Save this emitter in an array for processing during this.tick()
+                this.emitters.push( emitter );
+
+                // this._createMesh();
+            },
+
+            tick: function( dt ) {
+                dt = dt || this.fixedTimeStep;
+
+                for( var i = 0; i < this.emitters.length; ++i ) {
+                    this.emitters[i].tick( dt );
+                }
+
+                // Set flags to update (causes less garbage than ParticleSystem.sortParticles = true);
+                this.attributes.age.needsUpdate = true;
+                this.attributes.alive.needsUpdate = true;
+                this.geometry.verticesNeedUpdate = true;
+            }
+        };
+
+
+        var myEmitter, myParticleGroup;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 100;
+
+            renderer = new THREE.WebGLRenderer({
+                precision: 'mediump'
+            });
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000);
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+
+            var cube = new THREE.Mesh( new THREE.CubeGeometry(10, 10, 10) );
+            scene.add(cube);
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+        function randPositionOnSphere( base, radius ) {
+            var z = 2 * Math.random() - 1;
+            var t = 6.2832 * Math.random();
+            var r = Math.sqrt( 1 - z*z );
+            var vec3 = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
+            return new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
+        }
+
+        function initShader() {
+            myParticleGroup = new ParticleGroup({
+                texture: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png'),
+                maxAge: 10
+            });
+
+            myEmitter = new ParticleEmitter({
+                position: new THREE.Vector3(10, 0, 0),
+                acceleration: new THREE.Vector3(0, -10, 0),
+                velocity: new THREE.Vector3(0, 10, 0),
+                velocitySpread: new THREE.Vector3(10, 0, 10),
+                particlesPerSecond: 500
+            });
+
+            var myEmitter2 = new ParticleEmitter({
+                position: new THREE.Vector3(-10, 0, 0),
+                acceleration: new THREE.Vector3(0, 10, 0),
+                velocity: new THREE.Vector3(0, -10, 0),
+                velocitySpread: new THREE.Vector3(-10, 0, -10),
+                particlesPerSecond: 500
+            });
+
+            myParticleGroup.addEmitter( myEmitter );
+            myParticleGroup.addEmitter( myEmitter2 );
+
+            scene.add( myParticleGroup.mesh );
+        }
+
+
+        document.addEventListener('mousemove', function(e) {
+            mouseX = e.pageX - (window.innerWidth/2);
+            mouseY = e.pageY - (window.innerHeight/2);
+        }, false);
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+            render( 0.016 );
+            stats.update();
+        }
+
+
+
+        function updateCamera() {
+            camera.position.x = Math.cos( Date.now() * 0.0005 ) * 20;
+            // camera.position.y = Math.sin( Date.now() * 0.0005 ) * 100;
+            camera.position.z = Math.sin( Date.now() * 0.0005 ) * 20;
+            camera.lookAt( scene.position );
+        }
+
+
+        function render( dt ) {
+            myParticleGroup.tick();
+            updateCamera();
+
+            renderer.render( scene, camera );
+        }
+
+
+        init();
+        initShader();
+
+        setTimeout(animate, 100);
+
+    </script>
+</body>
+</html>

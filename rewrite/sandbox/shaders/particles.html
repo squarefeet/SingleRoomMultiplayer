@@ -4,6 +4,62 @@
     <style type="text/css">
         * { margin: 0; padding: 0; }
     </style>
+
+    <script type="text/javascript">
+        if(typeof Function.prototype.bind === 'undefined') {
+            Function.prototype.bind = function (oThis) {
+                if (typeof this !== "function") {
+                  // closest thing possible to the ECMAScript 5 internal IsCallable function
+                  throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+                }
+
+                var aArgs = Array.prototype.slice.call(arguments, 1),
+                    fToBind = this,
+                    fNOP = function () {},
+                    fBound = function () {
+                      return fToBind.apply(this instanceof fNOP && oThis
+                                             ? this
+                                             : oThis,
+                                           aArgs.concat(Array.prototype.slice.call(arguments)));
+                    };
+
+                fNOP.prototype = this.prototype;
+                fBound.prototype = new fNOP();
+
+                return fBound;
+            };
+        }
+
+
+
+        (function() {
+            var lastTime = 0;
+            var vendors = ['ms', 'moz', 'webkit', 'o'];
+            for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+                window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+                window.cancelAnimationFrame =
+                  window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+            }
+
+            if (!window.requestAnimationFrame)
+                window.requestAnimationFrame = function(callback, element) {
+                    var currTime = new Date().getTime();
+                    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                    var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                      timeToCall);
+                    lastTime = currTime + timeToCall;
+                    return id;
+                };
+
+            if (!window.cancelAnimationFrame)
+                window.cancelAnimationFrame = function(id) {
+                    clearTimeout(id);
+                };
+        }());
+
+    </script>
+
+
     <script type="text/javascript" src="../../res/js/lib/THREE-r58.min.js"></script>
     <script type="text/javascript" src="../../res/js/lib/Stats.min.js"></script>
 </head>
@@ -65,14 +121,23 @@
             return mvPosition;
         }
 
+
         void main() {
             if( alive > 0.5 ) {
                 // Integrate color "tween"
                 vec3 color = vec3( customColor );
-                color = Lerp( customColor, customColorEnd );
+
+                if( customColor != customColorEnd ) {
+                    color = Lerp( customColor, customColorEnd );
+                }
 
                 // Store the color of this particle in the varying vColor, so frag shader can access it.
-                vColor = vec4( color, Lerp( opacity, opacityEnd ) );
+                if( opacity != opacityEnd ) {
+                    vColor = vec4( color, Lerp( opacity, opacityEnd ) );
+                }
+                else {
+                    vColor = vec4( color, opacity );
+                }
 
                 // Set the position of this particle
                 gl_Position = projectionMatrix * GetPos();
@@ -122,7 +187,7 @@
         var basePos = new THREE.Vector3(); // starting position
         var duration = 5, // seconds
             dtInc = 1 / duration, // step size in seconds
-            particlesPerSecond = 1000;
+            particlesPerSecond = 1;
 
 
         var numParticles = particlesPerSecond * duration;
@@ -140,7 +205,7 @@
             hasPerspective: { type: 'i', value: 1 },
             colorize: { type: 'i', value: 1 },
             opacity: { type: 'f', value: 1.0 },
-            opacityEnd: { type: 'f', value: 0.0 }
+            opacityEnd: { type: 'f', value: 1.0 }
         };
         attributes = {
             acceleration: { type: 'v3', value: [] },
@@ -156,9 +221,13 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
             camera.position.z = 100;
-            renderer = new THREE.WebGLRenderer();
+
+            renderer = new THREE.WebGLRenderer({
+                precision: 'mediump'
+            });
             renderer.setSize( window.innerWidth, window.innerHeight );
-            renderer.setClearColor(0x000000)
+            renderer.setClearColor(0x000000);
+
             stats = new Stats();
             clock = new THREE.Clock();
 
@@ -198,7 +267,7 @@
                 cubeGeometry.vertices[i] = new THREE.Vector3();
                 a.acceleration.value.push( new THREE.Vector3(Math.random() * 30 - 15, -50, Math.random() * 30 - 15) );
                 a.velocity.value.push( new THREE.Vector3(0, 200, 0) );
-                a.size.value.push( Math.random() * 5 );
+                a.size.value.push( 5 );
 
                 a.age.value.push(0.0);
                 a.alive.value.push( 0.0 );
@@ -306,10 +375,12 @@
         }
 
 
-
+        try {
         init();
         initShader();
-
+    }catch(ev) {
+        alert(ev)
+    }
 
         setTimeout(animate, 100);
 
