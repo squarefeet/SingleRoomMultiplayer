@@ -30,8 +30,6 @@
             };
         }
 
-
-
         (function() {
             var lastTime = 0;
             var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -56,7 +54,6 @@
                     clearTimeout(id);
                 };
         }());
-
     </script>
 
 
@@ -198,7 +195,7 @@
             this.velocitySpread         = options.velocitySpread || new THREE.Vector3();
 
             this.size                   = options.size || 10;
-            this.sizeSpread             = options.sizeSpread || 5;
+            this.sizeSpread             = options.sizeSpread || 0;
 
             this.numParticles           = null;
 
@@ -210,55 +207,66 @@
             this.recycled               = [];
         }
 
-        ParticleEmitter.prototype.tick = function( dt ) {
+        ParticleEmitter.prototype = {
+            _resetParticle: function( p ) {
+                p.copy( this.position );
+            },
 
-            var a = this.attributes,
-                alive = a.alive.value,
-                age = a.age.value,
-                velocity = a.velocity.value,
-                start = this.verticesIndex,
-                end = start + this.numParticles;
+            tick: function( dt ) {
+                var a = this.attributes,
+                    alive = a.alive.value,
+                    age = a.age.value,
+                    velocity = a.velocity.value,
+                    start = this.verticesIndex,
+                    end = start + this.numParticles,
+                    r = this.recycled,
+                    pps = this.particlesPerSecond,
+                    m = this.maxAge,
+                    emitterAge = this.age;
 
-            this.recycled.length = 0;
+                r.length = 0;
 
-            for( var i = start; i < end; ++i ) {
-                if( alive[i] === 1.0 ) {
-                    age[i] += dt;
+                for( var i = start; i < end; ++i ) {
+                    if( alive[i] === 1.0 ) {
+                        age[i] += dt;
+                    }
+
+                    if(age[i] >= m) {
+                        age[i] = 0.0;
+                        alive[i] = 0.0;
+                        r.push(i);
+                    }
                 }
 
-                if(age[i] >= this.maxAge) {
-                    age[i] = 0.0;
-                    alive[i] = 0.0;
-                    this.recycled.push(i);
+                if( emitterAge <= this.maxAge ) {
+                    // determine indices of particles to activate
+                    var startIndex  = start + Math.round( pps * emitterAge );
+                    var endIndex    = start + Math.round( pps * (emitterAge + dt) );
+
+                    if( endIndex > start + this.numParticles ) {
+                        endIndex = start + this.numParticles;
+                    }
+
+                    for( var i = startIndex; i < endIndex; i++ ) {
+                        alive[i] = 1.0;
+                        this._resetParticle( this.vertices[i] );
+                    }
                 }
+
+                for(var i = 0; i < r.length; ++i) {
+                    alive[ r[i] ] = 1.0;
+                    this._resetParticle( this.vertices[ r[i] ] );
+                }
+
+                this.age += dt;
             }
-
-            if( this.age <= this.maxAge ) {
-                // determine indices of particles to activate
-                var startIndex  = start + Math.round( this.particlesPerSecond * this.age );
-                var endIndex    = start + Math.round( this.particlesPerSecond * (this.age + dt) );
-
-                if( endIndex > start + this.numParticles ) {
-                    endIndex = start + this.numParticles;
-                }
-
-                for( var i = startIndex; i < endIndex; i++ ) {
-                    alive[i] = 1.0;
-                    this.vertices[ i ].set(this.position.x, this.position.y, this.position.z);
-                }
-            }
-
-            for(var i = 0; i < this.recycled.length; ++i) {
-                alive[ this.recycled[i] ] = 1.0;
-                this.vertices[ this.recycled[i] ].set(this.position.x, this.position.y, this.position.z);
-            }
-
-            this.age += dt;
         };
 
 
         function ParticleGroup( options ) {
             this.fixedTimeStep          = options.fixedTimeStep || 0.016;
+
+            this.shape                  = options.shape || 'sphere';
 
             // Uniform properties ( applied to all particles )
             this.maxAge                 = options.maxAge || 3;
@@ -345,7 +353,8 @@
             },
 
             _randomFloat: function( base, spread ) {
-                return Math.random() * base - spread;
+                return base + (Math.random() * spread - (spread/2));
+                // return Math.random() * base - spread;
             },
 
             _randomizeExistingVector3: function( vector, base, spread ) {
@@ -408,7 +417,7 @@
         };
 
 
-        var myEmitter, myParticleGroup;
+        var myEmitter, myParticleGroup, myParticleGroup2;
 
         function init() {
             scene = new THREE.Scene();
@@ -427,10 +436,6 @@
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.top = '0';
 
-
-            var cube = new THREE.Mesh( new THREE.CubeGeometry(10, 10, 10) );
-            scene.add(cube);
-
             document.body.appendChild( renderer.domElement );
             document.body.appendChild( stats.domElement );
         }
@@ -446,7 +451,7 @@
         function initShader() {
             myParticleGroup = new ParticleGroup({
                 texture: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png'),
-                maxAge: 10
+                maxAge: 3
             });
 
             myEmitter = new ParticleEmitter({
@@ -454,7 +459,9 @@
                 acceleration: new THREE.Vector3(0, -10, 0),
                 velocity: new THREE.Vector3(0, 10, 0),
                 velocitySpread: new THREE.Vector3(10, 0, 10),
-                particlesPerSecond: 500
+                particlesPerSecond: 500,
+                size: 5,
+                sizeSpread: 5
             });
 
             var myEmitter2 = new ParticleEmitter({
@@ -465,10 +472,42 @@
                 particlesPerSecond: 500
             });
 
+            var myEmitter3 = new ParticleEmitter({
+                position: new THREE.Vector3(0, 0, 0),
+                acceleration: new THREE.Vector3(0, -20, 0),
+                velocity: new THREE.Vector3(0, 20, 0),
+                velocitySpread: new THREE.Vector3(-10, 0, -10),
+                size: 5,
+                sizeSpread: 2.5,
+                particlesPerSecond: 500
+            });
+
             myParticleGroup.addEmitter( myEmitter );
-            myParticleGroup.addEmitter( myEmitter2 );
+            // myParticleGroup.addEmitter( myEmitter2 );
+            // myParticleGroup.addEmitter( myEmitter3 );
+
+
+            // myParticleGroup2 = new ParticleGroup({
+            //     colorStart: new THREE.Color('green'),
+            //     colorEnd: new THREE.Color('blue'),
+            //     texture: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png'),
+            //     maxAge: 3
+            // });
+
+            // var myEmitter4 = new ParticleEmitter({
+            //     position: new THREE.Vector3(0, -10, 0),
+            //     acceleration: new THREE.Vector3(10, 10, 10),
+            //     velocity: new THREE.Vector3(0, 0, 0),
+            //     velocitySpread: new THREE.Vector3(0, 0, -0),
+            //     size: 5,
+            //     sizeSpread: 2.5,
+            //     particlesPerSecond: 500
+            // });
+
+            // myParticleGroup2.addEmitter( myEmitter4 );
 
             scene.add( myParticleGroup.mesh );
+            // scene.add( myParticleGroup2.mesh );
         }
 
 
@@ -487,15 +526,19 @@
 
 
         function updateCamera() {
-            camera.position.x = Math.cos( Date.now() * 0.0005 ) * 20;
+            // camera.position.x = Math.cos( Date.now() * 0.0005 ) * 20;
             // camera.position.y = Math.sin( Date.now() * 0.0005 ) * 100;
-            camera.position.z = Math.sin( Date.now() * 0.0005 ) * 20;
-            camera.lookAt( scene.position );
+            // camera.position.z = Math.sin( Date.now() * 0.0005 ) * 20;
+            // camera.lookAt( scene.position );
+
+            myEmitter.position.x = Math.cos( Date.now() * 0.0005 ) * -50;
+            myEmitter.position.z = Math.sin( Date.now() * 0.0005 ) * -50;
         }
 
 
         function render( dt ) {
             myParticleGroup.tick();
+            // myParticleGroup2.tick();
             updateCamera();
 
             renderer.render( scene, camera );
