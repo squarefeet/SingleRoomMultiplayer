@@ -1,6 +1,8 @@
 function MouseHandler() {
     var _leftBtnValue = 1,
         _rightBtnValue = 3,
+        _mousedownListeners = [],
+        _mouseupListeners = [],
         that = this;
 
     this.prevX = 0;
@@ -22,6 +24,11 @@ function MouseHandler() {
         else if( e.which === _rightBtnValue ) {
             that.right = 1;
         }
+
+        for(var i = 0; i < _mousedownListeners.length; ++i) {
+            _mousedownListeners[i]();
+        }
+
     }, false );
 
 
@@ -41,11 +48,25 @@ function MouseHandler() {
         else if( e.which === _rightBtnValue ) {
             that.right = 0;
         }
+
+        for(var i = 0; i < _mouseupListeners.length; ++i) {
+            _mouseupListeners[i]();
+        }
+
     }, false );
 
 
     this.onResize = function() {
         that.centerX = window.innerWidth / 2;
         that.centerY = window.innerHeight / 2;
+    };
+
+
+    this.addMouseDownListener = function( fn ) {
+        _mousedownListeners.push( fn );
+    };
+
+    this.addMouseUpListener = function( fn ) {
+        _mouseupListeners.push( fn );
     };
 }

@@ -1,0 +1,112 @@
+<html>
+<head>
+    <title>Canvas text</title>
+
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script type="text/javascript">
+        var canvas = document.getElementById('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var ctx = canvas.getContext( '2d' );
+
+        ctx.font = '24px monospace';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.lineWidth = 5;
+
+        var text = [
+                'hello this is a test',
+                'and another',
+                'Oh, look. Another stupud test.'
+            ].join('\n'),
+            startChars = [],
+            endChars = [],
+            lerpPosition = 0,
+            lineNumber = 0;
+
+        function lerp( start, end, amount ) {
+            return ( start + ((end-start) * amount) );
+        }
+
+
+        function makeChars( t, s, e ) {
+            var lines = t.split('\n');
+            var letters;
+
+            for(var i = 0; i < lines.length; ++i) {
+                letters = lines[i].split('');
+                s[i] = [];
+                e[i] = [];
+
+                for( var j = 0; j < letters.length; ++j ) {
+                    s[i].push( letters[j].charCodeAt(0) );
+                    e[i].push( Math.random() * 50 );
+                }
+            }
+        }
+
+
+        function morphText( line ) {
+            var str = '',
+                lerpAmount,
+                minLerp = 10000;
+
+            for(var i = 0; i < startChars[line].length; ++i ) {
+                lerpAmount = (startChars[line].length - i) * 0.01;
+                lerpAmount = Math.max( 0.001, lerpAmount );
+
+                minLerp = Math.min( lerpAmount, minLerp );
+
+                endChars[line][i] = lerp( endChars[line][i], startChars[line][i], lerpAmount );
+
+                str += String.fromCharCode( Math.round( endChars[line][i] ) );
+            }
+
+            lerpPosition += 0.001;
+
+            return str;
+        }
+
+
+        function drawLetters( l ) {
+            // l = l.split('');
+            // l = l.splice( 0, lerpPosition * startChars[lineNumber].length);
+            // l = l.join('');
+
+            ctx.strokeText( l, canvas.width /2, canvas.height / 2);
+            ctx.fillText( l, canvas.width/2, canvas.height/2 );
+        }
+
+
+
+        function render() {
+            requestAnimationFrame( render );
+
+            if(lerpPosition < 1) {
+                ctx.clearRect( 0, 0, canvas.width, canvas.height );
+                drawLetters( morphText( lineNumber ) );
+            }
+            else {
+                lerpPosition = 0;
+                ++lineNumber;
+
+                if(lineNumber > text.split('\n').length-1) {
+                    lineNumber = text.split('\n').length-1;
+                }
+            }
+        }
+
+        makeChars( text, startChars, endChars );
+        render();
+
+
+    </script>
+</body>
+</html>

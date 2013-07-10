@@ -16,7 +16,7 @@ function ShaderParticleEmitter( options ) {
     this.velocity               = options.velocity || new THREE.Vector3();
     this.velocitySpread         = options.velocitySpread || new THREE.Vector3();
 
-    this.size                   = options.size || 10;
+    this.size                   = options.size || 10.0;
     this.sizeSpread             = options.sizeSpread || 0;
     this.sizeEnd                = options.sizeEnd || 10.0;
 
@@ -28,6 +28,10 @@ function ShaderParticleEmitter( options ) {
     this.age                    = 0;
     this.maxAge                 = null;
     this.recycled               = [];
+
+    this.userData = {};
+
+    this.alive = 0;
 }
 
 ShaderParticleEmitter.prototype = {
@@ -98,6 +102,17 @@ ShaderParticleEmitter.prototype = {
             }
         }
 
+        if( !this.alive ) {
+            if(r.length) {
+                for(var i = 0; i < r.length; ++i) {
+                    this._resetParticle( this.vertices[ r[i] ] );
+                }
+            }
+
+            this.age = 0;
+            return;
+        }
+
         if( emitterAge <= this.maxAge ) {
             // determine indices of particles to activate
             var startIndex  = start + Math.round( pps * emitterAge );
@@ -135,7 +150,7 @@ function ShaderParticleGroup( options ) {
     this.opacityStart           = typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1;
     this.opacityEnd             = options.opacityEnd || 0;
 
-    this.texture                = options.texture || null;
+    this.texture                = ( typeof options.texture === 'string' ? ASSET_LOADER.loaded.textures[ options.texture ] : options.texture ) || null;
     this.hasPerspective         = options.hasPerspective || 1;
     this.colorize               = options.colorize || 1;
 

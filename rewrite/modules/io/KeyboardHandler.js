@@ -1,5 +1,7 @@
 function KeyboardHandler() {
 	var _pressedKeys = [],
+		_keydownListeners = {},
+		_keyupListeners = {},
 		_meta = false,
 		_shift = false,
 		_alt = false,
@@ -7,6 +9,10 @@ function KeyboardHandler() {
 		_ctrl = false;
 
 	document.addEventListener( 'keydown', function(e) {
+		var charcode = String.fromCharCode( e.keyCode ).toLowerCase(),
+			key = charcode.charCodeAt( 0 ),
+			listeners = _keydownListeners[ charcode ];
+
 		_meta = e.metaKey;
 		_shift = e.shiftKey;
 		_alt = e.altKey;
@@ -14,22 +20,36 @@ function KeyboardHandler() {
 		_ctrl = e.ctrlKey;
 
 		// Force lowercase
-		_pressedKeys[ String.fromCharCode( e.keyCode ).toLowerCase().charCodeAt(0) ] = 1;
+		_pressedKeys[ key ] = 1;
 
 		// if( _meta || _ctrl ) e.preventDefault();
+		if( listeners ) {
+			for( var i = 0; i < listeners.length; ++i ) {
+				listeners[i]();
+			}
+		}
 	}, false );
 
 
 	document.addEventListener( 'keyup', function(e) {
+		var charcode = String.fromCharCode( e.keyCode ).toLowerCase(),
+			key = charcode.charCodeAt( 0 ),
+			listeners = _keyupListeners[ charcode ];
+
 		_meta = e.metaKey;
 		_shift = e.shiftKey;
 		_alt = e.altKey;
 		_altGraph = e.altGraphKey;
 		_ctrl = e.ctrlKey;
 
-		_pressedKeys[ String.fromCharCode( e.keyCode ).toLowerCase().charCodeAt(0) ] = 0;
+		_pressedKeys[ key ] = 0;
 
 		// if( _meta || _ctrl ) e.preventDefault();
+		if( listeners ) {
+			for( var i = 0; i < listeners.length; ++i ) {
+				listeners[i]();
+			}
+		}
 	}, false );
 
 
@@ -59,6 +79,23 @@ function KeyboardHandler() {
 		}
 
 		return true;
+	};
+
+
+	this.addKeyDownListener = function( key, fn ) {
+		if( !_keydownListeners[ key ] ) {
+			 _keydownListeners[ key ] = [];
+		}
+
+		_keydownListeners[ key ].push( fn );
+	};
+
+	this.addKeyUpListener = function( key, fn ) {
+		if( !_keyupListeners[ key ] ) {
+			 _keyupListeners[ key ] = [];
+		}
+
+		_keyupListeners[ key ].push( fn );
 	};
 
 }

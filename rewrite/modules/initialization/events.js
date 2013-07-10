@@ -8,6 +8,15 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
 		renderer: RENDERER
 	});
 
+    var middleground = new MiddlegroundLayer( {
+        layerManager: LAYER_MANAGER,
+        renderer: RENDERER
+    } );
 
 	RENDERER.start();
+});
+
+
+EVENTS.on('Rockets:destroyed', function( destructionType, x, y, z ) {
+    // Trigger an explosion at xyz.
 });

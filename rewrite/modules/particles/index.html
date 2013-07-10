@@ -57,121 +57,11 @@
     </script>
 
 
-    <script type="text/javascript" src="../../res/js/lib/THREE-r58.min.js"></script>
-    <script type="text/javascript" src="../../res/js/lib/Stats.min.js"></script>
-    <script type="text/javascript" src="./Particles.js"></script>
+    <script type="text/javascript" src="../external/THREE-r58.min.js"></script>
+    <script type="text/javascript" src="../external/Stats.min.js"></script>
+    <script type="text/javascript" src="./ShaderParticles.js"></script>
 </head>
 <body>
-    <script type="text/x-shader" id="vertex">
-        uniform float duration;
-        uniform vec3 customColor;
-        uniform vec3 customColorEnd;
-        uniform int hasPerspective;
-        uniform float opacity;
-        uniform float opacityEnd;
-
-        attribute vec3 acceleration;
-        attribute vec3 velocity;
-        attribute float alive;
-        attribute float age;
-        attribute float size;
-        attribute float sizeEnd;
-
-        varying vec4 vColor;
-
-        // Linearly lerp a float
-        float Lerp( float start, float end ) {
-            return (start + ((end - start) * (age / duration)));
-        }
-
-        // Linearly lerp a vector3
-        vec3 Lerp( vec3 start, vec3 end ) {
-            return (start + ((end - start) * (age / duration)));
-        }
-
-        // Return the size of the particle
-        float GetSize( float newSize, vec4 mvPosition ) {
-            if( hasPerspective == 1 ) {
-                newSize = newSize * (300.0 / length( mvPosition.xyz ) );
-            }
-
-            return newSize;
-        }
-
-
-        // Integrate acceleration into velocity and apply it to the particle's position
-        vec4 GetPos() {
-            vec3 newPos = vec3( position );
-
-            float positionInTime = age / duration;
-
-            // Move acceleration & velocity vectors to the value they should be at the current age
-            vec3 a = acceleration * positionInTime;
-            vec3 v = velocity * positionInTime;
-
-            // Move velocity vector to correct values at this age
-            v = v + (a * age);
-
-            newPos = newPos + v;
-            vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );
-
-            gl_PointSize = Lerp( GetSize( size, mvPosition ), sizeEnd );
-
-            return mvPosition;
-        }
-
-
-        void main() {
-            if( alive > 0.5 ) {
-                // Integrate color "tween"
-                vec3 color = vec3( customColor );
-
-                if( customColor != customColorEnd ) {
-                    color = Lerp( customColor, customColorEnd );
-                }
-
-                // Store the color of this particle in the varying vColor, so frag shader can access it.
-                if( opacity != opacityEnd ) {
-                    vColor = vec4( color, Lerp( opacity, opacityEnd ) );
-                }
-                else {
-                    vColor = vec4( color, opacity );
-                }
-
-                // Set the position of this particle
-                gl_Position = projectionMatrix * GetPos();
-            }
-            else {
-                // Hide particle and set its position to the glsl equivalent of Number.POSITIVE_INFINITY
-                vColor = vec4( customColor, 0.0 );
-                gl_Position = vec4(1e20, 1e20, 1e20, 0);
-            }
-        }
-    </script>
-
-    <script type="text/x-shader" id="fragment">
-        uniform sampler2D texture;
-        uniform int colorize;
-
-        varying vec4 vColor;
-
-        void main() {
-            float c = cos(0.0);
-            float s = sin(0.0);
-
-            vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,
-                                  c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);
-            vec4 rotatedTexture = texture2D( texture,  rotatedUV );
-
-            if( colorize == 1 ) {
-                gl_FragColor = vColor * rotatedTexture;
-            }
-            else {
-                gl_FragColor = rotatedTexture;
-            }
-        }
-    </script>
-
     <script type="text/javascript">
 
         // General
@@ -206,9 +96,9 @@
         var emitters = [];
 
         function initShader() {
-            myParticleGroup = new ParticleGroup({
+            myParticleGroup = new ShaderParticleGroup({
                 texture: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png'),
-                maxAge: 2,
+                maxAge: 1,
                 opacityStart: 1.0,
                 opacityEnd: 0.0,
 
@@ -216,29 +106,33 @@
                 colorEnd: new THREE.Color('green')
             });
 
-            var base = 200,
+            var base = 0,
                 halfBase = base/2;
 
             function getPos() {
                 return Math.random() * base - halfBase;
             }
 
-            for(var i = 0; i < 50; ++i) {
-                myEmitter = new ParticleEmitter({
-                    position: new THREE.Vector3(getPos(), getPos(), getPos()),
-                    // positionSpread: new THREE.Vector3(10, 10, 10),
-                    acceleration: new THREE.Vector3(0, 0, 0),
-                    accelerationSpread: new THREE.Vector3(20, 20, 20),
-                    particlesPerSecond: 500,
-                    size: 1,
-                    sizeSpread: 0,
-                    sizeEnd: 0
-                });
 
-                myParticleGroup.addEmitter( myEmitter );
+            myEmitter = new ShaderParticleEmitter({
+                position: new THREE.Vector3(getPos(), getPos(), getPos()),
+                // positionSpread: new THREE.Vector3(10, 10, 10),
+                acceleration: new THREE.Vector3(0, 0, 0),
+                accelerationSpread: new THREE.Vector3(20, 20, 20),
+                particlesPerSecond: 500,
+                size: 1,
+                sizeSpread: 0,
+                sizeEnd: 0
+            });
 
-                emitters.push( myEmitter );
-            }
+            myParticleGroup.addEmitter( myEmitter );
+
+
+            setInterval( function() {
+                myEmitter.alive = !myEmitter.alive;
+            }, 1000);
+
+            emitters.push( myEmitter );
 
             scene.add( myParticleGroup.mesh );
         }
@@ -260,7 +154,7 @@
 
         function render( dt ) {
             myParticleGroup.tick();
-            updateCamera();
+            // updateCamera();
 
             renderer.render( scene, camera );
         }

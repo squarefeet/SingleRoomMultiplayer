@@ -187,15 +187,6 @@ function CameraControls( opts ) {
 		mouseY = m.y;
 		centerX = m.centerX;
 		centerY = m.centerY;
-
-		forward = k.isPressed( controls.FORWARD );
-		back = (!forward && k.isPressed( controls.BACKWARD ));
-
-		left = k.isPressed( controls.LEFT );
-		right = (!left && k.isPressed( controls.RIGHT ));
-
-		rollLeft = k.isPressed( controls.ROLL_LEFT );
-		rollRight = (!rollLeft && k.isPressed( controls.ROLL_RIGHT ) );
 	};
 
 
@@ -216,7 +207,7 @@ function CameraControls( opts ) {
 		forward = state;
 	};
 	this.setBackward = function( state ) {
-		backward = state;
+		back = state;
 	};
 	this.setLeft = function( state ) {
 		left = state;

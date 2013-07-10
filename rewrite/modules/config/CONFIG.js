@@ -115,8 +115,59 @@ const CONFIG = {
 				flare2Texture: '../../res/textures/lensflares/lensflare2.png',
 				flare3Texture: '../../res/textures/lensflares/lensflare3.png'
 		    }
-		}
+		},
+
+        middleground: {
+            starfield: {
+                stars: 200000,
+                size: 50,
+                texture: '../../res/textures/star.png'
+            }
+        }
 	},
+
+    particleGroups: {
+        engines: {
+            maxAge: 3,
+            colorStart: new THREE.Color( 'white' ),
+            colorEnd: new THREE.Color( 'blue' ),
+            opacityStart: 1.0,
+            opacityEnd: 0.0,
+            texture: '../../res/textures/smokeparticle.png'
+        },
+
+        rockets: {
+            maxAge: 1.5,
+            colorStart: new THREE.Color( 'white' ),
+            colorEnd: new THREE.Color( 'green' ),
+            opacityStart: 1.0,
+            opacityEnd: 0.0,
+            texture: '../../res/textures/smokeparticle.png'
+        }
+    },
+
+    particleEmitters: {
+        engines: {},
+        rockets: {
+            particlesPerSecond: 100,
+            accelerationSpread: new THREE.Vector3(20, 20, 20),
+            sizeSpread: 8
+        }
+    },
+
+
+    weapons: {
+        rockets: {
+            acceleration: 5,
+            velocity: 1000,
+            maxVelocity: 1500,
+            freeFlightDuration: 1,
+            lerpAmount: 0.07,
+            maxAge: 10,
+            launchGap: 1,
+            model: '../../res/models/rocket.dae'
+        }
+    },
 
 
 	ship: {
@@ -124,36 +175,6 @@ const CONFIG = {
 		scale: 0.1,
 		useEmitter: true
 	},
-
-	engineEmitter: {
-        particlesPerSecond: 50,
-        maxAge:             3,
-
-        position:           new THREE.Vector3( Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ),
-        positionSpread:     new THREE.Vector3( 0, 0, 0 ),
-
-        velocity:           new THREE.Vector3( 0, 0, 0 ),
-        velocitySpread:     new THREE.Vector3( 0, 0, 0 ),
-
-        acceleration:       new THREE.Vector3( 0, 0, 0 ),
-        accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
-
-        angle:              90,
-        angleSpread:        90,
-
-        size:               100,
-        // sizeSpread:         0,
-
-        opacity:            1,
-        // opacitySpread:      1,
-
-        color:              new THREE.Vector3( 0.58, 0.5, 0.5 ),
-        // colorSpread:        new THREE.Vector3( 0.05, 0, 0 ),
-
-        opacityTweenTo:     0,
-        sizeTweenTo:        200,
-        colorTweenTo:       new THREE.Vector3( 0.65, 0.5, 0.5 )
-    },
 
     engineBooster: {
     	texture: '../../res/textures/booster.jpg',
@@ -173,46 +194,6 @@ const CONFIG = {
     	speed: 5000,
     	power: 10,
     	maxAge: 5
-    },
-
-    rocket: {
-    	acceleration: 5,
-	    velocity: 1000,
-	    maxVelocity: 1500,
-	    freeFlightDuration: 1,
-	    lerpAmount: 0.07,
-	    maxAge: 10,
-	    launchGap: 1
-    },
-
-    rocketEmitter: {
-        particlesPerSecond: 100,
-        maxAge:             3,
-
-        position:           new THREE.Vector3( Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ),
-        positionSpread:     new THREE.Vector3( 0, 0, 0 ),
-
-        velocity:           new THREE.Vector3( 0, 0, 0 ),
-        velocitySpread:     new THREE.Vector3( 0, 0, 0 ),
-
-        acceleration:       new THREE.Vector3( 0, 0, 0 ),
-        accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
-
-        angle:              90,
-        angleSpread:        90,
-
-        size:               50,
-        // sizeSpread:         0,
-
-        opacity:            1,
-        // opacitySpread:      1,
-
-        color:              new THREE.Vector3( 0.58, 0.5, 0.5 ),
-        // colorSpread:        new THREE.Vector3( 0.05, 0, 0 ),
-
-        opacityTweenTo:     0,
-        sizeTweenTo:        10,
-        colorTweenTo:       new THREE.Vector3( 0.65, 0.5, 0.5 )
-    },
+    }
 
 };

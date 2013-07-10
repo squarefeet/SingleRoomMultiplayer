@@ -8,17 +8,25 @@ function Layer( options ) {
 
 Layer.prototype = {
 	_addObjectsToRenderer: function() {
+		var l = this.options.layerManager;
+
 		for( var i in this.objects ) {
-			this.options.layerManager.addObjectToLayer( this.name, this.objects[i] );
+			l.addObjectToLayer( this.name, this.objects[i] );
 		}
 
 		for( var i in this.object3Ds ) {
-			this.options.layerManager.addObject3dToLayer( this.name, this.object3Ds[i] );
+			l.addObject3dToLayer( this.name, this.object3Ds[i] );
 		}
 	},
 
 	_addTickToRenderer: function() {
 		this.options.renderer.addPreRenderTickFunction( this.tick );
+	},
+
+	_addParticleGroupsToRenderer: function() {
+		for( var i in this.particleGroups ) {
+			this.options.layerManager.addObject3dToLayer( this.name, this.particleGroups[i].mesh );
+		}
 	}
 };
 
@@ -34,8 +42,6 @@ var BackgroundLayer = Layer.extend({
 	object3Ds: {},
 
 	initialize: function() {
-		console.log('yay', this.options )
-
 		this.tick = this.tick.bind( this );
 
 		this._makeObjects();
@@ -67,33 +73,55 @@ var MiddlegroundLayer = Layer.extend({
 
 	objects: {},
 	object3Ds: {},
+	particleGroups: {},
 
 	initialize: function() {
-		console.log('yay', this.options )
-
 		this.tick = this.tick.bind( this );
 
+		this._makeParticleGroups();
 		this._makeObjects();
 		this._addObjectsToRenderer();
+		this._addParticleGroupsToRenderer();
 		this._addTickToRenderer();
+
+	    var that = this;
+        document.addEventListener('mousedown', function() {
+            that.objects.rockets.fire( 'host', LAYER_MANAGER.getLayerWithName('middleground').camera, that.object3Ds.targetMesh );
+		}, false);
 	},
 
 	_makeParticleGroups: function() {
+		var groups = this.particleGroups;
+
 		// Shader Engines
+		groups.engines = new ShaderParticleGroup( CONFIG.particleGroups.engines );
+
 		// Shader Rockets
+		groups.rockets = new ShaderParticleGroup( CONFIG.particleGroups.rockets );
+
+		// Shader rocket explosions
+
 
 		// Bullet particles
-		//
+
 	},
 
 	_makeObjects: function() {
 		var o = this.objects,
 			o3d = this.object3Ds;
 
+		o.starfield = new Starfield( CONFIG.layers.middleground.starfield );
+		o.rockets = new DoubleRocket( _.extend( { particleGroup: this.particleGroups.rockets }, CONFIG.weapons.rockets ) );
 
+		o3d.targetMesh = new THREE.Mesh( new THREE.CubeGeometry(100, 100, 100) );
+	    o3d.targetMesh.position.set(-1000, 2000, 1000);
+
+		o3d.sunLight = new THREE.DirectionalLight( 0xfffea6, 3 );
+	    o3d.sunLight.position.copy( CONFIG.layers.background.sun.position );
 	},
 
 	tick: function( dt ) {
-
+		this.objects.rockets.tick( dt );
+		this.particleGroups.rockets.tick();
 	}
 });
