@@ -74,11 +74,14 @@ var MiddlegroundLayer = Layer.extend({
 	objects: {},
 	object3Ds: {},
 	particleGroups: {},
+	particleEmitters: {},
 
 	initialize: function() {
 		this.tick = this.tick.bind( this );
 
 		this._makeParticleGroups();
+		this._makeLayerEmitters();
+
 		this._makeObjects();
 		this._addObjectsToRenderer();
 		this._addParticleGroupsToRenderer();
@@ -100,10 +103,24 @@ var MiddlegroundLayer = Layer.extend({
 		groups.rockets = new ShaderParticleGroup( CONFIG.particleGroups.rockets );
 
 		// Shader rocket explosions
-
+		groups.rocketExplosions = new ShaderParticleGroup( CONFIG.particleGroups.rocketExplosions );
 
 		// Bullet particles
 
+	},
+
+	_makeLayerEmitters: function() {
+		var p = this.particleEmitters,
+			g = this.particleGroups,
+			store;
+
+		p.rocketExplosions = new Pool( 100, ShaderParticleEmitter, CONFIG.particleEmitters.rocketExplosions );
+
+		store = p.rocketExplosions.getStore();
+
+		for( var i = 0; i < store.length; ++i ) {
+			g.rocketExplosions.addEmitter( store[i] );
+		}
 	},
 
 	_makeObjects: function() {
@@ -111,7 +128,10 @@ var MiddlegroundLayer = Layer.extend({
 			o3d = this.object3Ds;
 
 		o.starfield = new Starfield( CONFIG.layers.middleground.starfield );
-		o.rockets = new DoubleRocket( _.extend( { particleGroup: this.particleGroups.rockets }, CONFIG.weapons.rockets ) );
+		o.rockets = new Rockets( _.extend( {
+			particleGroup: this.particleGroups.rockets,
+			explosionParticleGroup: this.particleGroups.rocketExplosions
+		}, CONFIG.weapons.rockets ) );
 
 		o3d.targetMesh = new THREE.Mesh( new THREE.CubeGeometry(100, 100, 100) );
 	    o3d.targetMesh.position.set(-1000, 2000, 1000);
@@ -120,8 +140,23 @@ var MiddlegroundLayer = Layer.extend({
 	    o3d.sunLight.position.copy( CONFIG.layers.background.sun.position );
 	},
 
+	triggerRocketExplosion: function( type, x, y, z ) {
+		var pool = this.particleEmitters.rocketExplosions,
+			explosion = pool.get();
+
+		if(!explosion) return;
+
+		explosion.position.set( x, y, z );
+		explosion.alive = 1;
+
+		setTimeout( function() {
+			pool.release( explosion );
+		}, CONFIG.particleGroups.rocketExplosions.maxAge + 100 )
+	},
+
 	tick: function( dt ) {
 		this.objects.rockets.tick( dt );
 		this.particleGroups.rockets.tick();
+		this.particleGroups.rocketExplosions.tick();
 	}
 });

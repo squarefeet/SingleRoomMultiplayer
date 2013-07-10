@@ -13,7 +13,7 @@ function Rockets( options ) {
     // Create a parent mesh that'll hold all the rockets
     this.mesh = new THREE.Object3D();
 
-    // Create a particle system for the rockets.
+    // Store particle groups
     this.particleGroup = options.particleGroup;
 
     // Create a pool of rockets
@@ -68,9 +68,10 @@ Rockets.prototype = {
     },
 
     _makeRockets: function() {
-        for(var i = 0, rocket, emitter; i < 40; ++i) {
+        for(var i = 0, rocket, emitter, explosionEmitter; i < 40; ++i) {
             rocket = this._makeSingleRocket();
             emitter = this._makeEmitter();
+
             this.pool.push( rocket );
             this.emitterPool.push( emitter );
         }
@@ -158,11 +159,8 @@ Rockets.prototype = {
         this._returnToPool( rocket );
 
         if( rocket.userData.emitter ) {
-            console.log('returning emitter to pool');
             this._returnToEmitterPool( rocket.userData.emitter );
         }
-
-
     },
 
     fire: function( playerID, source, target ) {
@@ -286,7 +284,7 @@ Rockets.extend = utils.extend;
 
 
 
-var DoubleRocket = Rockets.extend({
+var DoubleRockets = Rockets.extend({
     fire: function( playerID, source, target ) {
         if( !target || !(target instanceof THREE.Object3D) ) return;
 

@@ -1,7 +1,7 @@
 const CONFIG = {
 
     // Performance
-    resolutionScaling: 2,
+    resolutionScaling: 1,
 
 
 	// Controls
@@ -19,6 +19,7 @@ const CONFIG = {
 		TEAM_CHAT: 'u'
 	},
 
+	maxPlayers: 10,
 
 	layerManager: {
 	    layers: {
@@ -137,21 +138,52 @@ const CONFIG = {
         },
 
         rockets: {
-            maxAge: 1.5,
+            maxAge: 1,
             colorStart: new THREE.Color( 'white' ),
             colorEnd: new THREE.Color( 'green' ),
             opacityStart: 1.0,
             opacityEnd: 0.0,
             texture: '../../res/textures/smokeparticle.png'
+        },
+
+        rocketExplosions: {
+            maxAge: 2,
+            colorStart: new THREE.Color('red'),
+            colorEnd: new THREE.Color('yellow'),
+            opacityStart: 1.0,
+            opacityEnd: 0.0,
+        	texture: '../../res/textures/smokeparticle.png',
+        	usePerspective: 0.0
         }
     },
 
     particleEmitters: {
-        engines: {},
-        rockets: {
+        engines: {
+            type: 'cube',
             particlesPerSecond: 100,
+            size: 20,
+            sizeSpread: 10,
+            sizeEnd: 20
+        },
+
+        rockets: {
+            particlesPerSecond: 50,
             accelerationSpread: new THREE.Vector3(20, 20, 20),
-            sizeSpread: 8
+            sizeSpread: 8,
+            alive: 0
+        },
+
+        rocketExplosions: {
+        	radius: 1,
+            speed: 250,
+            speedSpread: 0,
+            particlesPerSecond: 50,
+            size: 500,
+            sizeSpread: 0,
+            sizeEnd: 200,
+            emitterDuration: 0.1,
+            alive: 0,
+            type: 'sphere'
         }
     },
 

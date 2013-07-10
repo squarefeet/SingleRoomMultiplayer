@@ -8,7 +8,7 @@ function ShaderParticleEmitter( options ) {
     // Attribute properties ( per particle settings )
     this.position               = options.position || new THREE.Vector3();
     this.positionSpread         = options.positionSpread || new THREE.Vector3();
-    this.radius                 = options.radius || 10;
+    this.radius                 = typeof options.radius === 'number' ? options.radius : 10;
 
     this.acceleration           = options.acceleration || new THREE.Vector3();
     this.accelerationSpread     = options.accelerationSpread || new THREE.Vector3();
@@ -16,9 +16,15 @@ function ShaderParticleEmitter( options ) {
     this.velocity               = options.velocity || new THREE.Vector3();
     this.velocitySpread         = options.velocitySpread || new THREE.Vector3();
 
+    this.speed                  = typeof options.speed === 'number' ? options.speed : 0;
+    this.speedSpread            = typeof options.speedSpread === 'number' ? options.speedSpread : 0;
+
     this.size                   = options.size || 10.0;
     this.sizeSpread             = options.sizeSpread || 0;
     this.sizeEnd                = options.sizeEnd || 10.0;
+
+    this.emitterDuration        = options.emitterDuration || null;
+    this.alive                  = typeof options.alive === 'number' ? options.alive : 1;
 
     this.numParticles           = null;
 
@@ -30,8 +36,6 @@ function ShaderParticleEmitter( options ) {
     this.recycled               = [];
 
     this.userData = {};
-
-    this.alive = 0;
 }
 
 ShaderParticleEmitter.prototype = {
@@ -102,6 +106,9 @@ ShaderParticleEmitter.prototype = {
             }
         }
 
+
+
+
         if( !this.alive ) {
             if(r.length) {
                 for(var i = 0; i < r.length; ++i) {
@@ -112,6 +119,12 @@ ShaderParticleEmitter.prototype = {
             this.age = 0;
             return;
         }
+
+        if( typeof this.emitterDuration === 'number' && this.age > this.emitterDuration ) {
+            this.alive = 0;
+            return;
+        }
+
 
         if( emitterAge <= this.maxAge ) {
             // determine indices of particles to activate
@@ -229,7 +242,7 @@ ShaderParticleGroup.prototype = {
     },
 
     _randomFloat: function( base, spread ) {
-        return base + (Math.random() * spread - (spread/2));
+        return base + spread * (Math.random() - 0.5);
     },
 
     _randomVector3OnSphere: function( base, radius ) {
@@ -238,6 +251,11 @@ ShaderParticleGroup.prototype = {
         var r = Math.sqrt( 1 - z*z );
         var vec3 = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
         return new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
+    },
+
+    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread ) {
+        var direction = new THREE.Vector3().subVectors( base, position );
+        return direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
     },
 
     _randomizeExistingVector3: function( vector, base, spread ) {
@@ -249,7 +267,14 @@ ShaderParticleGroup.prototype = {
     },
 
     addEmitter: function( emitter ) {
-        emitter.numParticles = emitter.particlesPerSecond * this.maxAge;
+        if( emitter.duration ) {
+            emitter.numParticles = emitter.particlesPerSecond * (this.maxAge < emitter.emitterDuration ? this.maxAge : emitter.emitterDuration);
+        }
+        else {
+            emitter.numParticles = emitter.particlesPerSecond * this.maxAge;
+        }
+
+        emitter.numParticles = Math.ceil(emitter.numParticles);
 
         var vertices = this.geometry.vertices,
             start = vertices.length,
@@ -266,15 +291,18 @@ ShaderParticleGroup.prototype = {
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
-                vertices[i] = this._randomVector3OnSphere( emitter.position, emitter.radius );
+                vertices[i]     = this._randomVector3OnSphere( emitter.position,   emitter.radius );
+                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else {
-                vertices[i] = this._randomVector3( emitter.position, emitter.positionSpread );
+                vertices[i]     = this._randomVector3( emitter.position, emitter.positionSpread );
+                velocity[i]     = this._randomVector3( emitter.velocity, emitter.velocitySpread );
             }
 
 
             acceleration[i] = this._randomVector3( emitter.acceleration, emitter.accelerationSpread );
-            velocity[i]     = this._randomVector3( emitter.velocity, emitter.velocitySpread );
+
+
             size[i]         = Math.max( 0.1, this._randomFloat( emitter.size, emitter.sizeSpread ) );
             sizeEnd[i]      = emitter.sizeEnd;
             age[i]          = 0.0;

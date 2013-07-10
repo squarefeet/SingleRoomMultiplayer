@@ -1,0 +1,180 @@
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+    </style>
+
+    <script type="text/javascript">
+        if(typeof Function.prototype.bind === 'undefined') {
+            Function.prototype.bind = function (oThis) {
+                if (typeof this !== "function") {
+                  // closest thing possible to the ECMAScript 5 internal IsCallable function
+                  throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+                }
+
+                var aArgs = Array.prototype.slice.call(arguments, 1),
+                    fToBind = this,
+                    fNOP = function () {},
+                    fBound = function () {
+                      return fToBind.apply(this instanceof fNOP && oThis
+                                             ? this
+                                             : oThis,
+                                           aArgs.concat(Array.prototype.slice.call(arguments)));
+                    };
+
+                fNOP.prototype = this.prototype;
+                fBound.prototype = new fNOP();
+
+                return fBound;
+            };
+        }
+
+        (function() {
+            var lastTime = 0;
+            var vendors = ['ms', 'moz', 'webkit', 'o'];
+            for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+                window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+                window.cancelAnimationFrame =
+                  window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+            }
+
+            if (!window.requestAnimationFrame)
+                window.requestAnimationFrame = function(callback, element) {
+                    var currTime = new Date().getTime();
+                    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                    var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                      timeToCall);
+                    lastTime = currTime + timeToCall;
+                    return id;
+                };
+
+            if (!window.cancelAnimationFrame)
+                window.cancelAnimationFrame = function(id) {
+                    clearTimeout(id);
+                };
+        }());
+    </script>
+
+
+    <script type="text/javascript" src="../external/THREE-r58.min.js"></script>
+    <script type="text/javascript" src="../external/Stats.min.js"></script>
+    <script type="text/javascript" src="./ShaderParticles.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+
+        // General
+        var mouseX = 0, mouseY = 0;
+
+        // variables used in init()
+        var scene, camera, renderer, stats, stats2, clock;
+
+
+        var myEmitter, myParticleGroup, myParticleGroup2;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 550;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000);
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+
+        var emitters = [];
+
+        function initShader() {
+            myParticleGroup = new ShaderParticleGroup({
+                texture: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png'),
+                maxAge: 1,
+                opacityStart: 0.0,
+                opacityEnd: 1.0,
+
+                colorStart: new THREE.Color('red'),
+                colorEnd: new THREE.Color('yellow')
+            });
+
+            var base = 400,
+                halfBase = base/2;
+
+            function getPos() {
+                return Math.random() * base - halfBase;
+            }
+
+
+            for( var i = 0; i < 100; ++i ) {
+                myEmitter = new ShaderParticleEmitter({
+                    position: new THREE.Vector3(getPos(), getPos(), getPos()),
+                    radius: 1,
+
+                    speed: 100,
+                    speedSpread: 0,
+
+                    particlesPerSecond: 1000,
+                    size: 20,
+                    sizeSpread: 0,
+                    sizeEnd: -2,
+                    emitterDuration: 0.05,
+
+                    type: 'sphere',
+                    alive: 0
+                });
+
+                myParticleGroup.addEmitter( myEmitter );
+                emitters.push( myEmitter );
+            }
+
+
+            setInterval( function() {
+                for(var i = 0; i < emitters.length; ++i) {
+                    emitters[i].alive = !emitters[i].alive;
+                    emitters[i].position = new THREE.Vector3();
+                }
+            }, 2000);
+
+            scene.add( myParticleGroup.mesh );
+        }
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+            render( 0.016 );
+            stats.update();
+        }
+
+        function updateCamera() {
+            camera.position.x = Math.cos( Date.now() * 0.0005 ) * 150;
+            camera.position.z = Math.sin( Date.now() * 0.0005 ) * 150;
+            // camera.position.y = Math.sin( Date.now() * 0.0005 ) * 100;
+            camera.lookAt( scene.position );
+        }
+
+
+        function render( dt ) {
+            myParticleGroup.tick();
+            // updateCamera();
+
+            renderer.render( scene, camera );
+        }
+
+
+        init();
+        initShader();
+
+        setTimeout(animate, 100);
+
+    </script>
+</body>
+</html>
