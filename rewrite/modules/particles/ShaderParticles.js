@@ -1,4 +1,4 @@
-function ParticleEmitter( options ) {
+function ShaderParticleEmitter( options ) {
     options = options || {};
 
     this.particlesPerSecond     = options.particlesPerSecond || 100;
@@ -30,7 +30,7 @@ function ParticleEmitter( options ) {
     this.recycled               = [];
 }
 
-ParticleEmitter.prototype = {
+ShaderParticleEmitter.prototype = {
     _resetParticle: function( p ) {
         var spread = this.positionSpread;
 
@@ -123,7 +123,7 @@ ParticleEmitter.prototype = {
 };
 
 
-function ParticleGroup( options ) {
+function ShaderParticleGroup( options ) {
     this.fixedTimeStep          = options.fixedTimeStep || 0.016;
 
     // Uniform properties ( applied to all particles )
@@ -177,7 +177,7 @@ function ParticleGroup( options ) {
 
 }
 
-ParticleGroup.prototype = {
+ShaderParticleGroup.prototype = {
     _createGeometry: function() {
         this.geometry = new THREE.Geometry();
     },
@@ -186,8 +186,8 @@ ParticleGroup.prototype = {
         this.material = new THREE.ShaderMaterial({
             uniforms:       this.uniforms,
             attributes:     this.attributes,
-            vertexShader:   ParticleGroup.shaders.vertex,
-            fragmentShader: ParticleGroup.shaders.fragment,
+            vertexShader:   ShaderParticleGroup.shaders.vertex,
+            fragmentShader: ShaderParticleGroup.shaders.fragment,
             blending:       THREE.AdditiveBlending,
             transparent:    this.transparent,
             alphaTest:      this.alphaTest,
@@ -294,7 +294,7 @@ ParticleGroup.prototype = {
 
 
 // The all-important shaders
-ParticleGroup.shaders = {
+ShaderParticleGroup.shaders = {
     vertex: [
         'uniform float duration;',
         'uniform vec3 customColor;',
