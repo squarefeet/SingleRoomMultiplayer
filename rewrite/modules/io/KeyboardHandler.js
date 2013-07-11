@@ -10,8 +10,21 @@ function KeyboardHandler() {
 
 	document.addEventListener( 'keydown', function(e) {
 		var charcode = String.fromCharCode( e.keyCode ).toLowerCase(),
-			key = charcode.charCodeAt( 0 ),
+			key = e.keyCode,
 			listeners = _keydownListeners[ charcode ];
+
+		for( var i in CONFIG.keyMap ) {
+			if(key === CONFIG.keyMap[i]) {
+				if( CONFIG.keyMapPreventDefaults.indexOf( i ) > -1 ) {
+					e.preventDefault();
+				}
+
+				charcode = i;
+				break;
+			}
+		}
+
+		console.log(key, charcode)
 
 		_meta = e.metaKey;
 		_shift = e.shiftKey;

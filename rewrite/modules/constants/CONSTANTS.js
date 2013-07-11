@@ -1,13 +1,13 @@
 // Utility instances.
-const EVENTS = Events;
-const MOUSE_HANDLER = new MouseHandler();
-const KEYBOARD_HANDLER = new KeyboardHandler();
-const LAYER_MANAGER = new LayerManager( CONFIG.layerManager );
-const ASSET_LOADER = new AssetLoader( _.extend( { events: EVENTS }, CONFIG.assetLoader ) );
+var EVENTS = Events;
+var MOUSE_HANDLER = new MouseHandler();
+var KEYBOARD_HANDLER = new KeyboardHandler();
+var LAYER_MANAGER = new LayerManager( CONFIG.layerManager );
+var ASSET_LOADER = new AssetLoader( _.extend( { events: EVENTS }, CONFIG.assetLoader ) );
 
 
 // Adjust camera position(s) and rotation(s) on player input.
-const CAMERA_CONTROLS = new CameraControls({
+var CAMERA_CONTROLS = new CameraControls({
     mouseHandler: MOUSE_HANDLER,
     keyboardHandler: KEYBOARD_HANDLER,
     targetCameras: LAYER_MANAGER.getAllCameras()
@@ -15,7 +15,7 @@ const CAMERA_CONTROLS = new CameraControls({
 
 
 // Create renderer instance.
-const RENDERER = new Renderer({
+var RENDERER = new Renderer({
     width: window.innerWidth / CONFIG.resolutionScaling,
     height: window.innerHeight / CONFIG.resolutionScaling,
     elementWidth: window.innerWidth,

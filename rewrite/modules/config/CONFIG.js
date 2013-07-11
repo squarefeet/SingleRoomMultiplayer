@@ -1,7 +1,13 @@
-const CONFIG = {
+var CONFIG = {
 
     // Performance
     resolutionScaling: 1,
+
+    keyMap: {
+        'tab': 9
+    },
+
+    keyMapPreventDefaults: [ 'tab' ],
 
 
 	// Controls
