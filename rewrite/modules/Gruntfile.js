@@ -11,6 +11,7 @@ module.exports = function( grunt ) {
             'hud/HUD.js',
             'io/MouseHandler.js',
             'io/KeyboardHandler.js',
+            'layerManager/LayerManager.js',
             'layer/Layer.js',
             'localStorage/LocalStorage.js',
             'particles/ShaderParticles.js',
@@ -70,7 +71,7 @@ module.exports = function( grunt ) {
 
         concat: {
             options: {
-                separator: ';',
+                separator: ';\n\n',
                 banner: '\n(function() {',
                 footer: '\n\n}());'
             },
