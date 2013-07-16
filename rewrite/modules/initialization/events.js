@@ -15,6 +15,10 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
         renderer: RENDERER
     } );
 
+
+    // Add HUD to dom
+    HUD.addToDOM();
+
     setTimeout(RENDERER.start, 100);
 });
 

@@ -25,7 +25,12 @@ var CONFIG = {
 		TEAM_CHAT: 'u'
 	},
 
+	// Should the ship automatically decelerate if !FORWARD && !BACKWARD keys 
+	// are pressed?
+	automaticShipDeceleration: false,
+
 	maxPlayers: 10,
+
 
 	layerManager: {
 	    layers: {
@@ -133,6 +138,7 @@ var CONFIG = {
         }
 	},
 
+
     particleGroups: {
         engines: {
             maxAge: 3,
@@ -162,6 +168,7 @@ var CONFIG = {
         	usePerspective: 0.0
         }
     },
+
 
     particleEmitters: {
         engines: {
@@ -223,7 +230,6 @@ var CONFIG = {
     	heightSegments: 1,
     	openEnded: true
     },
-
 
     plasmaCannon: {
     	numBullets: 10000,

@@ -101,7 +101,7 @@ function CameraControls( opts ) {
 		else if( back ) {
 			positionVector.z += inc;
 		}
-		else {
+		else if( CONFIG.automaticShipDeceleration ) {
 			positionVector.z *= dec;
 		}
 

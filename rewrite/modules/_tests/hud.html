@@ -1,0 +1,30 @@
+<html>
+<head>
+	<title>Weapons Test</title>
+	<link rel="stylesheet" type="text/css" href="../../res/css/style.css">
+</head>
+<body>
+	<script type="text/javascript" src="../hud/HUD.js"></script>
+
+	<script type="text/javascript">
+		var hud = new HUD();
+		hud.addToDOM();
+
+		var index = 0;
+
+		setInterval( function() {
+			index = !index;
+			hud.selectWeapon( 'primary', Number(index) );
+			hud.selectWeapon( 'secondary', Number(index) );
+		}, 1000 );
+
+		setInterval( function() {
+			hud.renderHit();
+		}, 1500 );
+
+		setInterval( function() {
+			hud.renderHit();
+		}, 1400 );
+	</script>
+</body>
+</html>
