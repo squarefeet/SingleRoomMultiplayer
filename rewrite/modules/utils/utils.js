@@ -38,3 +38,23 @@ utils.extend = function(protoProps, staticProps) {
 
     return child;
 };
+
+
+utils.makeCSSRGBAString = function( r, g, b, a ) {
+    r = Math.max(0, Math.min(255, r)) | 0;
+    g = Math.max(0, Math.min(255, g)) | 0;
+    b = Math.max(0, Math.min(255, b)) | 0;
+    a = Math.max(0, Math.min(1, a));
+
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+};
+
+// Given an input value and its high and low bounds, scale
+// that value to new high and low bounds.
+//
+// Formula from MaxMSP's Scale object:
+//  http://www.cycling74.com/forums/topic.php?id=26593
+//
+utils.scaleNumber = function(num, lowIn, highIn, lowOut, highOut) {
+    return ((num-lowIn) / (highIn-lowIn)) * (highOut-lowOut) + lowOut;
+};

@@ -33,7 +33,8 @@ module.exports = function( grunt ) {
         ],
         outputPath = '_dist/build.js',
         outputPathMin = outputPath.replace( '.js', '.min.js' ),
-        outputPathBeautify = outputPath.replace('.js', '.beaut.js');
+        outputPathBeautify = outputPath.replace('.js', '.beaut.js'),
+        outputPathClosureCompiler = outputPath.replace('.js', '.closure.min.js');
 
 
     var uglifySettings = {
@@ -80,10 +81,24 @@ module.exports = function( grunt ) {
                 dest: outputPath,
             },
         },
+
+        'closure-compiler': {
+            frontend: {
+                closurePath: '/Applications/ClosureCompiler',
+                js: outputPathBeautify,
+                jsOutputFile: outputPathClosureCompiler,
+                maxBuffer: 500,
+                options: {
+                    compilation_level: 'ADVANCED_OPTIMIZATIONS',
+                    language_in: 'ECMASCRIPT5_STRICT'
+                }
+            }
+        }
     });
 
     grunt.loadNpmTasks( 'grunt-contrib-concat' );
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
+    grunt.loadNpmTasks( 'grunt-closure-compiler' );
 
-    grunt.registerTask( 'default', ['concat', 'uglify'] );
+    grunt.registerTask( 'default', ['concat', 'uglify', 'closure-compiler'] );
 };

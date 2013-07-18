@@ -8,7 +8,7 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
 	BACKGROUND_LAYER = new BackgroundLayer( {
 		layerManager: LAYER_MANAGER,
 		renderer: RENDERER
-	});
+	} );
 
     MIDDLEGROUND_LAYER = new MiddlegroundLayer( {
         layerManager: LAYER_MANAGER,
@@ -18,6 +18,11 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
 
     // Add HUD to dom
     HUD.addToDOM();
+
+    setInterval(function() {
+        HUD.selectWeapon( 'primary', Math.round( Math.random() ) );
+        HUD.selectWeapon( 'secondary', Math.round( Math.random() ) );
+    }, 1000);
 
     setTimeout(RENDERER.start, 100);
 });

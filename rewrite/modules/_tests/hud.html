@@ -4,6 +4,9 @@
 	<link rel="stylesheet" type="text/css" href="../../res/css/style.css">
 </head>
 <body>
+	<script type="text/javascript" src="../external/THREE-r58.min.js"></script>
+	<script type="text/javascript" src="../config/CONFIG.js"></script>
+	<script type="text/javascript" src="../utils/utils.js"></script>
 	<script type="text/javascript" src="../hud/HUD.js"></script>
 
 	<script type="text/javascript">
@@ -12,19 +15,28 @@
 
 		var index = 0;
 
-		setInterval( function() {
-			index = !index;
-			hud.selectWeapon( 'primary', Number(index) );
-			hud.selectWeapon( 'secondary', Number(index) );
-		}, 1000 );
+		// setInterval( function() {
+		// 	index = !index;
+		// 	hud.selectWeapon( 'primary', Number(index) );
+		// 	hud.selectWeapon( 'secondary', Number(index) );
+		// }, 1000 );
 
-		setInterval( function() {
-			hud.renderHit();
-		}, 1500 );
+		// setInterval( function() {
+		// 	hud.renderHit();
+		// }, 1500 );
 
-		setInterval( function() {
-			hud.renderHit();
-		}, 1400 );
+		// setInterval( function() {
+		// 	hud.renderHit();
+		// }, 1400 );
+
+
+		// setInterval(function() {
+		// 	var l = (Math.sin(Date.now() * 0.005) * 50) + 50;
+
+		// 	CONFIG.hud.color.l = l;
+		// 	hud.setColor();
+
+		// }, 1000/60);
 	</script>
 </body>
 </html>

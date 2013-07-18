@@ -9,6 +9,28 @@ var CONFIG = {
 
     keyMapPreventDefaults: [ 'tab' ],
 
+    hud: {
+    	color: {
+    		h: 360,
+    		s: 100,
+    		l: 100,
+    		a: 1
+    	},
+
+    	textAdjustment: {
+    		h: 0,
+    		s: 0,
+    		l: 0,
+    		a: 1
+    	},
+
+    	weaponIndicatorAdjustment: {
+    		h: 0,
+    		s: 0,
+    		l: 0,
+    		a: -0.3
+    	}
+    },
 
 	// Controls
 	controls: {
@@ -25,9 +47,9 @@ var CONFIG = {
 		TEAM_CHAT: 'u'
 	},
 
-	// Should the ship automatically decelerate if !FORWARD && !BACKWARD keys 
+	// Should the ship automatically decelerate if !FORWARD && !BACKWARD keys
 	// are pressed?
-	automaticShipDeceleration: false,
+	automaticShipDeceleration: true,
 
 	maxPlayers: 10,
 
@@ -202,6 +224,11 @@ var CONFIG = {
 
 
     weapons: {
+    	names: {
+    		primary: [ 'Pulse', 'Plasma' ],
+    		secondary: [ 'Sidewinder', 'Hellfire' ]
+    	},
+
         rockets: {
             acceleration: 5,
             velocity: 1000,
