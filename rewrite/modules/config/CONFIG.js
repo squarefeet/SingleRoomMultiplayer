@@ -11,11 +11,25 @@ var CONFIG = {
 
     hud: {
     	color: {
-    		h: 360,
-    		s: 100,
-    		l: 100,
-    		a: 1
+    		h: 0.551,
+    		s: 1,
+    		l: 0.5,
+    		a: 0.5
     	},
+
+        reticuleAdjustment: {
+            h: 0,
+            s: -0.8,
+            l: 0,
+            a: 0
+        },
+
+        speedAdjustment: {
+            h: 0,
+            s: 0,
+            l: 0,
+            a: -0.3
+        },
 
     	textAdjustment: {
     		h: 0,
