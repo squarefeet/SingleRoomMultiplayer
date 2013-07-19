@@ -1,19 +1,23 @@
 function Ship( options ) {
 
+    GameObject.call( this );
+
+    this.collideWithWeapons = 1;
+
     this.controls = null;
     this.emitter = null;
     this.particleGroup = options.particleGroup;
     this.booster = null;
     this.weapons = {};
 
-    this.mesh = assetLoader.loaded.models[ options.model ].dae.clone();
+    this.mesh = ASSET_LOADER.loaded.models[ options.model ].dae.clone();
     this.mesh.scale.x = this.mesh.scale.y = this.mesh.scale.z = CONFIG.ship.scale;
     this.mesh.position.setX( options.x );
     this.mesh.position.setY( options.y );
     this.mesh.position.setZ( options.z );
 
     this._addControls();
-    this._addWeapons();
+    // this._addWeapons();
 
     if( options.useEmitter && this.particleGroup ) {
         this._addEmitter( this.particleGroup );
@@ -22,9 +26,6 @@ function Ship( options ) {
         this._addBooster();
     }
 
-
-
-    this.renderables = [];
     this.renderables.push( this.mesh );
 }
 
@@ -44,17 +45,14 @@ Ship.prototype = {
         controls.setY( window.innerHeight/2 );
 
         this.controls = controls;
-        renderer.addPreRenderTickFunction( controls.tick );
+        RENDERER.addPreRenderTickFunction( controls.tick );
     },
 
     _addEmitter: function( particleGroup ) {
-        CONFIG.engineEmitter.position = this.mesh.position;
 
-        var emitter = new ParticleEmitter( CONFIG.engineEmitter );
-
-        emitter.position = this.mesh.position;
-
-        emitter.initialize();
+        var emitter = new ShaderParticleEmitter( _.extend({
+            position: this.mesh.position
+        }, CONFIG.particleEmitters.engines) );
 
         particleGroup.addEmitter( emitter );
 
@@ -74,7 +72,7 @@ Ship.prototype = {
                 config.openEnded
             ),
             new THREE.MeshBasicMaterial({
-                map: assetLoader.loaded.textures[ config.texture ],
+                map: ASSET_LOADER.loaded.textures[ config.texture ],
                 transparent: true,
                 blending: THREE.AdditiveBlending,
                 opacity: 0.3
@@ -91,12 +89,8 @@ Ship.prototype = {
         this.weapons.plasmaCannon = new PlasmaCannon({
             numBullets: 1000
         });
-        renderer.addPreRenderTickFunction( this.weapons.plasmaCannon.tick );
+        RENDERER.addPreRenderTickFunction( this.weapons.plasmaCannon.tick );
 
         layerManager.addObject3dToLayer( 'middleground', this.weapons.plasmaCannon.mesh );
-    },
-
-    getRenderables: function() {
-        return this.renderables;
     }
 };

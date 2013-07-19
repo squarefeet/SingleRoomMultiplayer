@@ -11,14 +11,17 @@ function HUD( options ) {
 	}
 
 	this.fillColor = new THREE.Color();
-
+	
 	this.elements = {};
 	this._makeElements();
 	this.setColor();
-	this._drawCanvas();
+
+	this.tick = this.tick.bind( this );
 }
 
 HUD.prototype = {
+
+	prevForwardSpeed: 0,
 
 	_makeWeaponIndicator: function( type ) {
 		var elements = {},
@@ -41,20 +44,44 @@ HUD.prototype = {
 		this.elements.weaponIndicators[type] = elements;
 	},
 
-	_makeCanvas: function() {
-		var elements = this.elements,
-			canvas = document.createElement('canvas'),
-			ctx = canvas.getContext( '2d' );
+	_makeReticule: function() {
+		var elements = this.elements;
 
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;
+		elements.reticule = document.createElement('div');
+		elements.reticule.className = 'hud-reticule';
 
-		elements.canvas = canvas;
-		elements.ctx = ctx;
-
-		this.elements.canvas = elements;
-		this.elements.wrapper.appendChild( canvas );
+		this.elements.wrapper.appendChild( elements.reticule );
 	},
+
+	_makeSpeedIndicators: function() {
+		var elements = {};
+
+		elements.leftBackground = document.createElement('div');
+		elements.leftBackground.className = 'hud-speedIndicator left';
+		elements.rightBackground = document.createElement('div');
+		elements.rightBackground.className = 'hud-speedIndicator right';
+
+		elements.leftIndicatorWrapper = document.createElement('div');
+		elements.leftIndicatorWrapper.className = 'hud-speedIndicator left';
+		elements.rightIndicatorWrapper = document.createElement('div');
+		elements.rightIndicatorWrapper.className = 'hud-speedIndicator right';
+
+		elements.leftIndicator = document.createElement('div');
+		elements.leftIndicator.className = 'hud-indicator';
+		elements.rightIndicator = document.createElement('div');
+		elements.rightIndicator.className = 'hud-indicator';
+
+		elements.leftIndicatorWrapper.appendChild( elements.leftIndicator );
+		elements.rightIndicatorWrapper.appendChild( elements.rightIndicator );
+
+		this.elements.wrapper.appendChild( elements.leftBackground );
+		this.elements.wrapper.appendChild( elements.rightBackground );
+		this.elements.wrapper.appendChild( elements.leftIndicatorWrapper );
+		this.elements.wrapper.appendChild( elements.rightIndicatorWrapper );
+
+		this.elements.speedIndicators = elements;
+	},
+
 
 	_makeElements: function() {
 		var elements = this.elements;
@@ -67,111 +94,9 @@ HUD.prototype = {
 		this._makeWeaponIndicator( 'primary' );
 		this._makeWeaponIndicator( 'secondary' );
 
-		// Create canvas element for reticule and other elements that can't be made
-		// easily using DOM elements
-		this._makeCanvas();
-	},
-
-	_drawSpeedIndicators: function( ctx, color, x, y, h, s, l, a ) {
-		color.setHSL(h, s, l);
-		ctx.fillStyle = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + CONFIG.hud.speedAdjustment.a 
-		);
-		ctx.beginPath();
-		ctx.arc( x, y, 116, 0, Math.PI * 2, false);
-		ctx.closePath();
-		ctx.fill();
-
-		// Cut out the middle of the circle just drawn
-		ctx.fillStyle = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, 1
-		);
-		ctx.globalCompositeOperation = 'destination-out';
-
-		ctx.save();
-		ctx.scale(1, 1.1);
-		ctx.beginPath();
-		ctx.arc( x, y/1.1, 100, 0, Math.PI * 2, false);
-		ctx.closePath();
-		ctx.fill();
-		ctx.restore();
-
-		ctx.fillRect( x - 10, y, 20, 150 );
-		ctx.fillRect( x - 150, y, 300, -150);
-	},
-
-	_drawReticule: function( ctx, color, x, y, h, s, l, a ) {
-		color.setHSL(h, s, l);
-		color.offsetHSL( CONFIG.hud.reticuleAdjustment.h, CONFIG.hud.reticuleAdjustment.s, CONFIG.hud.reticuleAdjustment.l );
-
-		ctx.fillStyle = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + CONFIG.hud.reticuleAdjustment.a 
-		);
-		ctx.lineWidth = 8;
-		ctx.globalCompositeOperation = 'source-over';
-
-		// Draw reticule
-		ctx.beginPath();
-		ctx.arc( x, y, 15, 0, Math.PI * 2, false);
-		ctx.closePath();
-		ctx.fill();
-
-		ctx.fillStyle = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, 1
-		);
-		ctx.beginPath();
-		ctx.arc( x, y, 7, 0, Math.PI * 2, false);
-		ctx.fill();
-
-		ctx.moveTo( x, y );
-		ctx.lineTo( x, y - 16 );
-
-		ctx.moveTo( x, y );
-		ctx.lineTo( x - 15, y + 10 );
-
-		ctx.moveTo( x, y );
-		ctx.lineTo( x + 15, y + 10 );
-		ctx.closePath();
-		ctx.stroke();
-
-		// Draw reticule center dot
-		ctx.globalCompositeOperation = 'source-over';
-
-		color.setHSL(h, s, l);
-		color.offsetHSL( CONFIG.hud.reticuleAdjustment.h, CONFIG.hud.reticuleAdjustment.s, CONFIG.hud.reticuleAdjustment.l );
-
-		ctx.fillStyle = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + CONFIG.hud.reticuleAdjustment.a 
-		);
-
-		ctx.beginPath();
-		ctx.arc( x, y, 1, 0, Math.PI * 2, false);
-		ctx.closePath();
-		ctx.fill();
-	},
-
-
-	_drawCanvas: function() {
-		var ctx = this.elements.canvas.ctx,
-			middleX = window.innerWidth/2,
-			middleY = window.innerHeight/2,
-
-			configColor = CONFIG.hud.color,
-			h = configColor.h,
-			s = configColor.s,
-			l = configColor.l,
-			a = configColor.a,
-			color = this.fillColor;
-
-
-
-
-
-		// Draw speed indicators
-		this._drawSpeedIndicators( ctx, color, middleX, middleY, h, s, l, a );
-
-		this._drawReticule( ctx, color, middleX, middleY, h, s, l, a );
-		
+		// Create reticule
+		this._makeReticule();
+		this._makeSpeedIndicators();
 	},
 
 
@@ -190,7 +115,9 @@ HUD.prototype = {
 			color = this.fillColor,
 
 			textAdjustment = config.textAdjustment,
-			weaponIndicatorAdjustment = config.weaponIndicatorAdjustment;
+			weaponIndicatorAdjustment = config.weaponIndicatorAdjustment,
+			speedIndicatorAdjustment = config.speedIndicatorAdjustment,
+			reticuleAdjustment = config.reticuleAdjustment;
 
 		// Set base text color
 		color.setHSL( h, s, l );
@@ -214,6 +141,35 @@ HUD.prototype = {
 				color.r * 255, color.g * 255, color.b * 255, a + weaponIndicatorAdjustment.a - 0.5 
 			);
 		}
+
+
+		// Set reticule color
+		color.setHSL( h, s, l );
+		color.offsetHSL( reticuleAdjustment.h, reticuleAdjustment.s, reticuleAdjustment.l );
+		this.elements.reticule.style.backgroundColor = utils.makeCSSRGBAString( 
+			color.r * 255, color.g * 255, color.b * 255, a + reticuleAdjustment.a 
+		);
+
+
+		// Set speed indicator colors
+		color.setHSL( h, s, l );
+		color.offsetHSL( speedIndicatorAdjustment.h, speedIndicatorAdjustment.s, speedIndicatorAdjustment.l );
+
+		var speedIndicators = this.elements.speedIndicators;
+
+		speedIndicators.leftBackground.style.backgroundColor = utils.makeCSSRGBAString( 
+			color.r * 255, color.g * 255, color.b * 255, a + speedIndicatorAdjustment.a 
+		);
+		speedIndicators.rightBackground.style.backgroundColor = utils.makeCSSRGBAString( 
+			color.r * 255, color.g * 255, color.b * 255, a + speedIndicatorAdjustment.a 
+		);
+
+		speedIndicators.leftIndicator.style.backgroundColor = utils.makeCSSRGBAString( 
+			color.r * 255, color.g * 255, color.b * 255, a + speedIndicatorAdjustment.a 
+		);
+		speedIndicators.rightIndicator.style.backgroundColor = utils.makeCSSRGBAString( 
+			color.r * 255, color.g * 255, color.b * 255, a + speedIndicatorAdjustment.a 
+		);
 	},
 
 
@@ -241,7 +197,17 @@ HUD.prototype = {
 	},
 
 	tick: function() {
+		var controls = this.options.controls,
+			forwardSpeed = controls.getAbsoluteForwardSpeed();
 
+
+		// Only draw if value has updated.
+		if(this.prevForwardSpeed !== forwardSpeed) {
+			this.elements.speedIndicators.leftIndicator.style.height = forwardSpeed * 100 + '%';
+		}
+
+
+		this.prevForwardSpeed = forwardSpeed;
 	}
 
 };

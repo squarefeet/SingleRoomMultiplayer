@@ -189,7 +189,6 @@ function CameraControls( opts ) {
 		centerY = m.centerY;
 	};
 
-
 	this.tick = function( dt ) {
 		if( hasInput ) {
 			handleInput();
@@ -199,6 +198,7 @@ function CameraControls( opts ) {
 		updatePosition();
 		updateCameras( dt );
 	};
+
 
 
 	this.set = function() {};
@@ -232,5 +232,13 @@ function CameraControls( opts ) {
 	};
 	this.setCenterY = function( state ) {
 		centerY = state;
+	};
+
+	this.getForwardSpeed = function() {
+		return positionVector.z / options.maxPositionVelocity;
+	};
+
+	this.getAbsoluteForwardSpeed = function() {
+		return Math.abs(positionVector.z) / options.maxPositionVelocity;
 	};
 }

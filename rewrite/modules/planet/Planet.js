@@ -1,5 +1,7 @@
 function Planet( options ) {
 
+    GameObject.call( this );
+
     var internalScale = 0.3,
         textures = ASSET_LOADER.loaded.textures;
 
@@ -85,7 +87,6 @@ function Planet( options ) {
     this.europa.position.z += this.details.europa.distance;
 
 
-    this.renderables = [];
     this.renderables.push( this.jupiter );
     this.renderables.push( this.jupiterAtmosphere );
     this.renderables.push( this.jupiterAtmosphere2 );
@@ -110,10 +111,6 @@ Planet.prototype = {
         this.europa.rotation.y -= 0.09 * dt;
         this.europa.position.z = center + Math.sin( now * this.details.europa.period ) * this.details.europa.distance;
         this.europa.position.x = Math.cos( now * this.details.europa.period ) * this.details.europa.distance;
-    },
-
-    getRenderables: function() {
-        return this.renderables;
     }
 };
 
@@ -121,7 +118,7 @@ Planet.prototype = {
 
 
 function Sun( options ) {
-    this.renderables = [];
+    GameObject.call( this );
 
     this.material = new THREE.MeshBasicMaterial({
         map: ASSET_LOADER.loaded.textures[ options.sunTexture ],
@@ -187,9 +184,5 @@ Sun.prototype = {
         lensFlare.position.x += 100;
 
         this.renderables.push( lensFlare );
-    },
-
-    getRenderables: function() {
-        return this.renderables;
     }
 };

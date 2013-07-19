@@ -161,10 +161,10 @@ function ShaderParticleGroup( options ) {
     this.colorEnd               = options.colorEnd || new THREE.Color( 'blue' );
 
     this.opacityStart           = typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1;
-    this.opacityEnd             = options.opacityEnd || 0;
+    this.opacityEnd             = typeof options.opacityEnd === 'number' ? options.opacityEnd : 0;
 
     this.texture                = ( typeof options.texture === 'string' ? ASSET_LOADER.loaded.textures[ options.texture ] : options.texture ) || null;
-    this.hasPerspective         = options.hasPerspective || 1;
+    this.hasPerspective         = typeof options.hasPerspective === 'number' ? options.hasPerspective : 1;
     this.colorize               = options.colorize || 1;
 
     this.blending               = options.blending || THREE.AdditiveBlending;

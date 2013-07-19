@@ -27,6 +27,7 @@ function LayerManager( opts ) {
 	// Useful variables...
 	var layers = {},
 		store = {},
+		weaponColliders = [],
 		layerCache = [];
 
 
@@ -65,13 +66,17 @@ function LayerManager( opts ) {
 	};
 
 	var addObjectToLayer = function( layerName, obj ) {
-		var obj3d = obj.getRenderables(),
+		var obj3d = obj.renderables,
 			s = store[ layerName ],
 			l = layers[ layerName ].scene;
 
 		for( var i = 0; i < obj3d.length; ++i ) {
 			s.push( obj3d[ i ] );
 			l.add( obj3d[ i ] );
+		}
+
+		if( obj.collideWithWeapons ) {
+			weaponColliders.push( obj.mesh );
 		}
 
 		obj3d = null;
@@ -106,6 +111,10 @@ function LayerManager( opts ) {
 		return cams;
 	};
 
+
+	var getAllWeaponColliders = function() {
+		return weaponColliders;
+	};
 
 
 	// Camera helpers
@@ -160,4 +169,5 @@ function LayerManager( opts ) {
 	this.setCameraPositionForLayer = setCameraPositionForLayer;
 	this.setCameraLookAtForLayer = setCameraLookAtForLayer;
 	this.getAllCameras = getAllCameras;
+	this.getAllWeaponColliders = getAllWeaponColliders;
 }

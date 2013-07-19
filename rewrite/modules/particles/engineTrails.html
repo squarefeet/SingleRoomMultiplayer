@@ -141,8 +141,8 @@
         }
 
         function updateCamera() {
-            camera.position.x = Math.cos( Date.now() * 0.0005 ) * 150;
-            camera.position.z = Math.sin( Date.now() * 0.0005 ) * 150;
+            // camera.position.x = Math.cos( Date.now() * 0.0005 ) * 150;
+            camera.position.z = Math.sin( Date.now() * 0.0005 ) * 2000 + 2000;
             // camera.position.y = Math.sin( Date.now() * 0.0005 ) * 100;
             camera.lookAt( scene.position );
         }
@@ -150,7 +150,7 @@
 
         function render( dt ) {
             myParticleGroup.tick();
-            // updateCamera();
+            updateCamera();
 
             renderer.render( scene, camera );
         }

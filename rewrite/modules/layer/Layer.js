@@ -54,7 +54,7 @@ var BackgroundLayer = Layer.extend({
 			o3d = this.object3Ds;
 
 		o.skybox = new Skybox( CONFIG.layers.background.skybox );
-		o.starfield = new Starfield( CONFIG.layers.background.starfield );
+		// o.starfield = new Starfield( CONFIG.layers.background.starfield );
 		o.planet = new Planet( CONFIG.layers.background.planet );
 		o.sun = new Sun( CONFIG.layers.background.sun );
 
@@ -138,6 +138,12 @@ var MiddlegroundLayer = Layer.extend({
 
 		o3d.sunLight = new THREE.DirectionalLight( 0xfffea6, 3 );
 	    o3d.sunLight.position.copy( CONFIG.layers.background.sun.position );
+
+
+	    o.ship = new Ship( _.extend( {
+			particleGroup: this.particleGroups.engines,
+			x: 0, y: 0, z: 0
+		}, CONFIG.ship )  );
 	},
 
 	triggerRocketExplosion: function( type, x, y, z ) {
@@ -158,5 +164,7 @@ var MiddlegroundLayer = Layer.extend({
 		this.objects.rockets.tick( dt );
 		this.particleGroups.rockets.tick();
 		this.particleGroups.rocketExplosions.tick();
+
+		this.particleGroups.engines.tick();
 	}
 });

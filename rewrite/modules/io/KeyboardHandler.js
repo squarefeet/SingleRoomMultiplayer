@@ -24,8 +24,6 @@ function KeyboardHandler() {
 			}
 		}
 
-		console.log(key, charcode)
-
 		_meta = e.metaKey;
 		_shift = e.shiftKey;
 		_alt = e.altKey;

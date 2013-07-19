@@ -2,13 +2,14 @@ var BACKGROUND_LAYER,
 	MIDDLEGROUND_LAYER,
 	FOREGROUND_LAYER;
 
-// LAYER_MANAGER.addFogToLayer( 'middleground', 0x111111, 0.0001 );
+LAYER_MANAGER.addFogToLayer( 'middleground', 0x111111, 0.0001 );
 
 // Initialize the renderer
 RENDERER.setLayerManager( LAYER_MANAGER );
 RENDERER.addToDOM();
 RENDERER.addStats( new Stats() );
 RENDERER.addPreRenderTickFunction( CAMERA_CONTROLS.tick );
+RENDERER.addPreRenderTickFunction( HUD.tick );
 
 // Kick off all asset loading
 ASSET_LOADER.loadAll();

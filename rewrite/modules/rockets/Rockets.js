@@ -232,6 +232,8 @@ Rockets.prototype = {
             userData.age += dt;
 
             this.checkCollisionWithOtherRockets( rocket );
+
+            this.checkCollisionWithWeaponColliders( rocket );
         }
     },
 
@@ -268,9 +270,22 @@ Rockets.prototype = {
         }
     },
 
-    getRenderables: function() {
-        return this.renderables;
-    }
+    checkCollisionWithWeaponColliders: function( rocket ) {
+        var colliders = LAYER_MANAGER.getAllWeaponColliders();
+
+        for( var i = 0; i < colliders.length; ++i ) {
+
+            if( rocket.position.distanceTo( colliders[i].position ) < 500 ) {
+                // Mark both rockets for destruction
+                console.log('collision')
+
+                rocket.userData.age = Number.POSITIVE_INFINITY;
+                this.activeRockets[i].userData.age = Number.POSITIVE_INFINITY;
+
+                break;
+            }
+        }
+    },
 };
 
 Rockets.destructionTypes = Object.freeze({

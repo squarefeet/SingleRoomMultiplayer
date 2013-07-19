@@ -19,7 +19,7 @@ var CONFIG = {
 
         reticuleAdjustment: {
             h: 0,
-            s: -0.8,
+            s: -0.9,
             l: 0,
             a: 0
         },
@@ -43,7 +43,14 @@ var CONFIG = {
     		s: 0,
     		l: 0,
     		a: -0.3
-    	}
+    	},
+
+        speedIndicatorAdjustment: {
+            h: 0,
+            s: 0,
+            l: 0,
+            a: -0.3
+        }
     },
 
 	// Controls
@@ -91,7 +98,8 @@ var CONFIG = {
 
 	assetLoader: {
 		models: [
-	        '../../res/models/rocket.dae'
+	        '../../res/models/rocket.dae',
+            '../../res/models/crosswing6-recentered.dae'
 	    ],
 		textures: [
 	        '../../res/textures/universe_sml_darker.jpg',
@@ -136,7 +144,7 @@ var CONFIG = {
 		        color: 0xffffff,
 		        size: 20,
 		        minDistance: 50,
-		        texture: '../../res/textures/star.png'
+		        // texture: '../../res/textures/star.png'
 		    },
 
 		    planet: {
@@ -168,8 +176,9 @@ var CONFIG = {
         middleground: {
             starfield: {
                 stars: 200000,
-                size: 50,
-                texture: '../../res/textures/star.png'
+                size: 10,
+                color: 0xaaaaaa
+                // texture: '../../res/textures/star.png'
             }
         }
 	},
@@ -201,7 +210,7 @@ var CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 0.0,
         	texture: '../../res/textures/smokeparticle.png',
-        	usePerspective: 0.0
+        	hasPerspective: 0
         }
     },
 
@@ -209,15 +218,17 @@ var CONFIG = {
     particleEmitters: {
         engines: {
             type: 'cube',
-            particlesPerSecond: 100,
-            size: 20,
+            particlesPerSecond: 50,
+            size: 100,
             sizeSpread: 10,
-            sizeEnd: 20
+            sizeEnd: 100
         },
 
         rockets: {
             particlesPerSecond: 50,
             accelerationSpread: new THREE.Vector3(20, 20, 20),
+            size: 10,
+            sizeEnd: 50,
             sizeSpread: 8,
             alive: 0
         },
@@ -227,9 +238,9 @@ var CONFIG = {
             speed: 250,
             speedSpread: 0,
             particlesPerSecond: 50,
-            size: 500,
+            size: 100,
             sizeSpread: 0,
-            sizeEnd: 200,
+            sizeEnd: 20,
             emitterDuration: 0.1,
             alive: 0,
             type: 'sphere'
