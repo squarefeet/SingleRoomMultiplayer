@@ -171,7 +171,7 @@ function ShaderParticleGroup( options ) {
     this.transparent            = options.transparent || true;
     this.alphaTest              = options.alphaTest || 0.5;
     this.depthWrite             = options.depthWrite || false;
-    this.depthTest              = options.depthTest || false;
+    this.depthTest              = options.depthTest || true;
 
     // Create uniforms
     this.uniforms = {
@@ -390,7 +390,7 @@ ShaderParticleGroup.shaders = {
             'vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );',
 
             // Set point size (should be moved to main() block, really)
-            'gl_PointSize = Lerp( GetSize( size, mvPosition ), sizeEnd );',
+            'gl_PointSize = Lerp( GetSize( size, mvPosition ), GetSize( sizeEnd, mvPosition ) );',
 
             'return mvPosition;',
         '}',
