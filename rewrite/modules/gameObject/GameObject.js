@@ -1,6 +1,9 @@
 function GameObject() {
-	this.isTargetable = 0;
-	
+	this.targetable = 0;
+
+	this.health = 100;
+	this.team = null;
+
 	this.collideWithParticleWeapons = 0;
 	this.collideWithGeometryWeapons = 0;
 	this.collideWithGameObjects = 0;
@@ -14,6 +17,12 @@ function GameObject() {
 				return true;
 			}
 		}
+	};
+
+
+
+	this.onCollision = function( ) {
+
 	};
 }
 

@@ -198,7 +198,7 @@ HUD.prototype = {
 
 	tick: function() {
 		var controls = this.options.controls,
-			forwardSpeed = controls.getAbsoluteForwardSpeed();
+			forwardSpeed = controls.getAbsoluteForwardSpeedAsPercentage();
 
 
 		// Only draw if value has updated.

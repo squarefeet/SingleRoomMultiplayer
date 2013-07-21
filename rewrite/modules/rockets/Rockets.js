@@ -8,6 +8,15 @@ function Rockets( options ) {
     this.activeRockets = [];
     this.launchTimes = {};
 
+    // Base settings
+    this.acceleration       = options.acceleration;
+    this.velocity           = options.velocity;
+    this.maxVelocity        = options.maxVelocity;
+    this.freeFlightDuration = options.freeFlightDuration;
+    this.lerpAmount         = options.lerpAmount;
+    this.maxAge             = options.maxAge;
+    this.launchGap          = options.launchGap;
+
     this.model = ASSET_LOADER.loaded.models[ options.model ].dae.clone();
 
     // Create a parent mesh that'll hold all the rockets
@@ -25,14 +34,9 @@ function Rockets( options ) {
     this.invertXAxisQuaternion = new THREE.Quaternion(1, 0, 0, 0);
 
 
-    // Base settings
-    this.acceleration       = options.acceleration;
-    this.velocity           = options.velocity;
-    this.maxVelocity        = options.maxVelocity;
-    this.freeFlightDuration = options.freeFlightDuration;
-    this.lerpAmount         = options.lerpAmount;
-    this.maxAge             = options.maxAge;
-    this.launchGap          = options.launchGap;
+
+
+    console.log(options)
 
     // Add objects to the scene
     this.renderables = [];
@@ -52,7 +56,7 @@ Rockets.prototype = {
         model.scale.set(0.02, 0.02, 0.02);
         model.useQuaternion = true;
 
-        userData.velocity = this.velocity;
+        userData.velocity = (new THREE.Vector3()).copy( this.velocity );
         userData.age = 0;
         userData.lerpAmount = this.lerpAmount;
         userData.distanceToTarget = Number.POSITIVE_INFINITY;
@@ -123,9 +127,9 @@ Rockets.prototype = {
         }
     },
 
-    _setupRocket: function( rocket, source, emitter ) {
-        rocket.position.copy( source.position );
-        rocket.quaternion.copy( source.quaternion );
+    _setupRocket: function( rocket, position, quaternion, velocity, emitter ) {
+        rocket.position.copy( position );
+        rocket.quaternion.copy( quaternion );
         rocket.quaternion.multiply( this.invertXAxisQuaternion );
         rocket.translateY(50);
 
@@ -139,7 +143,7 @@ Rockets.prototype = {
     },
 
     _resetRocket: function( rocket ) {
-        rocket.userData.velocity = this.velocity;
+        rocket.userData.velocity.copy( this.velocity );
         rocket.userData.age = 0;
         rocket.userData.lerpAmount = 0;
         rocket.userData.distanceToTarget = Number.POSITIVE_INFINITY;
@@ -163,7 +167,7 @@ Rockets.prototype = {
         }
     },
 
-    fire: function( playerID, source, target ) {
+    fire: function( playerID, position, quaternion, velocity, target ) {
         if( !target || !(target instanceof THREE.Object3D) ) return;
 
         // Make sure we're not firing too often
@@ -176,7 +180,7 @@ Rockets.prototype = {
         var rocket = this._getFromPool();
         var emitter = this._getFromEmitterPool();
 
-        this._setupRocket( rocket, source, emitter );
+        this._setupRocket( rocket, position, quaternion, velocity, emitter );
         this.activeRockets.push( rocket );
 
         rocket.userData.target = target;
@@ -215,8 +219,14 @@ Rockets.prototype = {
             }
 
 
-            if( userData.velocity < this.maxVelocity ) {
-                userData.velocity += this.acceleration;
+            // if( userData.velocity.z < this.maxVelocity ) {
+            //     userData.velocity.z += this.acceleration;
+            // }
+
+            userData.velocity.lerp( this.acceleration, 0.01 );
+
+            if( userData.velocity.z > this.maxVelocity ) {
+                userData.velocity.z = this.maxVelocity
             }
 
             userData.distanceToTarget = rocket.position.distanceTo( userData.target.position );
@@ -228,7 +238,8 @@ Rockets.prototype = {
                 rocket.quaternion.slerp( this.targetQuaternion, userData.lerpAmount );
             }
 
-            rocket.translateZ( userData.velocity * dt );
+            rocket.translateZ( userData.velocity.z * dt );
+
             userData.age += dt;
 
             this.checkCollisionWithOtherRockets( rocket );
@@ -299,37 +310,37 @@ Rockets.extend = utils.extend;
 
 
 
-var DoubleRockets = Rockets.extend({
-    fire: function( playerID, source, target ) {
-        if( !target || !(target instanceof THREE.Object3D) ) return;
+// var DoubleRockets = Rockets.extend({
+//     fire: function( playerID, source, target ) {
+//         if( !target || !(target instanceof THREE.Object3D) ) return;
 
-        // Make sure we're not firing too often
-        if( Date.now() - this.launchTimes[ playerID ] < this.launchGap ) {
-            return;
-        }
+//         // Make sure we're not firing too often
+//         if( Date.now() - this.launchTimes[ playerID ] < this.launchGap ) {
+//             return;
+//         }
 
-        this.launchTimes[ playerID ] = Date.now();
+//         this.launchTimes[ playerID ] = Date.now();
 
-        var that = this;
-        var rocket = that._getFromPool();
-        var emitter = that._getFromEmitterPool();
+//         var that = this;
+//         var rocket = that._getFromPool();
+//         var emitter = that._getFromEmitterPool();
 
-        that._setupRocket( rocket, source, emitter );
-        that.activeRockets.push( rocket );
+//         that._setupRocket( rocket, source, emitter );
+//         that.activeRockets.push( rocket );
 
-        rocket.userData.target = target;
-        rocket.translateX( -30 );
+//         rocket.userData.target = target;
+//         rocket.translateX( -30 );
 
 
-        setTimeout(function() {
-            var rocket = that._getFromPool();
-            var emitter = that._getFromEmitterPool();
+//         setTimeout(function() {
+//             var rocket = that._getFromPool();
+//             var emitter = that._getFromEmitterPool();
 
-            that._setupRocket( rocket, source, emitter );
-            that.activeRockets.push( rocket );
+//             that._setupRocket( rocket, source, emitter );
+//             that.activeRockets.push( rocket );
 
-            rocket.userData.target = target;
-            rocket.translateX( 30 );
-        }, 0);
-    }
-})
+//             rocket.userData.target = target;
+//             rocket.translateX( 30 );
+//         }, 0);
+//     }
+// })

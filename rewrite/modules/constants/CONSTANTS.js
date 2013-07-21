@@ -17,6 +17,11 @@ var HUD = new HUD({
     controls: CAMERA_CONTROLS
 });
 
+var TARGETING_SYSTEM = new TargetingSystem({
+    layerManager: LAYER_MANAGER,
+    events: EVENTS,
+});
+
 
 // Create renderer instance.
 var RENDERER = new Renderer({

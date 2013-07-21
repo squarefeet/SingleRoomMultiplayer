@@ -59,7 +59,7 @@ GameObject Structure
 	* collideWithParticleWeapons (eg. for weapon -> ship collisions, but also to stop particle -> particle collision)
 	* collideWithGeometryWeapons (eg. for weapon -> ship collisions)
 	* collideWithGameObjects (eg. for ship -> ship collisions)
-	* isTargetable (flag to determine whether players can target this game object)
+	* targetable (flag to determine whether players can target this game object)
 
 	* checkCollisionWithParticleWeapons()
 	* checkCollisionWithGeometryWeapons()
@@ -69,7 +69,7 @@ GameObject Structure
 
 * Ship
 	* All of GameObject
-	* isTargetable = 1;
+	* targetable = 1;
 	* collideWithParticleWeapons = 1;
 	* collideWithGeometryWeapons = 1;
 	* collideWithGameObjects = 1;

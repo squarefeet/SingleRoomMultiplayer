@@ -3,6 +3,7 @@ function Ship( options ) {
     GameObject.call( this );
 
     this.collideWithWeapons = 1;
+    this.targetable = 1;
 
     this.controls = null;
     this.emitter = null;
@@ -19,10 +20,12 @@ function Ship( options ) {
     var boundingBox = this.mesh.children[0].geometry.boundingBox
 
     this.mesh.__center = new THREE.Vector3(
-        boundingBox.max.x - boundingBox.min.x,
-        boundingBox.max.y - boundingBox.min.y,
-        boundingBox.max.z - boundingBox.min.z
+        (boundingBox.max.x - boundingBox.min.x) * this.mesh.scale.x,
+        (boundingBox.max.y - boundingBox.min.y) * this.mesh.scale.y,
+        (boundingBox.max.z - boundingBox.min.z) * this.mesh.scale.z
     );
+
+    this.mesh.__center.divideScalar(2);
 
     this._addControls();
     // this._addWeapons();

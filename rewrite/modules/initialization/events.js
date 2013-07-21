@@ -18,11 +18,9 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
     FOREGROUND_LAYER = new ForegoundLayer( {
         layerManager: LAYER_MANAGER,
         renderer: RENDERER,
-        cameraControls: CAMERA_CONTROLS
+        cameraControls: CAMERA_CONTROLS,
+        events: EVENTS
     } );
-
-
-    FOREGROUND_LAYER.objects.target.setTargetObject( MIDDLEGROUND_LAYER.objects.ship );
 
 
     // Add HUD to dom

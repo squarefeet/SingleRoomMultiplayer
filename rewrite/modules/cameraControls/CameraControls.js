@@ -28,8 +28,8 @@ function CameraControls( opts ) {
 		mouseY = 0,
 		prevX = 0,
 		prevY = 0,
-		centerX = 0,
-		centerY = 0,
+		centerX = window.innerWidth/2,
+		centerY = window.innerHeight/2,
 		forward = false,
 		back = false,
 		left = false,
@@ -259,12 +259,19 @@ function CameraControls( opts ) {
 		return cameraQuaternion;
 	};
 
+	this.getVelocity = function() {
+		return positionVector;
+	};
 
-	this.getForwardSpeed = function() {
+	this.getPositionForCamera = function( cameraIndex ) {
+		return options.targetCameras[ cameraIndex ].position;
+	};
+
+	this.getForwardSpeedAsPercentage = function() {
 		return positionVector.z / options.maxPositionVelocity;
 	};
 
-	this.getAbsoluteForwardSpeed = function() {
+	this.getAbsoluteForwardSpeedAsPercentage = function() {
 		return Math.abs(positionVector.z) / options.maxPositionVelocity;
 	};
 }

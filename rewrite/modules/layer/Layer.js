@@ -89,7 +89,7 @@ var MiddlegroundLayer = Layer.extend({
 
 	    var that = this;
         document.addEventListener('mousedown', function() {
-            that.objects.rockets.fire( 'host', LAYER_MANAGER.getLayerWithName('middleground').camera, that.object3Ds.targetMesh );
+            that.objects.rockets.fire( 'host', CAMERA_CONTROLS.getPositionForCamera(1), CAMERA_CONTROLS.getCameraRotation(), CAMERA_CONTROLS.getVelocity(), TARGETING_SYSTEM.getCurrentTarget() );
 		}, false);
 	},
 
@@ -144,6 +144,10 @@ var MiddlegroundLayer = Layer.extend({
 			particleGroup: this.particleGroups.engines,
 			x: 0, y: 0, z: 0
 		}, CONFIG.ship )  );
+
+
+		o.ship.controls.setForward( true );
+		o.ship.controls.setY( (window.innerWidth/2) -10 );
 	},
 
 	triggerRocketExplosion: function( type, x, y, z ) {
@@ -189,12 +193,13 @@ var ForegoundLayer = Layer.extend({
 		var o = this.objects,
 			o3d = this.object3Ds;
 
-		o.target = new Target({
-			cameraControls: this.options.cameraControls
+		o.targetBox = new TargetBox({
+			cameraControls: this.options.cameraControls,
+			events: this.options.events
 		});
 	},
 
 	tick: function( dt ) {
-		this.objects.target.tick( dt );
+		this.objects.targetBox.tick( dt );
 	}
 });

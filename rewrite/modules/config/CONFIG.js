@@ -53,6 +53,11 @@ var CONFIG = {
         }
     },
 
+    target: {
+        minSize: 50,
+        maxSize: 1500
+    },
+
 	// Controls
 	controls: {
 		UP: 'r',
@@ -144,7 +149,7 @@ var CONFIG = {
 		        color: 0xffffff,
 		        size: 20,
 		        minDistance: 50,
-		        // texture: '../../res/textures/star.png'
+		        texture: '../../res/textures/star.png'
 		    },
 
 		    planet: {
@@ -175,10 +180,10 @@ var CONFIG = {
 
         middleground: {
             starfield: {
-                stars: 200000,
-                size: 10,
-                color: 0xaaaaaa
-                // texture: '../../res/textures/star.png'
+                stars: 500000,
+                size: 50,
+                color: 0xffffff,
+                texture: '../../res/textures/star.png'
             }
         }
 	},
@@ -255,9 +260,9 @@ var CONFIG = {
     	},
 
         rockets: {
-            acceleration: 5,
-            velocity: 1000,
-            maxVelocity: 1500,
+            acceleration: new THREE.Vector3(0, 0, 2000),
+            velocity: new THREE.Vector3(0, 0, 1000),
+            maxVelocity: 2000,
             freeFlightDuration: 1,
             lerpAmount: 0.07,
             maxAge: 10,

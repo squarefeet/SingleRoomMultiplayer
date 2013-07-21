@@ -30,6 +30,7 @@ function LayerManager( opts ) {
 		particleWeaponColliders = [],
 		geometryWeaponColliders = [],
 		gameObjectColliders = [],
+		targetableObjects = [],
 		layerCache = [];
 
 
@@ -86,7 +87,9 @@ function LayerManager( opts ) {
 		if( obj.collideWithGameObjects ) {
 			gameObjectColliders.push( obj.mesh );
 		}
-
+		if( obj.targetable ) {
+			targetableObjects.push( obj );
+		}
 
 		obj3d = null;
 		i = null;
@@ -129,6 +132,9 @@ function LayerManager( opts ) {
 	};
 	var getGameObjectColliders = function() {
 		return gameObjectColliders;
+	};
+	var getTargetableObjects = function() {
+		return targetableObjects;
 	};
 
 
@@ -197,4 +203,5 @@ function LayerManager( opts ) {
 	this.getParticleWeaponColliders = getParticleWeaponColliders;
 	this.getGeometryWeaponColliders = getGeometryWeaponColliders;
 	this.getGameObjectColliders = getGameObjectColliders;
+	this.getTargetableObjects = getTargetableObjects;
 }

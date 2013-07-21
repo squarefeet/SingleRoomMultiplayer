@@ -19,7 +19,8 @@ ASSET_LOADER.loadAll();
 function bindKeys() {
 	var controls = CONFIG.controls,
 		cam = CAMERA_CONTROLS,
-		handler = KEYBOARD_HANDLER;
+		handler = KEYBOARD_HANDLER,
+		targetingSystem = TARGETING_SYSTEM;
 
 	// Down
 	handler.addKeyDownListener( controls.FORWARD, function() {
@@ -70,5 +71,13 @@ function bindKeys() {
 
 	handler.addKeyUpListener( controls.ROLL_RIGHT, function() {
 		cam.setRollRight( false );
+	});
+
+
+	
+
+	// Targeting
+	handler.addKeyDownListener( controls.TARGET, function() {
+		targetingSystem.nextTarget();
 	});
 }
