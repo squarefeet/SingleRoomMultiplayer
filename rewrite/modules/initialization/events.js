@@ -12,7 +12,8 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
 
     MIDDLEGROUND_LAYER = new MiddlegroundLayer( {
         layerManager: LAYER_MANAGER,
-        renderer: RENDERER
+        renderer: RENDERER,
+        mouseHandler: MOUSE_HANDLER
     } );
 
     FOREGROUND_LAYER = new ForegoundLayer( {
@@ -26,14 +27,12 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
     // Add HUD to dom
     HUD.addToDOM();
 
-    
+    // setInterval(function() {
+    //     HUD.selectWeapon( 'primary', Math.round( Math.random() ) );
+    //     HUD.selectWeapon( 'secondary', Math.round( Math.random() ) );
+    // }, 1000);
 
-    setInterval(function() {
-        HUD.selectWeapon( 'primary', Math.round( Math.random() ) );
-        HUD.selectWeapon( 'secondary', Math.round( Math.random() ) );
-    }, 1000);
-
-    setTimeout(RENDERER.start, 100);
+    setTimeout(RENDERER.start, 0);
 });
 
 

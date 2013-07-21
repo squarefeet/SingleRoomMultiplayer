@@ -88,7 +88,7 @@ var MiddlegroundLayer = Layer.extend({
 		this._addTickToRenderer();
 
 	    var that = this;
-        document.addEventListener('mousedown', function() {
+        this.options.mouseHandler.addRightMouseDownListener(function() {
             that.objects.rockets.fire( 
             	'host', 
             	CAMERA_CONTROLS.getPositionForCamera(1), 
@@ -96,7 +96,7 @@ var MiddlegroundLayer = Layer.extend({
             	CAMERA_CONTROLS.getVelocity(), 
             	TARGETING_SYSTEM.getCurrentTarget() 
             );
-		}, false);
+		});
 	},
 
 	_makeParticleGroups: function() {
