@@ -2,6 +2,7 @@ var BACKGROUND_LAYER,
 	MIDDLEGROUND_LAYER,
 	FOREGROUND_LAYER;
 
+
 LAYER_MANAGER.addFogToLayer( 'middleground', 0x111111, 0.0001 );
 
 // Initialize the renderer

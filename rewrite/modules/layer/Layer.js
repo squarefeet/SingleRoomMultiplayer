@@ -168,3 +168,33 @@ var MiddlegroundLayer = Layer.extend({
 		this.particleGroups.engines.tick();
 	}
 });
+
+
+
+var ForegoundLayer = Layer.extend({
+	name: 'foreground',
+
+	objects: {},
+	object3Ds: {},
+
+	initialize: function() {
+		this.tick = this.tick.bind( this );
+
+		this._makeObjects();
+		this._addObjectsToRenderer();
+		this._addTickToRenderer();
+	},
+
+	_makeObjects: function() {
+		var o = this.objects,
+			o3d = this.object3Ds;
+
+		o.target = new Target({
+			cameraControls: this.options.cameraControls
+		});
+	},
+
+	tick: function( dt ) {
+		this.objects.target.tick( dt );
+	}
+});

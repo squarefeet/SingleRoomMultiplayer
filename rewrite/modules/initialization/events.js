@@ -15,9 +15,20 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
         renderer: RENDERER
     } );
 
+    FOREGROUND_LAYER = new ForegoundLayer( {
+        layerManager: LAYER_MANAGER,
+        renderer: RENDERER,
+        cameraControls: CAMERA_CONTROLS
+    } );
+
+
+    FOREGROUND_LAYER.objects.target.setTargetObject( MIDDLEGROUND_LAYER.objects.ship );
+
 
     // Add HUD to dom
     HUD.addToDOM();
+
+    
 
     setInterval(function() {
         HUD.selectWeapon( 'primary', Math.round( Math.random() ) );

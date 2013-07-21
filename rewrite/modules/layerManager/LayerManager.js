@@ -27,7 +27,9 @@ function LayerManager( opts ) {
 	// Useful variables...
 	var layers = {},
 		store = {},
-		weaponColliders = [],
+		particleWeaponColliders = [],
+		geometryWeaponColliders = [],
+		gameObjectColliders = [],
 		layerCache = [];
 
 
@@ -75,9 +77,16 @@ function LayerManager( opts ) {
 			l.add( obj3d[ i ] );
 		}
 
-		if( obj.collideWithWeapons ) {
-			weaponColliders.push( obj.mesh );
+		if( obj.collideWithParticleWeapons ) {
+			particleWeaponColliders.push( obj.mesh );
 		}
+		if( obj.collideWithGeometryWeapons ) {
+			geometryWeaponColliders.push( obj.mesh );
+		}
+		if( obj.collideWithGameObjects ) {
+			gameObjectColliders.push( obj.mesh );
+		}
+
 
 		obj3d = null;
 		i = null;
@@ -112,8 +121,14 @@ function LayerManager( opts ) {
 	};
 
 
-	var getAllWeaponColliders = function() {
-		return weaponColliders;
+	var getParticleWeaponColliders = function() {
+		return particleWeaponColliders;
+	};
+	var getGeometryWeaponColliders = function() {
+		return geometryWeaponColliders;
+	};
+	var getGameObjectColliders = function() {
+		return gameObjectColliders;
 	};
 
 
@@ -146,6 +161,16 @@ function LayerManager( opts ) {
 	};
 
 
+	var deallocateAll = function() {
+		for( var i = 0; i < options.layerOrder.length; ++i ) {
+			var scene = layers[ options.layerOrder[i] ].scene;
+
+			scene.traverse(function( child ) {
+				console.log(child);
+			});
+		}
+	};
+
 
 	for( var i in options.layers) {
 		createLayer( i, options.layers[ i ] );
@@ -169,5 +194,7 @@ function LayerManager( opts ) {
 	this.setCameraPositionForLayer = setCameraPositionForLayer;
 	this.setCameraLookAtForLayer = setCameraLookAtForLayer;
 	this.getAllCameras = getAllCameras;
-	this.getAllWeaponColliders = getAllWeaponColliders;
+	this.getParticleWeaponColliders = getParticleWeaponColliders;
+	this.getGeometryWeaponColliders = getGeometryWeaponColliders;
+	this.getGameObjectColliders = getGameObjectColliders;
 }

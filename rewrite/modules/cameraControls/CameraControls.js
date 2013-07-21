@@ -26,6 +26,8 @@ function CameraControls( opts ) {
 
 	var mouseX = 0,
 		mouseY = 0,
+		prevX = 0,
+		prevY = 0,
 		centerX = 0,
 		centerY = 0,
 		forward = false,
@@ -38,8 +40,10 @@ function CameraControls( opts ) {
 		yaw = 0,
 		pitch = 0,
 		rotationVector = new THREE.Vector3(),
+		rotationVectorLerp = new THREE.Vector3(),
 		rotationQuaternion = new THREE.Quaternion(),
 		positionVector = new THREE.Vector3(),
+		cameraQuaternion = new THREE.Quaternion(),
 		hasInput = !!(options.keyboardHandler && options.mouseHandler),
 		controls = CONFIG.controls;
 
@@ -82,6 +86,10 @@ function CameraControls( opts ) {
 			rotationVector.y = (-(mouseX - centerX) / centerX) / options.rotationDamping;
 			rotationVector.x = (-(mouseY - centerY) / centerY) / options.rotationDamping;
 		}
+
+		// rotationVectorLerp.y = (prevX - mouseX) / (options.rotationDamping * 8);
+		// rotationVectorLerp.x = (prevY - mouseY) / (options.rotationDamping * 8);
+		// rotationVector.lerp( rotationVectorLerp, 0.05 );
 
 		inc = null;
 		dec = null;
@@ -142,10 +150,6 @@ function CameraControls( opts ) {
 			cam.translateY( y );
 			cam.translateZ( z );
 		}
-
-		if( cam.__updateRotation ) {
-			cam.quaternion.multiply ( rotationQuaternion );
-		}
 	};
 
 
@@ -164,6 +168,8 @@ function CameraControls( opts ) {
 			roll,
 			1
 		).normalize();
+
+		cameraQuaternion.multiply( rotationQuaternion );
 
 		for( i = 0; i < numCams; ++i ) {
 			updateSingleCamera( cams[i], velX, velY, velZ );
@@ -189,6 +195,17 @@ function CameraControls( opts ) {
 		centerY = m.centerY;
 	};
 
+
+
+	for( var i = 0; i < options.targetCameras.length; ++i ) {
+		if( options.targetCameras[i].__updateRotation ) {
+			options.targetCameras[i].quaternion = cameraQuaternion;
+		}
+	}
+
+
+
+
 	this.tick = function( dt ) {
 		if( hasInput ) {
 			handleInput();
@@ -197,6 +214,9 @@ function CameraControls( opts ) {
 		updateRotation();
 		updatePosition();
 		updateCameras( dt );
+
+		prevX = mouseX;
+		prevY = mouseY;
 	};
 
 
@@ -233,6 +253,12 @@ function CameraControls( opts ) {
 	this.setCenterY = function( state ) {
 		centerY = state;
 	};
+
+
+	this.getCameraRotation = function() {
+		return cameraQuaternion;
+	};
+
 
 	this.getForwardSpeed = function() {
 		return positionVector.z / options.maxPositionVelocity;

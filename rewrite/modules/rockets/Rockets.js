@@ -233,7 +233,7 @@ Rockets.prototype = {
 
             this.checkCollisionWithOtherRockets( rocket );
 
-            this.checkCollisionWithWeaponColliders( rocket );
+            // this.checkCollisionWithWeaponColliders( rocket );
         }
     },
 

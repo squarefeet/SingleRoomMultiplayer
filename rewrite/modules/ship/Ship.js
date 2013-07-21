@@ -16,6 +16,14 @@ function Ship( options ) {
     this.mesh.position.setY( options.y );
     this.mesh.position.setZ( options.z );
 
+    var boundingBox = this.mesh.children[0].geometry.boundingBox
+
+    this.mesh.__center = new THREE.Vector3(
+        boundingBox.max.x - boundingBox.min.x,
+        boundingBox.max.y - boundingBox.min.y,
+        boundingBox.max.z - boundingBox.min.z
+    );
+
     this._addControls();
     // this._addWeapons();
 

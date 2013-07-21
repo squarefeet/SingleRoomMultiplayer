@@ -74,6 +74,10 @@ AssetLoader.prototype = {
         this.elements.progressBar = progressBar;
     },
 
+    deallocateAll: function() {
+        
+    },
+
     loadAll: function() {
 
         var that = this,
