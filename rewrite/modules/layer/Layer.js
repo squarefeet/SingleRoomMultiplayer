@@ -89,7 +89,13 @@ var MiddlegroundLayer = Layer.extend({
 
 	    var that = this;
         document.addEventListener('mousedown', function() {
-            that.objects.rockets.fire( 'host', CAMERA_CONTROLS.getPositionForCamera(1), CAMERA_CONTROLS.getCameraRotation(), CAMERA_CONTROLS.getVelocity(), TARGETING_SYSTEM.getCurrentTarget() );
+            that.objects.rockets.fire( 
+            	'host', 
+            	CAMERA_CONTROLS.getPositionForCamera(1), 
+            	CAMERA_CONTROLS.getCameraRotation(), 
+            	CAMERA_CONTROLS.getVelocity(), 
+            	TARGETING_SYSTEM.getCurrentTarget() 
+            );
 		}, false);
 	},
 

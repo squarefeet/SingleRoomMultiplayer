@@ -23,6 +23,7 @@ function Starfield( opts ) {
 	        map: ASSET_LOADER.loaded.textures[ options.texture ],
 	        blending: THREE.AdditiveBlending,
 	        depthTest: true,
+	        depthWrite: false,
 	        transparent : true,
 	        color: options.color
 	    });

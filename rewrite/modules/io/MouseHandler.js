@@ -18,6 +18,7 @@ function MouseHandler() {
 
     document.addEventListener( 'mousedown', function( e ) {
         e.preventDefault();
+        
         if( e.which === _leftBtnValue ) {
             that.left = 1;
         }

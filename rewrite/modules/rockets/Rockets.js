@@ -168,7 +168,7 @@ Rockets.prototype = {
     },
 
     fire: function( playerID, position, quaternion, velocity, target ) {
-        if( !target || !(target instanceof THREE.Object3D) ) return;
+        // if( !target || !(target instanceof THREE.Object3D) ) return;
 
         // Make sure we're not firing too often
         if( Date.now() - this.launchTimes[ playerID ] < this.launchGap ) {
@@ -201,8 +201,8 @@ Rockets.prototype = {
             userData = rocket.userData;
 
             // If the rocket's too old, or has collided, destroy it.
-            if( userData.age > this.maxAge || userData.distanceToTarget < 100 ) {
-                if( userData.distanceToTarget < 100 ) {
+            if( userData.age > this.maxAge || (userData.target && userData.distanceToTarget < 100) ) {
+                if( userData.target && userData.distanceToTarget < 100 ) {
                     this._destroyRocket( rocket, Rockets.destructionTypes.hitTarget );
                 }
                 else if( userData.age === Number.POSITIVE_INFINITY ) {
@@ -219,20 +219,18 @@ Rockets.prototype = {
             }
 
 
-            // if( userData.velocity.z < this.maxVelocity ) {
-            //     userData.velocity.z += this.acceleration;
-            // }
-
             userData.velocity.lerp( this.acceleration, 0.01 );
 
             if( userData.velocity.z > this.maxVelocity ) {
                 userData.velocity.z = this.maxVelocity
             }
 
-            userData.distanceToTarget = rocket.position.distanceTo( userData.target.position );
-            userData.lerpAmount = min( this.lerpAmount, 50 / userData.distanceToTarget );
+            if( userData.target ) {
+                userData.distanceToTarget = rocket.position.distanceTo( userData.target.position );
+                userData.lerpAmount = min( this.lerpAmount, 50 / userData.distanceToTarget );
+            }            
 
-            if( userData.age > this.freeFlightDuration ) {
+            if( userData.target && userData.age > this.freeFlightDuration ) {
                 this.targetMatrix.lookAt( userData.target.position, rocket.position, rocket.up );
                 this.targetQuaternion.setFromRotationMatrix( this.targetMatrix );
                 rocket.quaternion.slerp( this.targetQuaternion, userData.lerpAmount );
