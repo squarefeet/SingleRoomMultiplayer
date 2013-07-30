@@ -99,6 +99,30 @@ HUD.prototype = {
 		this._makeSpeedIndicators();
 	},
 
+	_setElementColor: function( el, prop, base, newColor ) {
+		var color = this.fillColor;
+
+		color.setHSL( base.h, base.s, base.l );
+		color.offsetHSL( newColor.h, newColor.s, newColor.l );
+
+		if( prop !== 'border' ) {
+			el.style[ prop ] = utils.makeCSSRGBAString( 
+				color.r * 255,
+				color.g * 255,
+				color.b * 255,
+				base.a + newColor.a
+			);
+		}
+		else {
+			el.style[ prop ] = '1px solid ' + utils.makeCSSRGBAString( 
+				color.r * 255,
+				color.g * 255,
+				color.b * 255,
+				base.a + newColor.a
+			);
+		}
+	},
+
 
 	addToDOM: function() {
 		document.body.appendChild( this.elements.wrapper );
@@ -117,58 +141,74 @@ HUD.prototype = {
 			textAdjustment = config.textAdjustment,
 			weaponIndicatorAdjustment = config.weaponIndicatorAdjustment,
 			speedIndicatorAdjustment = config.speedIndicatorAdjustment,
+			speedIndicatorOverlayAdjustment = config.speedIndicatorOverlayAdjustment,
 			reticuleAdjustment = config.reticuleAdjustment;
 
-		// Set base text color
-		color.setHSL( h, s, l );
-		color.offsetHSL( textAdjustment.h, textAdjustment.s, textAdjustment.l );
 
-		this.elements.wrapper.style.color = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + textAdjustment.a 
+		this._setElementColor( 
+			this.elements.wrapper, 
+			'color', 
+			configColor,
+			textAdjustment
 		);
-
-
-		// Set weapon indicator colors
-		color.setHSL( h, s, l );
-		color.offsetHSL( weaponIndicatorAdjustment.h, weaponIndicatorAdjustment.s, weaponIndicatorAdjustment.l );
 
 		var weaponIndicators = this.elements.weaponIndicators;
 		for( var i in weaponIndicators ) {
-			weaponIndicators[i].wrapper.style.backgroundColor = utils.makeCSSRGBAString( 
-				color.r * 255, color.g * 255, color.b * 255, a + weaponIndicatorAdjustment.a 
+
+			this._setElementColor(
+				weaponIndicators[i].wrapper,
+				'backgroundColor',
+				configColor,
+				weaponIndicatorAdjustment
 			);
-			weaponIndicators[i].wrapper.style.border = '1px solid ' + utils.makeCSSRGBAString( 
-				color.r * 255, color.g * 255, color.b * 255, a + weaponIndicatorAdjustment.a - 0.5 
+
+			this._setElementColor(
+				weaponIndicators[i].wrapper,
+				'border',
+				configColor,
+				weaponIndicatorAdjustment
 			);
 		}
 
 
 		// Set reticule color
-		color.setHSL( h, s, l );
-		color.offsetHSL( reticuleAdjustment.h, reticuleAdjustment.s, reticuleAdjustment.l );
-		this.elements.reticule.style.backgroundColor = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + reticuleAdjustment.a 
+		this._setElementColor(
+			this.elements.reticule,
+			'backgroundColor',
+			configColor,
+			reticuleAdjustment
 		);
 
 
 		// Set speed indicator colors
-		color.setHSL( h, s, l );
-		color.offsetHSL( speedIndicatorAdjustment.h, speedIndicatorAdjustment.s, speedIndicatorAdjustment.l );
-
 		var speedIndicators = this.elements.speedIndicators;
 
-		speedIndicators.leftBackground.style.backgroundColor = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + speedIndicatorAdjustment.a 
-		);
-		speedIndicators.rightBackground.style.backgroundColor = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + speedIndicatorAdjustment.a 
+		this._setElementColor(
+			speedIndicators.leftBackground,
+			'backgroundColor',
+			configColor,
+			speedIndicatorAdjustment
 		);
 
-		speedIndicators.leftIndicator.style.backgroundColor = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + speedIndicatorAdjustment.a 
+		this._setElementColor(
+			speedIndicators.rightBackground,
+			'backgroundColor',
+			configColor,
+			speedIndicatorAdjustment
 		);
-		speedIndicators.rightIndicator.style.backgroundColor = utils.makeCSSRGBAString( 
-			color.r * 255, color.g * 255, color.b * 255, a + speedIndicatorAdjustment.a 
+
+		this._setElementColor(
+			speedIndicators.leftIndicator,
+			'backgroundColor',
+			configColor,
+			speedIndicatorAdjustment
+		);
+
+		this._setElementColor(
+			speedIndicators.rightIndicator,
+			'backgroundColor',
+			configColor,
+			speedIndicatorAdjustment
 		);
 	},
 
@@ -204,10 +244,9 @@ HUD.prototype = {
 		// Only draw if value has updated.
 		if(this.prevForwardSpeed !== forwardSpeed) {
 			this.elements.speedIndicators.leftIndicator.style.height = forwardSpeed * 100 + '%';
+			this.prevForwardSpeed = forwardSpeed;
 		}
 
-
-		this.prevForwardSpeed = forwardSpeed;
 	}
 
 };

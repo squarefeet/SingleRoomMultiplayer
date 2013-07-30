@@ -50,6 +50,13 @@ var CONFIG = {
             s: 0,
             l: 0,
             a: -0.3
+        },
+
+        speedIndicatorOverlayAdjustment: {
+            h: 0,
+            s: 0,
+            l: 0,
+            a: 0
         }
     },
 
@@ -72,6 +79,20 @@ var CONFIG = {
 		CHAT: 'y',
 		TEAM_CHAT: 'u'
 	},
+
+    cameraControls: {
+        positionVelocityIncrement: 10 / 70,
+        positionVelocityDecrement: 0.99,
+
+        rotationDamping: 50,
+
+        rollVelocityIncrement: 0.05,
+        rollVelocityDecrement: 0.95,
+
+        maxPositionVelocity: 1000 / 70,
+        maxRotationVelocity: 1000 / 70,
+        maxRollVelocity: 2
+    },
 
 	// Should the ship automatically decelerate if !FORWARD && !BACKWARD keys
 	// are pressed?
@@ -104,7 +125,8 @@ var CONFIG = {
 	assetLoader: {
 		models: [
 	        '../../res/models/rocket.dae',
-            '../../res/models/crosswing6-recentered.dae'
+            '../../res/models/crosswing6-recentered.dae',
+            '../../res/models/bigShip3.dae',
 	    ],
 		textures: [
 	        '../../res/textures/universe_sml_darker.jpg',

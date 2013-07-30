@@ -146,14 +146,19 @@ var MiddlegroundLayer = Layer.extend({
 	    o3d.sunLight.position.copy( CONFIG.layers.background.sun.position );
 
 
-	    o.ship = new Ship( _.extend( {
-			particleGroup: this.particleGroups.engines,
-			x: 0, y: 0, z: 0
-		}, CONFIG.ship )  );
+		// o.ship = new Ship( _.extend( {
+		// 	particleGroup: this.particleGroups.engines,
+		// 	x: 0, y: 0, z: 0
+		// }, CONFIG.ship )  );
+
+		// o.ship.controls.setForward( true );
+		// o.ship.controls.setY( (window.innerWidth/2) -10 );
 
 
-		o.ship.controls.setForward( true );
-		o.ship.controls.setY( (window.innerWidth/2) -10 );
+		// o.mothership = new Mothership({
+		// 	x: 0, y: 0, z: 0,
+		// 	model: '../../res/models/bigShip3.dae'
+		// });
 	},
 
 	triggerRocketExplosion: function( type, x, y, z ) {

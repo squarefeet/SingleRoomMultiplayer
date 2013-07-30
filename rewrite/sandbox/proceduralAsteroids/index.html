@@ -1,0 +1,157 @@
+<html>
+<head>
+	<title>Procedural Asteroids</title>
+	<style type="text/css">
+		* { margin: 0; padding: 0; }
+	</style>
+</head>
+<body>
+	<script type="text/javascript" src="../../modules/external/THREE-r58.min.js"></script>
+	<script type="text/javascript" src="../../modules/external/Stats.min.js"></script>
+
+	<script type="text/javascript">
+		var scene = new THREE.Scene(),
+			camera = new THREE.PerspectiveCamera( 63, window.innerWidth/window.innerHeight, 0.1, 100000 ),
+			renderer = new THREE.WebGLRenderer(),
+			stats = new Stats();
+
+		
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.setClearColor( 0x000000 );
+		scene.add( camera );
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.top = '0px';
+		stats.domElement.style.left = '0px';
+		document.body.appendChild( renderer.domElement );
+		document.body.appendChild( stats.domElement );
+
+		camera.position.z = 500;
+		camera.lookAt( scene.position );
+
+		// Scene lights
+		var light = new THREE.DirectionalLight(0xFFFFFF, 0.5 );
+		light.position.y = 500;
+		light.position.z = 250;
+		scene.add( light );
+
+		var ambientLight = new THREE.AmbientLight(0x101010);
+		scene.add( ambientLight );
+
+
+		function Asteroid( options ) {
+			this.options = {
+				radius: 50,
+				detailLevel: 2,
+				randomness: 0.2
+			};
+
+			if( options ) {
+				for( var i in options ) {
+					this.options[i] = options[i];
+				}
+			}
+
+
+			this.morphPoints = function( geometry ) {
+				var vertices = geometry.vertices;
+
+				for( var i = 0; i < vertices.length; ++i ) {
+					vertices[i].multiplyScalar( 1 - Math.random() * this.options.randomness )
+				}
+			};
+
+			this.morphMesh = function( mesh ) {
+				var s = mesh.scale;
+				s.x = 1 - Math.random() * this.options.morphX;
+				s.y = 1 - Math.random() * this.options.morphY;
+				s.z = 1 - Math.random() * this.options.morphZ;
+			};
+
+			this.geometry = new THREE.IcosahedronGeometry( this.options.radius, this.options.detailLevel );
+			this.morphPoints( this.geometry );
+		}
+
+
+		function AsteroidField() {
+
+
+			this.geometry = new THREE.Geometry();
+			this.material = new THREE.MeshPhongMaterial({
+				wireframe: false,
+				
+				color: 0xFFFFFF,
+				emissive: 0x101010,
+
+				map: THREE.ImageUtils.loadTexture('../../res/textures/phobos2k.jpg'),
+				normalMap: THREE.ImageUtils.loadTexture('../../res/textures/phobos2k_NRM.png'),
+				specularMap: THREE.ImageUtils.loadTexture('../../res/textures/phobos2k_DISP.png'),
+
+				shininess: 200,
+				specular: 0xFFFFFF,
+			});
+
+			for( var i = 0; i < 200; ++i ) {
+				var randomPos = new THREE.Vector3( 
+					(Math.random() * 10000) - 5000,
+					(Math.random() * 10000) - 5000,
+					(Math.random() * 10000) - 5000
+				);
+
+				var asteroid = new Asteroid({
+					radius: Math.random() * 200,
+					detailLevel: 1,
+					randomness: 0.3
+				});
+
+				var g = asteroid.geometry,
+					v = g.vertices,
+					scaleX = Math.random() * 1.5 + 0.75,
+					rotation = (new THREE.Vector3( 
+						(Math.random() * (Math.PI * 2)) - Math.PI,
+						(Math.random() * (Math.PI * 2)) - Math.PI,
+						(Math.random() * (Math.PI * 2)) - Math.PI
+					)).normalize(),
+					rotMatrix = (new THREE.Matrix4()).makeRotationFromEuler( rotation, 'YXZ' );
+
+
+				for( var j = 0; j < v.length; ++j ) {
+					v[j].add( randomPos );
+					v[j].x *= scaleX;
+				}
+
+
+				g.applyMatrix( rotMatrix );
+
+				THREE.GeometryUtils.merge( this.geometry, g );
+			}
+
+			this.mesh = new THREE.Mesh( this.geometry, this.material );
+		}
+
+		var field = new AsteroidField();
+		scene.add( field.mesh );
+
+
+
+		function animate() {
+			requestAnimationFrame( animate );
+			stats.update();
+			updateAsteroids();
+			render();
+		}
+
+		function updateAsteroids() {
+			field.mesh.rotation.y += 0.005;
+		}
+
+		function render() {
+			renderer.render( scene, camera );
+		}
+
+		animate();
+
+
+
+	</script>
+</body>
+</html>

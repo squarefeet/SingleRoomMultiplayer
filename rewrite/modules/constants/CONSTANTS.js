@@ -7,11 +7,11 @@ var ASSET_LOADER = new AssetLoader( _.extend( { events: EVENTS }, CONFIG.assetLo
 
 
 // Adjust camera position(s) and rotation(s) on player input.
-var CAMERA_CONTROLS = new CameraControls({
+var CAMERA_CONTROLS = new CameraControls( _.extend( {
     mouseHandler: MOUSE_HANDLER,
     keyboardHandler: KEYBOARD_HANDLER,
     targetCameras: LAYER_MANAGER.getAllCameras()
-});
+}, CONFIG.cameraControls ));
 
 var HUD = new HUD({
     controls: CAMERA_CONTROLS
