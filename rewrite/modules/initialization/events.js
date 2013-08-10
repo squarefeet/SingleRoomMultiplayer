@@ -40,3 +40,9 @@ EVENTS.on('Rockets:destroyed', function( destructionType, x, y, z ) {
     // Trigger an explosion at xyz.
     MIDDLEGROUND_LAYER.triggerRocketExplosion( destructionType, x, y, z );
 });
+
+
+EVENTS.on('weapon:plasmaCannon:destroyed', function( destructionType, x, y, z ) {
+    // Trigger an explosion at xyz.
+    MIDDLEGROUND_LAYER.triggerRocketExplosion( destructionType, x, y, z );
+});

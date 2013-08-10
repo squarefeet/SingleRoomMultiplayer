@@ -81,7 +81,7 @@ var CONFIG = {
 	},
 
     cameraControls: {
-        positionVelocityIncrement: 10 / 70,
+        positionVelocityIncrement: 10,
         positionVelocityDecrement: 0.99,
 
         rotationDamping: 50,
@@ -89,8 +89,8 @@ var CONFIG = {
         rollVelocityIncrement: 0.05,
         rollVelocityDecrement: 0.95,
 
-        maxPositionVelocity: 1000 / 70,
-        maxRotationVelocity: 1000 / 70,
+        maxPositionVelocity: 1000,
+        maxRotationVelocity: 1000,
         maxRollVelocity: 2
     },
 
@@ -127,6 +127,7 @@ var CONFIG = {
 	        '../../res/models/rocket.dae',
             '../../res/models/crosswing6-recentered.dae',
             '../../res/models/bigShip3.dae',
+            '../../res/models/PlasmaCannon.dae'
 	    ],
 		textures: [
 	        '../../res/textures/universe_sml_darker.jpg',
@@ -154,7 +155,9 @@ var CONFIG = {
 	        '../../res/textures/lensflares/lensflare0.png',
 	        '../../res/textures/lensflares/lensflare1.png',
 	        '../../res/textures/lensflares/lensflare2.png',
-	        '../../res/textures/lensflares/lensflare3.png'
+	        '../../res/textures/lensflares/lensflare3.png',
+
+            '../../res/textures/PlasmaCannon.png'
 	    ],
 
 		parent: document.body,
@@ -283,13 +286,27 @@ var CONFIG = {
 
         rockets: {
             acceleration: new THREE.Vector3(0, 0, 2000),
-            velocity: new THREE.Vector3(0, 0, 1000),
-            maxVelocity: 2000,
+            velocity: new THREE.Vector3(0, 0, 2000),
+            maxVelocity: 4000,
             freeFlightDuration: 1,
             lerpAmount: 0.07,
             maxAge: 10,
-            launchGap: 1,
+            launchGap: 1000,
             model: '../../res/models/rocket.dae'
+        },
+
+        plasmaCannon: {
+            acceleration: new THREE.Vector3(0, 0, 2000),
+            velocity: new THREE.Vector3(0, 0, 4000),
+            maxVelocity: 10000,
+            freeFlightDuration: 1,
+            lerpAmount: 0.07,
+            maxAge: 2,
+            launchGap: 1,
+            model: '../../res/models/PlasmaCannon.dae',
+            texture: '../../res/textures/PlasmaCannon.png',
+            name: 'plasmaCannon',
+            scale: 0.1
         }
     },
 

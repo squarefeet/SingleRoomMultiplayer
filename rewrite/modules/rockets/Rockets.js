@@ -33,11 +33,6 @@ function Rockets( options ) {
     this.targetQuaternion = new THREE.Quaternion();
     this.invertXAxisQuaternion = new THREE.Quaternion(1, 0, 0, 0);
 
-
-
-
-    console.log(options)
-
     // Add objects to the scene
     this.renderables = [];
     this.renderables.push( this.mesh );

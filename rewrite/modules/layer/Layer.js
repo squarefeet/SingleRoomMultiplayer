@@ -97,6 +97,15 @@ var MiddlegroundLayer = Layer.extend({
             	TARGETING_SYSTEM.getCurrentTarget() 
             );
 		});
+
+		this.options.mouseHandler.addLeftMouseDownListener(function() {
+            that.objects.plasmaCannon.fire( 
+            	'host', 
+            	CAMERA_CONTROLS.getPositionForCamera(1), 
+            	CAMERA_CONTROLS.getCameraRotation(), 
+            	CAMERA_CONTROLS.getVelocity()
+            );
+		});
 	},
 
 	_makeParticleGroups: function() {
@@ -146,6 +155,8 @@ var MiddlegroundLayer = Layer.extend({
 	    o3d.sunLight.position.copy( CONFIG.layers.background.sun.position );
 
 
+	    o.plasmaCannon = new Weapon( CONFIG.weapons.plasmaCannon );
+
 		// o.ship = new Ship( _.extend( {
 		// 	particleGroup: this.particleGroups.engines,
 		// 	x: 0, y: 0, z: 0
@@ -177,6 +188,7 @@ var MiddlegroundLayer = Layer.extend({
 
 	tick: function( dt ) {
 		this.objects.rockets.tick( dt );
+		this.objects.plasmaCannon.tick( dt );
 		this.particleGroups.rockets.tick();
 		this.particleGroups.rocketExplosions.tick();
 
