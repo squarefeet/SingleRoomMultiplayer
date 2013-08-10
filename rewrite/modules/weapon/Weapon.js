@@ -1,61 +1,61 @@
 // A base class that most weapons inherit from
 function Weapon( options ) {
-
-	GameObject.call( this );
-
-    this.pool = [];
-    this.activeObjects = [];
-    this.launchTimes = {};
-
-    this.phase = true;
-
-    // Base settings
-    this.acceleration       = options.acceleration;
-    this.velocity           = options.velocity;
-    this.maxVelocity        = options.maxVelocity;
-    this.freeFlightDuration = options.freeFlightDuration;
-    this.lerpAmount         = options.lerpAmount;
-    this.maxAge             = options.maxAge;
-    this.launchGap          = options.launchGap;
-    this.name               = options.name;
-    this.scale              = options.scale;
-
-
-    // Create a parent mesh that'll hold all the rockets
-    this.mesh = new THREE.Object3D();
-
-    this.model = ASSET_LOADER.loaded.models[ options.model ].dae.clone();
-    this.material = new THREE.MeshBasicMaterial({
-        transparent: true,
-        map: ASSET_LOADER.loaded.textures[ options.texture ],
-        blending: THREE.AdditiveBlending
-    });
-
-    // Reused objects
-    this.targetMatrix = new THREE.Matrix4();
-    this.targetQuaternion = new THREE.Quaternion();
-    this.invertXAxisQuaternion = new THREE.Quaternion(1, 0, 0, 0);
-
-    // Add objects to the scene
-    this.renderables.push( this.mesh );
-
-    // Override some GameObject defaults
-    this.collideWithGameObjects = 1;
-
 	if( typeof this.initialize === 'function' ) {
-		this.initialize();
+		this.initialize( options );
 	}
 }
 
 
 Weapon.prototype = {
+    initialize: function( options ) {
+        GameObject.call( this );
+
+        this.pool = [];
+        this.activeObjects = [];
+        this.launchTimes = {};
+
+
+        // Base settings
+        this.acceleration       = options.acceleration;
+        this.velocity           = options.velocity;
+        this.maxVelocity        = options.maxVelocity;
+        this.freeFlightDuration = options.freeFlightDuration;
+        this.lerpAmount         = options.lerpAmount;
+        this.maxAge             = options.maxAge;
+        this.launchGap          = options.launchGap;
+        this.name               = options.name;
+        this.scale              = options.scale;
+
+
+        // Create a parent mesh that'll hold all the rockets
+        this.mesh = new THREE.Object3D();
+
+        this.model = ASSET_LOADER.loaded.models[ options.model ].dae.clone();
+        this.material = new THREE.MeshBasicMaterial({
+            transparent: true,
+            map: ASSET_LOADER.loaded.textures[ options.texture ],
+            blending: THREE.AdditiveBlending
+        });
+
+        // Reused objects
+        this.targetMatrix = new THREE.Matrix4();
+        this.targetQuaternion = new THREE.Quaternion();
+        this.invertXAxisQuaternion = new THREE.Quaternion(1, 0, 0, 0);
+
+        // Add objects to the scene
+        this.renderables.push( this.mesh );
+
+        // Override some GameObject defaults
+        this.collideWithGameObjects = 1;
+    },
+
     // Object creation functions
     _makeSingleObject: function() {
         var pos = Number.NEGATIVE_INFINITY;
         var model = this.model.clone(),
             userData = model.userData;
 
-        model.children[0].material = this.material;
+        model.children[0].children[0].material = this.material;
 
         model.scale.set( this.scale, this.scale, this.scale );
 
@@ -143,16 +143,6 @@ Weapon.prototype = {
         }
 
         this.launchTimes[ playerID ] = Date.now();
-
-        var obj = this._getFromPool();
-
-        this.phase = !this.phase;
-
-        this._setupObject( obj, position, quaternion, velocity, this.phase );
-        this.activeObjects.push( obj );
-
-        obj.userData.target = target;
-
 
         var obj = this._getFromPool();
 

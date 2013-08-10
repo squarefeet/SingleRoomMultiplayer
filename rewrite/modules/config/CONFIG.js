@@ -306,7 +306,8 @@ var CONFIG = {
             model: '../../res/models/PlasmaCannon.dae',
             texture: '../../res/textures/PlasmaCannon.png',
             name: 'plasmaCannon',
-            scale: 0.1
+            scale: 0.1,
+            rate: 100
         }
     },
 

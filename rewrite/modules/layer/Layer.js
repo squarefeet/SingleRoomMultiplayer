@@ -58,7 +58,7 @@ var BackgroundLayer = Layer.extend({
 		o.planet = new Planet( CONFIG.layers.background.planet );
 		o.sun = new Sun( CONFIG.layers.background.sun );
 
-		o3d.sunLight = new THREE.DirectionalLight( 0xfffea6, 1 );
+		o3d.sunLight = new THREE.DirectionalLight( 0xfffea6, 0.75 );
 	    o3d.sunLight.position = CONFIG.layers.background.sun.position;
 	},
 
@@ -105,6 +105,10 @@ var MiddlegroundLayer = Layer.extend({
             	CAMERA_CONTROLS.getCameraRotation(), 
             	CAMERA_CONTROLS.getVelocity()
             );
+		});
+
+		this.options.mouseHandler.addLeftMouseUpListener(function() {
+            that.objects.plasmaCannon.stopFiring( 'host' );
 		});
 	},
 
@@ -155,7 +159,7 @@ var MiddlegroundLayer = Layer.extend({
 	    o3d.sunLight.position.copy( CONFIG.layers.background.sun.position );
 
 
-	    o.plasmaCannon = new Weapon( CONFIG.weapons.plasmaCannon );
+	    o.plasmaCannon = new PlasmaCannon( CONFIG.weapons.plasmaCannon );
 
 		// o.ship = new Ship( _.extend( {
 		// 	particleGroup: this.particleGroups.engines,
