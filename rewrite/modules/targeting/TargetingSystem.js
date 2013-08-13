@@ -59,6 +59,8 @@ function TargetingSystem( opts ) {
 
 
 	this.setTargetObject = function( object ) {
+		if( !object.renderables || !object.renderables.length ) return;
+
 		var mesh = object.renderables[0];
 
 		if( !mesh ) return;

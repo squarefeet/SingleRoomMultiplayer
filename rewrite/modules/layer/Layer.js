@@ -161,13 +161,13 @@ var MiddlegroundLayer = Layer.extend({
 
 	    o.plasmaCannon = new PlasmaCannon( CONFIG.weapons.plasmaCannon );
 
-		// o.ship = new Ship( _.extend( {
-		// 	particleGroup: this.particleGroups.engines,
-		// 	x: 0, y: 0, z: 0
-		// }, CONFIG.ship )  );
+		o.ship = new Ship( _.extend( {
+			particleGroup: this.particleGroups.engines,
+			x: 0, y: 0, z: 0
+		}, CONFIG.ship )  );
 
-		// o.ship.controls.setForward( true );
-		// o.ship.controls.setY( (window.innerWidth/2) -10 );
+		o.ship.controls.setForward( true );
+		o.ship.controls.setY( (window.innerWidth/2) -10 );
 
 
 		// o.mothership = new Mothership({
