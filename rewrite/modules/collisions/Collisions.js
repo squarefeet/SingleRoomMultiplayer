@@ -23,18 +23,18 @@ var gjk = {
 	maxSimplexRecursions: 10,
 
 	_transformToWorldCoordinates: function( mesh ) {
-		// var out = [],
-		// 	faces = mesh.geometry.faces;
+		var out = [],
+			faces = mesh.geometry.faces;
 
-		// mesh.updateMatrixWorld();
+		mesh.updateMatrixWorld();
 
-		// for( var i = 0; i < faces.length; ++i ) {
-		// 	out.push(
-		// 		( new THREE.Vector3() ).copy( faces[i].centroid ).applyMatrix4( mesh.matrixWorld )
-		// 	);
-		// }
+		for( var i = 0; i < faces.length; ++i ) {
+			out.push(
+				( new THREE.Vector3() ).copy( faces[i].centroid ).applyMatrix4( mesh.matrixWorld )
+			);
+		}
 
-		// return out;
+		return out;
 
 
 		var out = [],
@@ -130,7 +130,7 @@ var gjk = {
 	    	// a is the point added last to the simplex 
 	    	var a = simplex[1],
 	    		b = simplex[0],
-	    		ab = ( new THREE.Vector3() ).subVectors( b, a ),
+	    		ab = ( new THREE.Vector3() ).addVectors( b, a ),
 	    		ao = ( new THREE.Vector3() ).copy( a ).negate();
 
 	    	plane.position.copy( ao );
@@ -153,8 +153,8 @@ var gjk = {
 	        	b = simplex[1],
 	        	c = simplex[0],
 	    		ao = ( new THREE.Vector3() ).copy( a ).negate(),
-	    		ab = ( new THREE.Vector3() ).subVectors( b, a ),
-	    		ac = ( new THREE.Vector3() ).subVectors( c, a ),
+	    		ab = ( new THREE.Vector3() ).addVectors( b, a ),
+	    		ac = ( new THREE.Vector3() ).addVectors( c, a ),
 	    		abc = ( new THREE.Vector3() ).copy( ab ).cross( ac );
 
 	    	plane.position.copy( ao );
@@ -222,9 +222,9 @@ var gjk = {
 	    		c = simplex[1],
 	    		d = simplex[0],
 	    		ao = ( new THREE.Vector3() ).copy( a ).negate(),
-	    		ab = ( new THREE.Vector3() ).subVectors( b, a ),
-	    		ac = ( new THREE.Vector3() ).subVectors( c, a ),
-	    		ad = ( new THREE.Vector3() ).subVectors( d, a ),
+	    		ab = ( new THREE.Vector3() ).addVectors( b, a ),
+	    		ac = ( new THREE.Vector3() ).addVectors( c, a ),
+	    		ad = ( new THREE.Vector3() ).addVectors( d, a ),
 	    		abc = ( new THREE.Vector3() ).copy( ab ).cross( ac ),
 	    		acd = ( new THREE.Vector3() ).copy( ac ).cross( ad ),
 	    		adb = ( new THREE.Vector3() ).copy( ad ).cross( ab ),
