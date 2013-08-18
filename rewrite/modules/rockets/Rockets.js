@@ -99,6 +99,7 @@ Rockets.prototype = {
     _returnToPool: function( rocket ) {
         this.pool.push( rocket );
         this.mesh.remove( rocket );
+        // rocket.dispose();
     },
 
     _getFromEmitterPool: function() {

@@ -85,7 +85,7 @@ function LayerManager( opts ) {
 			geometryWeaponColliders.push( obj.mesh );
 		}
 		if( obj.collideWithGameObjects ) {
-			gameObjectColliders.push( obj.mesh );
+			gameObjectColliders.push( obj );
 		}
 		if( obj.targetable ) {
 			targetableObjects.push( obj );

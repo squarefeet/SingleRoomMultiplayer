@@ -4,7 +4,7 @@ var MOUSE_HANDLER = new MouseHandler();
 var KEYBOARD_HANDLER = new KeyboardHandler();
 var LAYER_MANAGER = new LayerManager( CONFIG.layerManager );
 var ASSET_LOADER = new AssetLoader( _.extend( { events: EVENTS }, CONFIG.assetLoader ) );
-
+var GJK_COLLISIONS = new GJK();
 
 // Adjust camera position(s) and rotation(s) on player input.
 var CAMERA_CONTROLS = new CameraControls( _.extend( {

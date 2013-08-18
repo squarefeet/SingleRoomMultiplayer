@@ -126,6 +126,7 @@ var CONFIG = {
 		models: [
 	        '../../res/models/rocket.dae',
             '../../res/models/crosswing6-recentered.dae',
+            '../../res/models/crosswingBounding2.dae',
             '../../res/models/bigShip3.dae',
             '../../res/models/PlasmaCannon.dae'
 	    ],
@@ -315,7 +316,8 @@ var CONFIG = {
 	ship: {
 		model: '../../res/models/crosswing6-recentered.dae',
 		scale: 0.1,
-		useEmitter: true
+		useEmitter: true,
+        controls: true
 	},
 
     engineBooster: {

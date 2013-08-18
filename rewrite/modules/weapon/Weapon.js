@@ -46,7 +46,7 @@ Weapon.prototype = {
         this.renderables.push( this.mesh );
 
         // Override some GameObject defaults
-        this.collideWithGameObjects = 1;
+        // this.collideWithGameObjects = 1;
     },
 
     // Object creation functions
@@ -103,6 +103,7 @@ Weapon.prototype = {
     _returnToPool: function( obj ) {
         this.pool.push( obj );
         this.mesh.remove( obj );
+        // obj.dispose();
     },
 
     _setupObject: function( obj, position, quaternion, velocity, phase ) {

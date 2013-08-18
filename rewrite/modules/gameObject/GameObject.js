@@ -8,6 +8,8 @@ function GameObject() {
 	this.collideWithGeometryWeapons = 0;
 	this.collideWithGameObjects = 0;
 
+	this.checkedCollisionWithGameObjects = 0;
+
 	this.renderables = [];
 	
 

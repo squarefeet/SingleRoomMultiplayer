@@ -8,12 +8,14 @@
 	<script type="text/javascript" src="../external/Stats.min.js"></script>
 	<script type="text/javascript" src="../external/THREE-r58.min.js"></script>
 	<script type="text/javascript" src="../external/THREE.ColladaLoader.js"></script>
-
+    <script type="text/javascript" src="../pool/Pool.js"></script>
 	<script type="text/javascript" src="Collisions.js"></script>
 
 	<script type="text/javascript">
         var scene, camera, renderer, stats, stats2, clock,
-        	cube1, cube2, cubeSize = 10, plane;
+        	cube1, cube2, cubeSize = 10, plane,
+
+            gjk = new GJK();
 
         function init() {
             scene = new THREE.Scene();
@@ -27,9 +29,25 @@
             stats = new Stats();
             clock = new THREE.Clock();
 
-            cube1 = new THREE.Mesh( new THREE.CubeGeometry( cubeSize, cubeSize, cubeSize ) );
-            cube2 = new THREE.Mesh( new THREE.CubeGeometry( cubeSize, cubeSize, cubeSize ) );
-            plane = new THREE.Mesh( new THREE.SphereGeometry( 2, 2 ) );
+            // cube1 = new THREE.Mesh( new THREE.SphereGeometry( 5, cubeSize, cubeSize ) );
+            // cube2 = new THREE.Mesh( new THREE.SphereGeometry( 15, 15, 16 ) );
+            plane = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ) );
+
+            cube1 = new THREE.Mesh( new THREE.CubeGeometry( 10, 10, 10 ) );
+            cube2 = new THREE.Mesh( new THREE.CubeGeometry( 10, 10, 10 ) );
+
+            cube1.position.set(-100, 4, 0);
+            cube2.position.set(100, -4, 0);
+
+            cube1.acceleration = new THREE.Vector3(0.001, 0, 0);
+            cube2.acceleration = new THREE.Vector3(-0.001, 0, 0);
+
+            cube1.velocity = new THREE.Vector3();
+            cube2.velocity = new THREE.Vector3();
+
+
+
+            // cube2.rotation.z = Math.PI/4;
 
             scene.add( cube1 );
             scene.add( cube2 );
@@ -37,8 +55,6 @@
 
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.top = '0';
-
-            console.log( cube1 );
 
             document.body.appendChild( renderer.domElement );
             document.body.appendChild( stats.domElement );
@@ -51,20 +67,44 @@
         }
 
         function updateCubes() {
-            cube1.position.x = Math.sin( Date.now() * 0.0005 ) * 50;
-            cube2.position.copy( cube1.position ).negate();
+            cube1.velocity.add( cube1.acceleration );
+            cube2.velocity.add( cube2.acceleration );
+            cube1.position.add( cube1.velocity );
+            cube2.position.add( cube2.velocity );
         }
 
         function checkCollision() {
         	if( gjk.intersect( cube1, cube2 ) ) {
-        		console.log( true );
+                cube1.velocity.negate();
+                cube2.velocity.negate();
+
+                cube1.velocity.add( gjk.collisionDirectionForMesh1.divideScalar(10) );
+                cube2.velocity.add( gjk.collisionDirectionForMesh2.divideScalar(10) );
+
+                cube1.position.add( cube1.velocity );
+                cube2.position.add( cube2.velocity );
+
+                // var count = 0;
+
+                // while( gjk.intersect( cube1, cube2 ) ) {
+                //     ++count;
+                //     cube1.position.add( cube1.velocity );
+                //     cube2.position.add( cube2.velocity );
+                // }
+
+                // console.log(count)
         	}
         }
 
+        var c = 0;
+
         function render( dt ) {
-        	updateCubes();
-        	checkCollision();
+            if( c == 0 ) {
+        	   updateCubes();
+                checkCollision();
+            }
             renderer.render( scene, camera );
+            // ++c;
         }
 
 

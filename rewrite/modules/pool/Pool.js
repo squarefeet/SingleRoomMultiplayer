@@ -5,6 +5,9 @@ function Pool( numItems, object, creationArgument ) {
 		if(store.length) {
 			return store.pop();
 		}
+		else {
+			return new object( creationArgument );
+		}
 	};
 
 	this.release = function( o ) {

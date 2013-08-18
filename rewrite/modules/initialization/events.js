@@ -32,6 +32,27 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
     //     HUD.selectWeapon( 'secondary', Math.round( Math.random() ) );
     // }, 1000);
 
+
+    RENDERER.addPreRenderTickFunction( function() {
+        var gameColliders = LAYER_MANAGER.getGameObjectColliders();
+
+        for( var i = 0; i < gameColliders.length; ++i ) {
+            gameColliders[i].checkedCollisionWithGameObjects = 0;
+        }
+
+        for( var i = 0; i < gameColliders.length-1; ++i ) {
+            if( !gameColliders[i].checkedCollisionWithGameObjects || !gameColliders[i+1].checkedCollisionWithGameObjects) {
+                
+                if( GJK_COLLISIONS.intersect( gameColliders[i].renderables[0], gameColliders[i+1].renderables[0] ) ) {
+                    console.log('bump')
+                }
+
+                gameColliders[i].checkedCollisionWithGameObjects = 1;
+                gameColliders[i+1].checkedCollisionWithGameObjects = 1;
+            }
+        }
+    });
+
     setTimeout(RENDERER.start, 0);
 });
 
