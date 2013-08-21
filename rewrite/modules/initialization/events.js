@@ -71,9 +71,9 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
     RENDERER.addPreRenderTickFunction( function() {
         var gameColliders = LAYER_MANAGER.getGameObjectColliders();
 
-        for( var i = 0; i < gameColliders.length; ++i ) {
-            gameColliders[i].checkedCollisionWithGameObjects = 0;
-        }
+        // for( var i = 0; i < gameColliders.length; ++i ) {
+        //     gameColliders[i].checkedCollisionWithGameObjects = 0;
+        // }
 
         for( var i = 0; i < gameColliders.length - 1; ++i ) {
             if( !gameColliders[i].checkedCollisionWithGameObjects && !gameColliders[i].hasCollided ) {
@@ -81,49 +81,17 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
                 worldBox2.copy( gameColliders[i+1].boundingBox ).applyMatrix4( gameColliders[i+1].mesh.matrixWorld );
 
                 if( worldBox1.isIntersectionBox( worldBox2 ) ) {
-
                     if( GJK_COLLISIONS.intersect( 
-                            gameColliders[i].getBoundingModel(), 
-                            gameColliders[i+1].getBoundingModel()
-                        )
-                    ) {
-                        gameColliders[i].hasCollided = true;
-                        gameColliders[i+1].hasCollided = true;
-                        gameColliders[i].getVelocity().copy( GJK_COLLISIONS.collisionDirectionForMesh1.multiplyScalar(3000) );
-                        gameColliders[i+1].getVelocity().copy( GJK_COLLISIONS.collisionDirectionForMesh2.multiplyScalar(3000) );
-
-                        setTimeout( (function(index) {
-                            return function() {
-                                gameColliders[index].hasCollided = false;
-                                gameColliders[index+1].hasCollided = false;
-                            };
-                        }(i)), 500);
+                        gameColliders[i].getBoundingModel(), 
+                        gameColliders[i+1].getBoundingModel() 
+                    ) ) {
+                        gameColliders[i].onCollision( GJK_COLLISIONS.collisionDirectionForMesh1 );
+                        gameColliders[i+1].onCollision( GJK_COLLISIONS.collisionDirectionForMesh2 );
                     }
                 }
             }
         }
     });
-
-
-    // RENDERER.addPreRenderTickFunction( function() {
-    //     var gameColliders = LAYER_MANAGER.getGameObjectColliders();
-
-    //     for( var i = 0; i < gameColliders.length; ++i ) {
-    //         gameColliders[i].checkedCollisionWithGameObjects = 0;
-    //     }
-
-    //     for( var i = 0; i < gameColliders.length-1; ++i ) {
-    //         if( !gameColliders[i].checkedCollisionWithGameObjects || !gameColliders[i+1].checkedCollisionWithGameObjects) {
-                
-    //             if( GJK_COLLISIONS.intersect( gameColliders[i].renderables[0], gameColliders[i+1].renderables[0] ) ) {
-    //                 console.log('bump')
-    //             }
-
-    //             gameColliders[i].checkedCollisionWithGameObjects = 1;
-    //             gameColliders[i+1].checkedCollisionWithGameObjects = 1;
-    //         }
-    //     }
-    // });
 
     setTimeout(RENDERER.start, 0);
 });

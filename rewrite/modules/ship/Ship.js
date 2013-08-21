@@ -40,6 +40,8 @@ function Ship( options ) {
     this.mesh.add( this.shipModel );
     this.mesh.add( this.boundingModel );
 
+
+
     if( typeof options.controls === 'boolean') {
         this._addControls();
     }
@@ -66,6 +68,17 @@ Ship.prototype = {
         if( this.controls ) {
             return this.controls.getVelocity();
         }
+    },
+
+    onCollision: function( collisionVector ) {
+        var that = this;
+
+        this.getVelocity().copy( collisionVector ).multiplyScalar( 3000 );
+        this.hasCollided = true;
+
+        setTimeout(function() {
+            that.hasCollided = false;
+        }, 500);
     },
 
     _addControls: function() {

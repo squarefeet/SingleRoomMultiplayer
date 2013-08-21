@@ -11,21 +11,6 @@ function GameObject() {
 	this.checkedCollisionWithGameObjects = 0;
 
 	this.renderables = [];
-	
-
-	this.checkCollision = function( objects, obj, threshold ) {
-		for(var i = 0; i < objects.length; ++i ) {
-			if( objects[i].position.distanceTo( obj.position ) < threshold ) {
-				return true;
-			}
-		}
-	};
-
-
-
-	this.onCollision = function( ) {
-
-	};
 }
 
 GameObject.extend = utils.extend;
