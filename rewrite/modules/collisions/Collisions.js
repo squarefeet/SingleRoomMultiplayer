@@ -214,8 +214,6 @@ function GJK( opts ) {
     		ab = ( pool.get() ).subVectors( b, a ),
     		ao = ( pool.get() ).copy( a ).negate();
 
-    	plane.position.copy( ao );
-
     	if( ab.dot( ao ) > 0 ) {
     		direction.copy( ab.cross( ao ).cross( ab ) );
     	}
@@ -239,8 +237,6 @@ function GJK( opts ) {
     		abc = ( pool.get() ).copy( ab ).cross( ac ),
     		abcCopy = ( pool.get() ).copy( abc ),
     		abCopy = ( pool.get() ).copy( ab );
-
-    	plane.position.copy( ao );
 
     	if( abcCopy.cross( ac ).dot( ao ) > 0 ) {
     		if( ac.dot( ao ) > 0 ) {
@@ -325,12 +321,6 @@ function GJK( opts ) {
     		acSameAsOrigin = Math.sign( adb.dot( ao ) ) === cSideOnADB,
     		adSameAsOrigin = Math.sign( abc.dot( ao ) ) === dSideOnABC;
 
-    	plane.position.copy( ao );
-    	// plane.geometry.vertices[0].copy( a );
-    	// plane.geometry.vertices[1].copy( b );
-    	// plane.geometry.vertices[2].copy( c );
-    	// plane.geometry.vertices[3].copy( d );
-    	// plane.geometry.verticesNeedUpdate = true;
 
     	if( abSameAsOrigin && acSameAsOrigin && adSameAsOrigin ) {
     		

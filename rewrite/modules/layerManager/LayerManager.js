@@ -97,6 +97,21 @@ function LayerManager( opts ) {
 		l = null;
 	};
 
+	var addCollider = function( obj ) {
+		if( obj.collideWithParticleWeapons ) {
+			particleWeaponColliders.push( obj.mesh );
+		}
+		if( obj.collideWithGeometryWeapons ) {
+			geometryWeaponColliders.push( obj.mesh );
+		}
+		if( obj.collideWithGameObjects ) {
+			gameObjectColliders.push( obj );
+		}
+		if( obj.targetable ) {
+			targetableObjects.push( obj );
+		}
+	};
+
 	var getRenderablesForLayer = function( layerName ) {
 		return store[ layerName ];
 	};
@@ -204,4 +219,5 @@ function LayerManager( opts ) {
 	this.getGeometryWeaponColliders = getGeometryWeaponColliders;
 	this.getGameObjectColliders = getGameObjectColliders;
 	this.getTargetableObjects = getTargetableObjects;
+	this.addCollider = addCollider;
 }

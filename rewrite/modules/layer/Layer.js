@@ -166,7 +166,7 @@ var MiddlegroundLayer = Layer.extend({
 			x: 0, y: 0, z: 0
 		}, CONFIG.ship )  );
 
-		o.ship.controls.setForward( true );
+		// o.ship.controls.setForward( true );
 		o.ship.controls.setY( (window.innerWidth/2) -10 );
 
 
@@ -193,9 +193,9 @@ var MiddlegroundLayer = Layer.extend({
 	tick: function( dt ) {
 		this.objects.rockets.tick( dt );
 		this.objects.plasmaCannon.tick( dt );
+		
 		this.particleGroups.rockets.tick();
 		this.particleGroups.rocketExplosions.tick();
-
 		this.particleGroups.engines.tick();
 	}
 });

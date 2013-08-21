@@ -13,32 +13,44 @@ function Ship( options ) {
     this.weapons = {};
 
     this.mesh = new THREE.Object3D();
+    this.mesh.useQuaternion = true;
 
 
     var shipModel = ASSET_LOADER.loaded.models[ options.model ].dae.clone();
     shipModel.scale.x = shipModel.scale.y = shipModel.scale.z = CONFIG.ship.scale;
     
+    this.shipModel = shipModel;
 
     this.boundingModel = ASSET_LOADER.loaded.models[ '../../res/models/crosswingBounding2.dae' ].dae.clone();
-    this.boundingModel.scale.x = boundingModel.scale.y = boundingModel.scale.z = CONFIG.ship.scale;
+    this.boundingModel.scale.x = this.boundingModel.scale.y = this.boundingModel.scale.z = CONFIG.ship.scale;
     this.boundingModel.visible = false;
     this.boundingModel.children[0].visible = false;
+
+    this.boundingModel.children[0].geometry.computeBoundingBox();
+
+    this.boundingBox = this.boundingModel.children[0].geometry.boundingBox;
+    this.boundingBox.min.multiplyScalar( CONFIG.ship.scale );
+    this.boundingBox.max.multiplyScalar( CONFIG.ship.scale );
+    
 
     this.mesh.position.setX( options.x );
     this.mesh.position.setY( options.y );
     this.mesh.position.setZ( options.z );
 
-    this.mesh.add( shipModel );
-    this.mesh.add( boundingModel );
+    this.mesh.add( this.shipModel );
+    this.mesh.add( this.boundingModel );
 
-    if( options.controls ) {
+    if( typeof options.controls === 'boolean') {
         this._addControls();
+    }
+    else if( typeof options.controls === 'object' ) {
+        this.controls = options.controls;
     }
 
     if( options.useEmitter && this.particleGroup ) {
         this._addEmitter( this.particleGroup );
     }
-    else {
+    else if( !this.particleGroup ) {
         this._addBooster();
     }
 
@@ -47,7 +59,13 @@ function Ship( options ) {
 
 Ship.prototype = {
     getBoundingModel: function() {
-        return this.boundingModel;
+        return this.boundingModel.children[0];
+    },
+
+    getVelocity: function() {
+        if( this.controls ) {
+            return this.controls.getVelocity();
+        }
     },
 
     _addControls: function() {
@@ -68,10 +86,10 @@ Ship.prototype = {
         RENDERER.addPreRenderTickFunction( controls.tick );
     },
 
-    _addEmitter: function( particleGroup ) {
+    _addEmitter: function( particleGroup, position ) {
 
         var emitter = new ShaderParticleEmitter( _.extend({
-            position: this.mesh.position
+            position: position || this.mesh.position
         }, CONFIG.particleEmitters.engines) );
 
         particleGroup.addEmitter( emitter );

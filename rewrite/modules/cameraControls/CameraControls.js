@@ -138,6 +138,8 @@ function CameraControls( opts ) {
 			positionVector.x = -max;
 		}
 
+		positionVector.y *= dec;
+
 		inc = null;
 		dec = null;
 		max = null;

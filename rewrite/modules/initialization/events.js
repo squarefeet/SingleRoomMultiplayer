@@ -24,6 +24,35 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
     } );
 
 
+    // Create a player ship object
+    var settings = _.extend( {
+        particleGroup: MIDDLEGROUND_LAYER.particleGroups.engines,
+        x: 0, y: 0, z: 0
+    }, CONFIG.ship );
+
+    settings.controls = CAMERA_CONTROLS;
+    settings.useEmitter = false;
+
+    var playerShip = new Ship( settings ),
+        camera = LAYER_MANAGER.getAllCameras()[1];
+
+    playerShip._addEmitter( playerShip.particleGroup, camera.position );
+
+
+    console.log( playerShip );
+
+    // camera.add( playerShip );
+    // LAYER_MANAGER.addCollider( playerShip );
+
+    LAYER_MANAGER.addObjectToLayer( 'middleground', playerShip );
+
+
+    RENDERER.addPreRenderTickFunction( function() {
+        playerShip.mesh.position.copy( camera.position );
+        playerShip.mesh.translateZ( 520 );
+        playerShip.mesh.quaternion.copy( camera.quaternion );
+    });
+
     // Add HUD to dom
     HUD.addToDOM();
 
@@ -32,7 +61,13 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
     //     HUD.selectWeapon( 'secondary', Math.round( Math.random() ) );
     // }, 1000);
 
+    
+    // Check BoundingBox collisions
+    var worldBox1 = new THREE.Box3(),
+        worldBox2 = new THREE.Box3();
 
+
+    // Collision detection routine
     RENDERER.addPreRenderTickFunction( function() {
         var gameColliders = LAYER_MANAGER.getGameObjectColliders();
 
@@ -40,18 +75,55 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
             gameColliders[i].checkedCollisionWithGameObjects = 0;
         }
 
-        for( var i = 0; i < gameColliders.length-1; ++i ) {
-            if( !gameColliders[i].checkedCollisionWithGameObjects || !gameColliders[i+1].checkedCollisionWithGameObjects) {
-                
-                if( GJK_COLLISIONS.intersect( gameColliders[i].renderables[0], gameColliders[i+1].renderables[0] ) ) {
-                    console.log('bump')
-                }
+        for( var i = 0; i < gameColliders.length - 1; ++i ) {
+            if( !gameColliders[i].checkedCollisionWithGameObjects && !gameColliders[i].hasCollided ) {
+                worldBox1.copy( gameColliders[i].boundingBox ).applyMatrix4( gameColliders[i].mesh.matrixWorld );
+                worldBox2.copy( gameColliders[i+1].boundingBox ).applyMatrix4( gameColliders[i+1].mesh.matrixWorld );
 
-                gameColliders[i].checkedCollisionWithGameObjects = 1;
-                gameColliders[i+1].checkedCollisionWithGameObjects = 1;
+                if( worldBox1.isIntersectionBox( worldBox2 ) ) {
+
+                    if( GJK_COLLISIONS.intersect( 
+                            gameColliders[i].getBoundingModel(), 
+                            gameColliders[i+1].getBoundingModel()
+                        )
+                    ) {
+                        gameColliders[i].hasCollided = true;
+                        gameColliders[i+1].hasCollided = true;
+                        gameColliders[i].getVelocity().copy( GJK_COLLISIONS.collisionDirectionForMesh1.multiplyScalar(3000) );
+                        gameColliders[i+1].getVelocity().copy( GJK_COLLISIONS.collisionDirectionForMesh2.multiplyScalar(3000) );
+
+                        setTimeout( (function(index) {
+                            return function() {
+                                gameColliders[index].hasCollided = false;
+                                gameColliders[index+1].hasCollided = false;
+                            };
+                        }(i)), 500);
+                    }
+                }
             }
         }
     });
+
+
+    // RENDERER.addPreRenderTickFunction( function() {
+    //     var gameColliders = LAYER_MANAGER.getGameObjectColliders();
+
+    //     for( var i = 0; i < gameColliders.length; ++i ) {
+    //         gameColliders[i].checkedCollisionWithGameObjects = 0;
+    //     }
+
+    //     for( var i = 0; i < gameColliders.length-1; ++i ) {
+    //         if( !gameColliders[i].checkedCollisionWithGameObjects || !gameColliders[i+1].checkedCollisionWithGameObjects) {
+                
+    //             if( GJK_COLLISIONS.intersect( gameColliders[i].renderables[0], gameColliders[i+1].renderables[0] ) ) {
+    //                 console.log('bump')
+    //             }
+
+    //             gameColliders[i].checkedCollisionWithGameObjects = 1;
+    //             gameColliders[i+1].checkedCollisionWithGameObjects = 1;
+    //         }
+    //     }
+    // });
 
     setTimeout(RENDERER.start, 0);
 });
