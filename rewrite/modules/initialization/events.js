@@ -37,7 +37,7 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
         camera = LAYER_MANAGER.getAllCameras()[1];
 
     playerShip._addEmitter( playerShip.particleGroup, camera.position );
-
+    playerShip.playerID = 'host';
 
     console.log( playerShip );
 
@@ -71,16 +71,13 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
     RENDERER.addPreRenderTickFunction( function() {
         var gameColliders = LAYER_MANAGER.getGameObjectColliders();
 
-        // for( var i = 0; i < gameColliders.length; ++i ) {
-        //     gameColliders[i].checkedCollisionWithGameObjects = 0;
-        // }
-
         for( var i = 0; i < gameColliders.length - 1; ++i ) {
             if( !gameColliders[i].checkedCollisionWithGameObjects && !gameColliders[i].hasCollided ) {
                 worldBox1.copy( gameColliders[i].boundingBox ).applyMatrix4( gameColliders[i].mesh.matrixWorld );
                 worldBox2.copy( gameColliders[i+1].boundingBox ).applyMatrix4( gameColliders[i+1].mesh.matrixWorld );
 
                 if( worldBox1.isIntersectionBox( worldBox2 ) ) {
+
                     if( GJK_COLLISIONS.intersect( 
                         gameColliders[i].getBoundingModel(), 
                         gameColliders[i+1].getBoundingModel() 

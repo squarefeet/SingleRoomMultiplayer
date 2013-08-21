@@ -2,7 +2,7 @@ function Ship( options ) {
 
     GameObject.call( this );
 
-    this.collideWithWeapons = 1;
+    this.collideWithGeometryWeapons = 1;
     this.collideWithGameObjects = 1;
     this.targetable = 1;
 
@@ -72,6 +72,11 @@ Ship.prototype = {
 
     onCollision: function( collisionVector ) {
         var that = this;
+
+        if( !collisionVector ) {
+            console.log( '!collisionVector' );
+            return;
+        }
 
         this.getVelocity().copy( collisionVector ).multiplyScalar( 3000 );
         this.hasCollided = true;

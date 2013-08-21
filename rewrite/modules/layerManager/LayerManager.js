@@ -79,10 +79,10 @@ function LayerManager( opts ) {
 		}
 
 		if( obj.collideWithParticleWeapons ) {
-			particleWeaponColliders.push( obj.mesh );
+			particleWeaponColliders.push( obj );
 		}
 		if( obj.collideWithGeometryWeapons ) {
-			geometryWeaponColliders.push( obj.mesh );
+			geometryWeaponColliders.push( obj );
 		}
 		if( obj.collideWithGameObjects ) {
 			gameObjectColliders.push( obj );
@@ -99,10 +99,10 @@ function LayerManager( opts ) {
 
 	var addCollider = function( obj ) {
 		if( obj.collideWithParticleWeapons ) {
-			particleWeaponColliders.push( obj.mesh );
+			particleWeaponColliders.push( obj );
 		}
 		if( obj.collideWithGeometryWeapons ) {
-			geometryWeaponColliders.push( obj.mesh );
+			geometryWeaponColliders.push( obj );
 		}
 		if( obj.collideWithGameObjects ) {
 			gameObjectColliders.push( obj );

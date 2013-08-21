@@ -308,7 +308,8 @@ var CONFIG = {
             texture: '../../res/textures/PlasmaCannon.png',
             name: 'plasmaCannon',
             scale: 0.1,
-            rate: 100
+            rate: 500,
+            bulletConstructor: 'PlasmaCannonBullet'
         }
     },
 

@@ -1,6 +1,34 @@
 /**
 *	@requires utils, Weapon.js, ParticleWeapon.js
 */
+var PlasmaCannonBullet = function( model, material, scale, velocity, lerpAmount ) {
+    var pos = Number.NEGATIVE_INFINITY;
+
+    this.model = model.clone();
+    this.model.children[0].children[0].material = material;
+    this.model.scale.set( scale, scale, scale );
+    this.model.position.set( pos, pos, pos );
+    this.model.useQuaternion = true;
+
+    this.model.userData.velocity = (new THREE.Vector3()).copy( velocity );
+    this.model.userData.age = 0;
+    this.model.userData.lerpAmount = lerpAmount;
+    this.model.userData.distanceToTarget = Number.POSITIVE_INFINITY;
+    this.model.userData.target = null;
+
+    this.boundingBox = this.model.children[0].children[0].geometry.boundingBox;
+    this.boundingBox.min.multiplyScalar( scale );
+    this.boundingBox.max.multiplyScalar( scale );
+
+    this.mesh = this.model.children[0].children[0];
+
+    this.onCollision = function() {
+        console.log('collision!');
+        this.model.userData.age = Number.POSITIVE_INFINITY;
+    };
+};
+
+
 var PlasmaCannon = Weapon.extend({
 	initialize: function( options ) {
 		Weapon.prototype.initialize.apply(this, arguments);
@@ -18,7 +46,8 @@ var PlasmaCannon = Weapon.extend({
         this._setupObject( obj, position, quaternion, velocity, this.phase );
         this.activeObjects.push( obj );
 
-        obj.userData.target = target;
+        obj.model.userData.target = target;
+        obj.model.userData.playerID = playerID;
     },
 
     fire: function( playerID, position, quaternion, velocity, target ) {

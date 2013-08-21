@@ -165,6 +165,7 @@ var MiddlegroundLayer = Layer.extend({
 			particleGroup: this.particleGroups.engines,
 			x: 0, y: 0, z: 0
 		}, CONFIG.ship )  );
+		o.ship.playerID = 'enemy';
 
 		// o.ship.controls.setForward( true );
 		o.ship.controls.setY( (window.innerWidth/2) -10 );

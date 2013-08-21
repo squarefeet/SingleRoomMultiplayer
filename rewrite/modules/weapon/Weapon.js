@@ -25,6 +25,7 @@ Weapon.prototype = {
         this.launchGap          = options.launchGap;
         this.name               = options.name;
         this.scale              = options.scale;
+        this.bulletConstructor  = options.bulletConstructor;
 
 
         // Create a parent mesh that'll hold all the rockets
@@ -51,24 +52,17 @@ Weapon.prototype = {
 
     // Object creation functions
     _makeSingleObject: function() {
-        var pos = Number.NEGATIVE_INFINITY;
-        var model = this.model.clone(),
-            userData = model.userData;
+        var obj = new window[ this.bulletConstructor ] ( 
+            this.model, 
+            this.material, 
+            this.scale, 
+            this.velocity, 
+            this.lerpAmount 
+        );
 
-        model.children[0].children[0].material = this.material;
+        LAYER_MANAGER.addCollider( obj );
 
-        model.scale.set( this.scale, this.scale, this.scale );
-
-        model.position.set( pos, pos, pos );
-        model.useQuaternion = true;
-
-        userData.velocity = (new THREE.Vector3()).copy( this.velocity );
-        userData.age = 0;
-        userData.lerpAmount = this.lerpAmount;
-        userData.distanceToTarget = Number.POSITIVE_INFINITY;
-        userData.target = null;
-
-        return model;
+        return obj;
     },
 
     _makeObjects: function() {
@@ -95,40 +89,40 @@ Weapon.prototype = {
             o = this._makeSingleObject();
         }
 
-        this.mesh.add( o );
+        this.mesh.add( o.model );
 
         return o;
     },
 
     _returnToPool: function( obj ) {
         this.pool.push( obj );
-        this.mesh.remove( obj );
+        this.mesh.remove( obj.model );
         // obj.dispose();
     },
 
     _setupObject: function( obj, position, quaternion, velocity, phase ) {
-        obj.position.copy( position );
-        obj.quaternion.copy( quaternion );
-        obj.quaternion.multiply( this.invertXAxisQuaternion );
-        obj.translateX( phase ? 50 : -50 );
+        obj.model.position.copy( position );
+        obj.model.quaternion.copy( quaternion );
+        obj.model.quaternion.multiply( this.invertXAxisQuaternion );
+        obj.model.translateX( phase ? 50 : -50 );
 
         this._resetObject( obj );
     },
 
     _resetObject: function( obj ) {
-        obj.userData.velocity.copy( this.velocity );
-        obj.userData.age = 0;
-        obj.userData.lerpAmount = 0;
-        obj.userData.distanceToTarget = Number.POSITIVE_INFINITY;
+        obj.model.userData.velocity.copy( this.velocity );
+        obj.model.userData.age = 0;
+        obj.model.userData.lerpAmount = 0;
+        obj.model.userData.distanceToTarget = Number.POSITIVE_INFINITY;
     },
 
     _destroyObject: function( obj, destructionType ) {
-        var userData = obj.userData;
+        var userData = obj.model.userData;
         var pos = Number.NEGATIVE_INFINITY;
 
-        EVENTS.trigger('weapon:' + this.name + ':destroyed', destructionType, obj.position.x, obj.position.y, obj.position.z );
+        EVENTS.trigger('weapon:' + this.name + ':destroyed', destructionType, obj.model.position.x, obj.model.position.y, obj.model.position.z );
 
-        obj.position.set( pos, pos, pos );
+        obj.model.position.set( pos, pos, pos );
         this._resetObject( obj );
 
         this._returnToPool( obj );
@@ -152,7 +146,8 @@ Weapon.prototype = {
         this._setupObject( obj, position, quaternion, velocity, this.phase );
         this.activeObjects.push( obj );
 
-        obj.userData.target = target;
+        obj.model.userData.target = target;
+        obj.model.playerID = playerID;
     },
 
 
@@ -168,7 +163,7 @@ Weapon.prototype = {
 
         for(var i = 0; i < numActive; ++i ) {
             obj = active[i];
-            userData = obj.userData;
+            userData = obj.model.userData;
 
             // If the obj's too old, or has collided, destroy it.
             if( userData.age > this.maxAge || (userData.target && userData.distanceToTarget < 100) ) {
@@ -196,21 +191,40 @@ Weapon.prototype = {
             }
 
             if( userData.target ) {
-                userData.distanceToTarget = rocket.position.distanceTo( userData.target.position );
+                userData.distanceToTarget = obj.model.position.distanceTo( userData.target.position );
                 userData.lerpAmount = min( this.lerpAmount, 50 / userData.distanceToTarget );
             }            
 
             if( userData.target && userData.age > this.freeFlightDuration ) {
-                this.targetMatrix.lookAt( userData.target.position, rocket.position, rocket.up );
+                this.targetMatrix.lookAt( userData.target.position, obj.model.position, obj.model.up );
                 this.targetQuaternion.setFromRotationMatrix( this.targetMatrix );
-                rocket.quaternion.slerp( this.targetQuaternion, userData.lerpAmount );
+                obj.model.quaternion.slerp( this.targetQuaternion, userData.lerpAmount );
             }
 
-            obj.translateZ( userData.velocity.z * dt );
+            obj.model.translateZ( userData.velocity.z * dt );
 
             userData.age += dt;
+
+            this.checkCollision( obj );
         }
     },
+
+    checkCollision: function( obj ) {
+        var colliders = LAYER_MANAGER.getGeometryWeaponColliders();
+
+        for( var i = 0; i < colliders.length; ++i ) {
+            if( obj.model.userData.playerID === colliders[i].playerID ) continue;
+
+            if( GJK_COLLISIONS.intersect( 
+                obj.mesh, 
+                colliders[i].getBoundingModel()
+            ) ) {
+                console.log( obj.model.userData.playerID, colliders[i].playerID )
+                obj.onCollision();
+                break;
+            }
+        }
+    }
 };
 
 
