@@ -3,6 +3,8 @@ var CONFIG = {
     // Performance
     resolutionScaling: 1,
 
+    drawBoundingBoxes: true,
+
     keyMap: {
         'tab': 9
     },

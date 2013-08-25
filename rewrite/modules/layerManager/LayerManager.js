@@ -7,9 +7,7 @@ function LayerManager( opts ) {
 		fov: 75,
 		aspect: window.innerWidth / window.innerHeight,
 		near: 0.1,
-		far: 100000,
-
-		useQuaternion: true
+		far: 100000
 	};
 
 	if( opts ) {
@@ -45,7 +43,6 @@ function LayerManager( opts ) {
 			options.near,
 			options.far
 		);
-		layer.camera.useQuaternion = options.useQuaternion;
 		layer.tick = null;
 
 		if( settings ) {
@@ -164,17 +161,17 @@ function LayerManager( opts ) {
 	var setCameraRotationForLayer = function( layerName, x, y, z, w ) {
 		var camera = layers[ layerName ].camera;
 
-		if( camera.useQuaternion ) {
+		// if( camera.useQuaternion ) {
 			camera.quaternion.x = x;
 			camera.quaternion.y = y;
 			camera.quaternion.z = z;
 			camera.quaternion.w = w;
-		}
-		else {
-			camera.rotation.x = x;
-			camera.rotation.y = y;
-			camera.rotation.z = z;
-		}
+		// }
+		// else {
+		// 	camera.rotation.x = x;
+		// 	camera.rotation.y = y;
+		// 	camera.rotation.z = z;
+		// }
 	};
 
 	var setCameraLookAtForLayer = function( layerName, vector ) {

@@ -21,7 +21,6 @@ function TargetBox( opts ) {
 		planeMesh = new THREE.Mesh( new THREE.PlaneGeometry(1, 1, 1, 1), planeMaterial ),
 		currentTargetObject = null;
 
-	planeMesh.useQuaternion = true;
 	planeMesh.depthWrite = false;
 	planeMesh.quaternion = options.cameraControls.getCameraRotation();
 	planeMesh.visible = false;

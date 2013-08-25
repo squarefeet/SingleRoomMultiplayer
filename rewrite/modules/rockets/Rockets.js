@@ -49,7 +49,6 @@ Rockets.prototype = {
 
         model.position.set( pos, pos, pos );
         model.scale.set(0.02, 0.02, 0.02);
-        model.useQuaternion = true;
 
         userData.velocity = (new THREE.Vector3()).copy( this.velocity );
         userData.age = 0;
@@ -254,7 +253,6 @@ Rockets.prototype = {
                 this.activeRockets[i].userData.age = Number.POSITIVE_INFINITY;
 
                 // var newTarget = new THREE.Object3D();
-                // newTarget.useQuaternion = true;
                 // newTarget.position.copy( this.activeRockets[i].position );
                 // newTarget.quaternion.copy( this.activeRockets[i].quaternion );
                 // newTarget.translateX(1000);

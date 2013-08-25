@@ -8,7 +8,6 @@ var PlasmaCannonBullet = function( model, material, scale, velocity, lerpAmount 
     this.model.children[0].children[0].material = material;
     this.model.scale.set( scale, scale, scale );
     this.model.position.set( pos, pos, pos );
-    this.model.useQuaternion = true;
 
     this.model.userData.velocity = (new THREE.Vector3()).copy( velocity );
     this.model.userData.age = 0;
@@ -16,14 +15,17 @@ var PlasmaCannonBullet = function( model, material, scale, velocity, lerpAmount 
     this.model.userData.distanceToTarget = Number.POSITIVE_INFINITY;
     this.model.userData.target = null;
 
-    this.boundingBox = this.model.children[0].children[0].geometry.boundingBox;
-    this.boundingBox.min.multiplyScalar( scale );
-    this.boundingBox.max.multiplyScalar( scale );
+    this.model.children[0].children[0].geometry.computeBoundingBox();
 
+    this.boundingBox = this.model.children[0].children[0].geometry.boundingBox;
+    
     this.mesh = this.model.children[0].children[0];
 
+    if( CONFIG.drawBoundingBoxes ) {
+        this.mesh.add( utils.createDrawableBoundingBox( this.boundingBox ) );
+    }
+    
     this.onCollision = function() {
-        console.log('collision!');
         this.model.userData.age = Number.POSITIVE_INFINITY;
     };
 };

@@ -13,7 +13,6 @@ function Ship( options ) {
     this.weapons = {};
 
     this.mesh = new THREE.Object3D();
-    this.mesh.useQuaternion = true;
 
 
     var shipModel = ASSET_LOADER.loaded.models[ options.model ].dae.clone();
@@ -29,9 +28,15 @@ function Ship( options ) {
     this.boundingModel.children[0].geometry.computeBoundingBox();
 
     this.boundingBox = this.boundingModel.children[0].geometry.boundingBox;
+
+    this.boundingBox.max.z = this.boundingBox.min.z/2;
+    this.boundingBox.min.z = -this.boundingBox.min.z/2;
+    
+
     this.boundingBox.min.multiplyScalar( CONFIG.ship.scale );
     this.boundingBox.max.multiplyScalar( CONFIG.ship.scale );
     
+   
 
     this.mesh.position.setX( options.x );
     this.mesh.position.setY( options.y );
@@ -40,7 +45,9 @@ function Ship( options ) {
     this.mesh.add( this.shipModel );
     this.mesh.add( this.boundingModel );
 
-
+    if( CONFIG.drawBoundingBoxes ) {
+        this.mesh.add( utils.createDrawableBoundingBox( this.boundingBox ) );
+    }
 
     if( typeof options.controls === 'boolean') {
         this._addControls();

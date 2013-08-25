@@ -58,3 +58,19 @@ utils.makeCSSRGBAString = function( r, g, b, a ) {
 utils.scaleNumber = function(num, lowIn, highIn, lowOut, highOut) {
     return ((num-lowIn) / (highIn-lowIn)) * (highOut-lowOut) + lowOut;
 };
+
+
+// Create a new THREE.CubeGeometry based on a bounding box
+utils.createDrawableBoundingBox = (function() {
+    var material = new THREE.MeshBasicMaterial({
+        wireframe: true
+    });
+
+    return function( b ) {
+        var width   = b.max.x - b.min.x,
+            height  = b.max.y - b.min.y,
+            depth   = b.max.z - b.min.z;
+
+        return new THREE.Mesh( new THREE.CubeGeometry( width, height, depth ), material );
+    };
+}());

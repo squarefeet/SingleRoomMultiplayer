@@ -60,8 +60,6 @@ Weapon.prototype = {
             this.lerpAmount 
         );
 
-        LAYER_MANAGER.addCollider( obj );
-
         return obj;
     },
 
@@ -97,7 +95,6 @@ Weapon.prototype = {
     _returnToPool: function( obj ) {
         this.pool.push( obj );
         this.mesh.remove( obj.model );
-        // obj.dispose();
     },
 
     _setupObject: function( obj, position, quaternion, velocity, phase ) {
@@ -210,15 +207,21 @@ Weapon.prototype = {
     },
 
     checkCollision: function( obj ) {
-        var colliders = LAYER_MANAGER.getGeometryWeaponColliders();
+        var colliders = LAYER_MANAGER.getGeometryWeaponColliders(),
+            worldBox1 = (new THREE.Box3()).copy( obj.boundingBox ).applyMatrix4( obj.mesh.matrixWorld ),
+            worldBox2 = new THREE.Box3();
 
         for( var i = 0; i < colliders.length; ++i ) {
             if( obj.model.userData.playerID === colliders[i].playerID ) continue;
 
-            if( GJK_COLLISIONS.intersect( 
-                obj.mesh, 
-                colliders[i].getBoundingModel()
-            ) ) {
+            worldBox2.copy( colliders[i].boundingBox ).applyMatrix4( colliders[i].mesh.matrixWorld );
+
+            if( worldBox1.isIntersectionBox( worldBox2 ) ) {
+
+            // if( GJK_COLLISIONS.intersect( 
+            //     obj.mesh, 
+            //     colliders[i].getBoundingModel()
+            // ) ) {
                 console.log( obj.model.userData.playerID, colliders[i].playerID )
                 obj.onCollision();
                 break;
