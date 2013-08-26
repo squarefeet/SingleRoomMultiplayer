@@ -103,7 +103,8 @@ var MiddlegroundLayer = Layer.extend({
             	'host', 
             	CAMERA_CONTROLS.getPositionForCamera(1), 
             	CAMERA_CONTROLS.getCameraRotation(), 
-            	CAMERA_CONTROLS.getVelocity()
+            	CAMERA_CONTROLS.getVelocity(), 
+            	TARGETING_SYSTEM.getCurrentTarget() 
             );
 		});
 
@@ -118,13 +119,14 @@ var MiddlegroundLayer = Layer.extend({
 		// Shader Engines
 		groups.engines = new ShaderParticleGroup( CONFIG.particleGroups.engines );
 
-		// Shader Rockets
+		// Shader Rocket engines
 		groups.rockets = new ShaderParticleGroup( CONFIG.particleGroups.rockets );
 
 		// Shader rocket explosions
 		groups.rocketExplosions = new ShaderParticleGroup( CONFIG.particleGroups.rocketExplosions );
 
-		// Bullet particles
+		// Shader plasma cannon explosions
+		groups.plasmaCannonExplosions = new ShaderParticleGroup( CONFIG.particleGroups.plasmaCannonExplosions );
 
 	},
 
@@ -133,12 +135,22 @@ var MiddlegroundLayer = Layer.extend({
 			g = this.particleGroups,
 			store;
 
+		// Make rocket explosion pool and add each emitter in this pool to its parent particle group
 		p.rocketExplosions = new Pool( 100, ShaderParticleEmitter, CONFIG.particleEmitters.rocketExplosions );
 
 		store = p.rocketExplosions.getStore();
 
 		for( var i = 0; i < store.length; ++i ) {
 			g.rocketExplosions.addEmitter( store[i] );
+		}
+
+		// Do the same for plasma cannon explosions
+		p.plasmaCannonExplosions = new Pool( 100, ShaderParticleEmitter, CONFIG.particleEmitters.plasmaCannonExplosions );
+
+		store = p.plasmaCannonExplosions.getStore();
+
+		for( var i = 0; i < store.length; ++i ) {
+			g.plasmaCannonExplosions.addEmitter( store[i] );
 		}
 	},
 
@@ -169,6 +181,7 @@ var MiddlegroundLayer = Layer.extend({
 		o.ship.playerID = 'enemy';
 
 		o.ship.controls.setForward( true );
+		o.ship.controls.setY( window.innerHeight / 10 );
 
 
 		// o.mothership = new Mothership({
@@ -191,27 +204,31 @@ var MiddlegroundLayer = Layer.extend({
 		}, CONFIG.particleGroups.rocketExplosions.maxAge + 100 )
 	},
 
+	triggerPlasmaCannonExplosion: function( type, x, y, z ) {
+		var pool = this.particleEmitters.plasmaCannonExplosions,
+			explosion = pool.get();
+
+		if(!explosion) {
+			console.log( 'no explosion', explosion );
+			return;
+		}
+
+		explosion.position.set( x, y, z );
+		explosion.alive = 1;
+
+		setTimeout( function() {
+			pool.release( explosion );
+		}, CONFIG.particleGroups.plasmaCannonExplosions.maxAge + 100 )
+	},
+
 	tick: function( dt ) {
-		var controls = this.options.cameraControls,
-			pos = controls.getPositionForCamera(1);
-
-		// this.objects.planet.tick( dt );
-
-		// this.objects.skybox.mesh.position.copy( pos );
-		// this.objects.planet.mesh.position.copy( pos );
-		// this.objects.sun.mesh.position.copy( pos );
-		// this.object3Ds.sunLight.position.copy( pos );
-
-		// this.object3Ds.sunLight.position.add( pos );
-
 		this.objects.rockets.tick( dt );
 		this.objects.plasmaCannon.tick( dt );
 		
 		this.particleGroups.rockets.tick();
 		this.particleGroups.rocketExplosions.tick();
+		this.particleGroups.plasmaCannonExplosions.tick();
 		this.particleGroups.engines.tick();
-
-		// console.log(this.objects.ship.mesh.quaternion.x, this.objects.ship.mesh.quaternion.y, this.objects.ship.mesh.quaternion.z, this.objects.ship.mesh.quaternion.w)
 	}
 });
 

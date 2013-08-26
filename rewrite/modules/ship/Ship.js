@@ -28,9 +28,6 @@ function Ship( options ) {
     this.boundingModel.children[0].geometry.computeBoundingBox();
 
     this.boundingBox = this.boundingModel.children[0].geometry.boundingBox;
-
-    // this.boundingBox.max.z = this.boundingBox.min.z/2;
-    // this.boundingBox.min.z = -this.boundingBox.min.z/2;
     
     this.maxBoundingSize = utils.getMaxBoundingSize( this.boundingBox );
 
@@ -67,7 +64,6 @@ function Ship( options ) {
 
 
     this.renderables.push( this.mesh );
-    // this.renderables.push( this.drawableBoundingBox );
 }
 
 Ship.prototype = {
@@ -109,7 +105,7 @@ Ship.prototype = {
         controls.setCenterY( window.innerHeight/2 );
 
         controls.setX( window.innerWidth/2 );
-        controls.setY( 0 );
+        controls.setY( window.innerHeight/2 );
 
         this.controls = controls;
         RENDERER.addPreRenderTickFunction( controls.tick );

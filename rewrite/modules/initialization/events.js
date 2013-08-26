@@ -95,7 +95,7 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
 });
 
 
-EVENTS.on('Rockets:destroyed', function( destructionType, x, y, z ) {
+EVENTS.on('weapon:rocket:destroyed', function( destructionType, x, y, z ) {
     // Trigger an explosion at xyz.
     MIDDLEGROUND_LAYER.triggerRocketExplosion( destructionType, x, y, z );
 });
@@ -103,5 +103,5 @@ EVENTS.on('Rockets:destroyed', function( destructionType, x, y, z ) {
 
 EVENTS.on('weapon:plasmaCannon:destroyed', function( destructionType, x, y, z ) {
     // Trigger an explosion at xyz.
-    MIDDLEGROUND_LAYER.triggerRocketExplosion( destructionType, x, y, z );
+    MIDDLEGROUND_LAYER.triggerPlasmaCannonExplosion( destructionType, x, y, z );
 });

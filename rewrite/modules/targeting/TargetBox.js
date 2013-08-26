@@ -34,8 +34,11 @@ function TargetBox( opts ) {
 
 		targetObject.traverse( function( o ) {
 			if( o instanceof THREE.Mesh ) {
-				var geometry = o.geometry,
-					boundingBox = geometry.boundingBox,
+				var geometry = o.geometry;
+
+				geometry.computeBoundingBox();
+
+				var	boundingBox = geometry.boundingBox,
 					sizeX = (boundingBox.max.x - boundingBox.min.x) * targetObject.scale.x,
 					sizeY = (boundingBox.max.y - boundingBox.min.y) * targetObject.scale.y,
 					size = Math.min( Math.max( sizeX, sizeY, CONFIG.target.minSize ), CONFIG.target.maxSize );
@@ -58,6 +61,5 @@ function TargetBox( opts ) {
 		if(!currentTargetObject) return;
 
 		planeMesh.position.copy( currentTargetObject.position );
-		planeMesh.position.z -= currentTargetObject.__center.z;
 	};
 }

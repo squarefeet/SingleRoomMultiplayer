@@ -229,9 +229,13 @@ var CONFIG = {
         },
 
         rocketExplosions: {
-            maxAge: 2,
+            maxAge: 5,
         	texture: '../../res/textures/smokeparticle.png',
-        	hasPerspective: 1
+        },
+
+        plasmaCannonExplosions: {
+            maxAge: 2,
+            texture: '../../res/textures/smokeparticle.png',
         }
     },
 
@@ -242,7 +246,7 @@ var CONFIG = {
             particlesPerSecond: 50,
             size: 100,
             sizeSpread: 0,
-            sizeEnd: 1000,
+            sizeEnd: 200,
             colorStart: new THREE.Color( 'white' ),
             colorEnd: new THREE.Color( 'blue' ),
             opacityStart: 1.0,
@@ -268,13 +272,30 @@ var CONFIG = {
             speedSpread: 0,
             particlesPerSecond: 100,
             size: 500,
-            sizeSpread: 0,
+            sizeSpread: 300,
             sizeEnd: 20,
-            emitterDuration: 0.1,
+            emitterDuration: 0.5,
             alive: 0,
             type: 'sphere',
             colorStart: new THREE.Color('red'),
             colorEnd: new THREE.Color('yellow'),
+            opacityStart: 1.0,
+            opacityEnd: 0.0
+        },
+
+        plasmaCannonExplosions: {
+            radius: 1,
+            speed: 250,
+            speedSpread: 0,
+            particlesPerSecond: 100,
+            size: 500,
+            sizeSpread: 0,
+            sizeEnd: 20,
+            emitterDuration: 0.5,
+            alive: 0,
+            type: 'sphere',
+            colorStart: new THREE.Color('yellow'),
+            colorEnd: new THREE.Color('green'),
             opacityStart: 1.0,
             opacityEnd: 0.0
         }
@@ -291,7 +312,7 @@ var CONFIG = {
             acceleration: new THREE.Vector3(0, 0, 2000),
             velocity: new THREE.Vector3(0, 0, 3000),
             maxVelocity: 40000,
-            freeFlightDuration: 1,
+            freeFlightDuration: 0.5,
             lerpAmount: 0.07,
             maxAge: 10,
             launchGap: 1000,

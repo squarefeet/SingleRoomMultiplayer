@@ -119,7 +119,7 @@ Weapon.prototype = {
         var p = this.emitterPool,
             r;
 
-        // Grab a rocket from the pool if one is available.
+        // Grab a bullet from the pool if one is available.
         if( p.length ) {
             r = p.pop();
             r.alive = 1;
@@ -130,7 +130,8 @@ Weapon.prototype = {
 
     _returnToEmitterPool: function( emitter ) {
         if(emitter) {
-            emitter.userData.rocket = null;
+            emitter.userData.obj = null;
+            emitter.position.set( Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY );
             emitter.alive = 0;
             this.emitterPool.push( emitter );
         }
