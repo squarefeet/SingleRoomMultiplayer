@@ -220,28 +220,16 @@ var CONFIG = {
     particleGroups: {
         engines: {
             maxAge: 3,
-            colorStart: new THREE.Color( 'white' ),
-            colorEnd: new THREE.Color( 'blue' ),
-            opacityStart: 1.0,
-            opacityEnd: 0.0,
             texture: '../../res/textures/smokeparticle.png'
         },
 
         rockets: {
             maxAge: 1,
-            colorStart: new THREE.Color( 'white' ),
-            colorEnd: new THREE.Color( 'green' ),
-            opacityStart: 1.0,
-            opacityEnd: 0.0,
             texture: '../../res/textures/smokeparticle.png'
         },
 
         rocketExplosions: {
             maxAge: 2,
-            colorStart: new THREE.Color('red'),
-            colorEnd: new THREE.Color('yellow'),
-            opacityStart: 1.0,
-            opacityEnd: 0.0,
         	texture: '../../res/textures/smokeparticle.png',
         	hasPerspective: 1
         }
@@ -254,7 +242,11 @@ var CONFIG = {
             particlesPerSecond: 50,
             size: 100,
             sizeSpread: 0,
-            sizeEnd: 1000
+            sizeEnd: 1000,
+            colorStart: new THREE.Color( 'white' ),
+            colorEnd: new THREE.Color( 'blue' ),
+            opacityStart: 1.0,
+            opacityEnd: 0.0
         },
 
         rockets: {
@@ -263,7 +255,11 @@ var CONFIG = {
             size: 10,
             sizeEnd: 50,
             sizeSpread: 8,
-            alive: 0
+            alive: 0,
+            colorStart: new THREE.Color( 'white' ),
+            colorEnd: new THREE.Color( 'green' ),
+            opacityStart: 1.0,
+            opacityEnd: 0.0,
         },
 
         rocketExplosions: {
@@ -276,7 +272,11 @@ var CONFIG = {
             sizeEnd: 20,
             emitterDuration: 0.1,
             alive: 0,
-            type: 'sphere'
+            type: 'sphere',
+            colorStart: new THREE.Color('red'),
+            colorEnd: new THREE.Color('yellow'),
+            opacityStart: 1.0,
+            opacityEnd: 0.0
         }
     },
 
@@ -300,11 +300,11 @@ var CONFIG = {
 
         plasmaCannon: {
             acceleration: new THREE.Vector3(0, 0, 4000),
-            velocity: new THREE.Vector3(0, 0, 6000),
+            velocity: new THREE.Vector3(0, 0, 10000),
             maxVelocity: 20000,
             freeFlightDuration: 1,
             lerpAmount: 0.07,
-            maxAge: 10,
+            maxAge: 4,
             launchGap: 1,
             model: '../../res/models/PlasmaCannon.dae',
             texture: '../../res/textures/PlasmaCannon.png',
