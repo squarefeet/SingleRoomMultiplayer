@@ -146,19 +146,11 @@ var MiddlegroundLayer = Layer.extend({
 		var o = this.objects,
 			o3d = this.object3Ds;
 
-
-		// o.skybox = new Skybox( CONFIG.layers.background.skybox );
-		// o.starfield = new Starfield( CONFIG.layers.background.starfield );
-		// o.planet = new Planet( CONFIG.layers.background.planet );
-		// o.sun = new Sun( CONFIG.layers.background.sun );
-
-		// o3d.sunLight = new THREE.DirectionalLight( 0xfffea6, 0.75 );
-	 	// o3d.sunLight.position = CONFIG.layers.background.sun.position;
-
 		o.starfield = new Starfield( CONFIG.layers.middleground.starfield );
+
 		o.rockets = new Rockets( _.extend( {
 			particleGroup: this.particleGroups.rockets,
-			explosionParticleGroup: this.particleGroups.rocketExplosions
+			bulletConstructor: 'Rocket'
 		}, CONFIG.weapons.rockets ) );
 
 		o3d.targetMesh = new THREE.Mesh( new THREE.CubeGeometry(100, 100, 100) );

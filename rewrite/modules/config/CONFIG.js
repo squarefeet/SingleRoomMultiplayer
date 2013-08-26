@@ -3,7 +3,7 @@ var CONFIG = {
     // Performance
     resolutionScaling: 1,
 
-    drawBoundingBoxes: true,
+    drawBoundingBoxes: false,
 
     keyMap: {
         'tab': 9
@@ -224,7 +224,7 @@ var CONFIG = {
         },
 
         rockets: {
-            maxAge: 1,
+            maxAge: 3,
             texture: '../../res/textures/smokeparticle.png'
         },
 
@@ -250,7 +250,7 @@ var CONFIG = {
         },
 
         rockets: {
-            particlesPerSecond: 50,
+            particlesPerSecond: 200,
             accelerationSpread: new THREE.Vector3(20, 20, 20),
             size: 10,
             sizeEnd: 50,
@@ -289,18 +289,21 @@ var CONFIG = {
 
         rockets: {
             acceleration: new THREE.Vector3(0, 0, 2000),
-            velocity: new THREE.Vector3(0, 0, 2000),
-            maxVelocity: 4000,
+            velocity: new THREE.Vector3(0, 0, 3000),
+            maxVelocity: 40000,
             freeFlightDuration: 1,
             lerpAmount: 0.07,
             maxAge: 10,
             launchGap: 1000,
-            model: '../../res/models/rocket.dae'
+            model: '../../res/models/rocket.dae',
+            name: 'rocket',
+            rate: 200,
+            bulletConstructor: 'Rocket'
         },
 
         plasmaCannon: {
-            acceleration: new THREE.Vector3(0, 0, 4000),
-            velocity: new THREE.Vector3(0, 0, 10000),
+            acceleration: new THREE.Vector3(0, 0, 2000),
+            velocity: new THREE.Vector3(0, 0, 5000),
             maxVelocity: 20000,
             freeFlightDuration: 1,
             lerpAmount: 0.07,

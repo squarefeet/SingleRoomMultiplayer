@@ -105,7 +105,9 @@ ShaderParticleEmitter.prototype = {
             r = this.recycled,
             pps = this.particlesPerSecond,
             m = this.maxAge,
-            emitterAge = this.age;
+            emitterAge = this.age,
+            duration = this.emitterDuration,
+            numParticles = this.numParticles;
 
         r.length = 0;
 
@@ -135,19 +137,19 @@ ShaderParticleEmitter.prototype = {
             return;
         }
 
-        if( typeof this.emitterDuration === 'number' && this.age > this.emitterDuration ) {
+        if( typeof duration === 'number' && this.age > duration ) {
             this.alive = 0;
             return;
         }
 
 
-        if( emitterAge <= this.maxAge ) {
+        if( emitterAge <= m ) {
             // determine indices of particles to activate
             var startIndex  = start + Math.round( pps * emitterAge );
             var endIndex    = start + Math.round( pps * (emitterAge + dt) );
 
-            if( endIndex > start + this.numParticles ) {
-                endIndex = start + this.numParticles;
+            if( endIndex > start + numParticles ) {
+                endIndex = start + numParticles;
             }
 
             for( var i = startIndex; i < endIndex; i++ ) {
@@ -275,9 +277,11 @@ ShaderParticleGroup.prototype = {
         var z = 2 * Math.random() - 1;
         var t = 6.2832 * Math.random();
         var r = Math.sqrt( 1 - z*z );
-        var vec3 = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
+        var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
 
-        var vec = new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
+        vec.multiplyScalar( radius ).add( base );
+
+        // var vec = new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
 
         if( scale ) {
             vec.multiply( scale );
@@ -376,7 +380,8 @@ ShaderParticleGroup.prototype = {
             this.emitters[i].tick( dt );
         }
 
-        // Set flags to update (causes less garbage than ParticleSystem.sortParticles = true);
+        // Set flags to update (causes less garbage than 
+        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
         this.attributes.age.needsUpdate = true;
         this.attributes.alive.needsUpdate = true;
         this.geometry.verticesNeedUpdate = true;

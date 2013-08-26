@@ -10,6 +10,7 @@ Weapon.prototype = {
     initialize: function( options ) {
         GameObject.call( this );
 
+        this.emitterPool = [];
         this.pool = [];
         this.activeObjects = [];
         this.launchTimes = {};
@@ -28,6 +29,10 @@ Weapon.prototype = {
         this.bulletConstructor  = options.bulletConstructor;
 
 
+        // Store particle groups
+        this.particleGroup = options.particleGroup;
+
+
         // Create a parent mesh that'll hold all the rockets
         this.mesh = new THREE.Object3D();
 
@@ -42,6 +47,11 @@ Weapon.prototype = {
         this.targetMatrix = new THREE.Matrix4();
         this.targetQuaternion = new THREE.Quaternion();
         this.invertXAxisQuaternion = new THREE.Quaternion(1, 0, 0, 0);
+
+
+        // Create an initial pool of bullets
+        this._makeObjects();
+
 
         // Add objects to the scene
         this.renderables.push( this.mesh );
@@ -60,11 +70,21 @@ Weapon.prototype = {
         return obj;
     },
 
-    _makeObjects: function() {
-        for(var i = 0, obj; i < 40; ++i) {
-            obj = this._makeSingleRocket();
+    _makeEmitter: function() {
+        var emitter = new ShaderParticleEmitter( CONFIG.particleEmitters.rockets );
+        this.particleGroup.addEmitter( emitter );
+        return emitter;
+    },
 
+    _makeObjects: function() {
+        for( var i = 0, obj, emitter; i < 40; ++i ) {
+            obj = this._makeSingleObject();
             this.pool.push( obj );
+
+            if( this.particleGroup ) {
+                emitter = this._makeEmitter();
+                this.emitterPool.push( emitter );
+            }
         }
     },
 
@@ -95,11 +115,39 @@ Weapon.prototype = {
         this.mesh.remove( obj.model );
     },
 
-    _setupObject: function( obj, position, quaternion, velocity, phase ) {
+    _getFromEmitterPool: function() {
+        var p = this.emitterPool,
+            r;
+
+        // Grab a rocket from the pool if one is available.
+        if( p.length ) {
+            r = p.pop();
+            r.alive = 1;
+        }
+
+        return r;
+    },
+
+    _returnToEmitterPool: function( emitter ) {
+        if(emitter) {
+            emitter.userData.rocket = null;
+            emitter.alive = 0;
+            this.emitterPool.push( emitter );
+        }
+    },
+
+    _setupObject: function( obj, position, quaternion, velocity, phase, emitter ) {
         obj.model.position.copy( position );
         obj.model.quaternion.copy( quaternion );
         obj.model.quaternion.multiply( this.invertXAxisQuaternion );
         obj.model.translateX( phase ? 50 : -50 );
+
+        if( emitter ) {
+            emitter.userData.obj = obj;
+            emitter.position = obj.model.position;
+            obj.model.userData.emitter = emitter;
+            obj.model.translateY( 50 );
+        }
 
         this._resetObject( obj );
     },
@@ -120,6 +168,10 @@ Weapon.prototype = {
         obj.model.position.set( pos, pos, pos );
 
         this._returnToPool( obj );
+
+        if( obj.model.userData.emitter ) {
+            this._returnToEmitterPool( obj.model.userData.emitter );
+        }
     },
 
 
@@ -133,11 +185,16 @@ Weapon.prototype = {
 
         this.launchTimes[ playerID ] = Date.now();
 
-        var obj = this._getFromPool();
+        var obj = this._getFromPool(),
+            emitter;
+
+        if( this.particleGroup ) {
+            emitter = this._getFromEmitterPool();
+        }
 
         this.phase = !this.phase;
 
-        this._setupObject( obj, position, quaternion, velocity, this.phase );
+        this._setupObject( obj, position, quaternion, velocity, this.phase, emitter );
         this.activeObjects.push( obj );
 
         obj.model.userData.target = target;
@@ -162,13 +219,13 @@ Weapon.prototype = {
             // If the obj's too old, or has collided, destroy it.
             if( userData.age > this.maxAge || (userData.target && userData.distanceToTarget < 100) ) {
                 if( userData.target && userData.distanceToTarget < 100 ) {
-                    this._destroyObject( obj, Rockets.destructionTypes.hitTarget );
+                    this._destroyObject( obj, Weapon.destructionTypes.hitTarget );
                 }
                 else if( userData.age === Number.POSITIVE_INFINITY ) {
-                    this._destroyObject( obj, Rockets.destructionTypes.hitRocket );
+                    this._destroyObject( obj, Weapon.destructionTypes.hitProjectile );
                 }
                 else {
-                    this._destroyObject( obj, Rockets.destructionTypes.timedOut );
+                    this._destroyObject( obj, Weapon.destructionTypes.timedOut );
                 }
 
                 active.splice(i, 1);
@@ -222,6 +279,13 @@ Weapon.prototype = {
         }
     }
 };
+
+
+Weapon.destructionTypes = Object.freeze({
+    hitTarget: 0,
+    hitProjectile: 1,
+    timedOut: 2
+});
 
 
 Weapon.extend = utils.extend;
