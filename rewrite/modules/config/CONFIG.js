@@ -243,7 +243,7 @@ var CONFIG = {
             opacityStart: 1.0,
             opacityEnd: 0.0,
         	texture: '../../res/textures/smokeparticle.png',
-        	hasPerspective: 0
+        	hasPerspective: 1
         }
     },
 
@@ -253,8 +253,8 @@ var CONFIG = {
             type: 'cube',
             particlesPerSecond: 50,
             size: 100,
-            sizeSpread: 10,
-            sizeEnd: 100
+            sizeSpread: 0,
+            sizeEnd: 1000
         },
 
         rockets: {
@@ -270,8 +270,8 @@ var CONFIG = {
         	radius: 1,
             speed: 250,
             speedSpread: 0,
-            particlesPerSecond: 50,
-            size: 100,
+            particlesPerSecond: 100,
+            size: 500,
             sizeSpread: 0,
             sizeEnd: 20,
             emitterDuration: 0.1,
@@ -299,18 +299,18 @@ var CONFIG = {
         },
 
         plasmaCannon: {
-            acceleration: new THREE.Vector3(0, 0, 2000),
-            velocity: new THREE.Vector3(0, 0, 4000),
-            maxVelocity: 10000,
+            acceleration: new THREE.Vector3(0, 0, 4000),
+            velocity: new THREE.Vector3(0, 0, 6000),
+            maxVelocity: 20000,
             freeFlightDuration: 1,
             lerpAmount: 0.07,
-            maxAge: 2,
+            maxAge: 10,
             launchGap: 1,
             model: '../../res/models/PlasmaCannon.dae',
             texture: '../../res/textures/PlasmaCannon.png',
             name: 'plasmaCannon',
             scale: 0.1,
-            rate: 500,
+            rate: 200,
             bulletConstructor: 'PlasmaCannonBullet'
         }
     },
@@ -318,7 +318,7 @@ var CONFIG = {
 
 	ship: {
 		model: '../../res/models/crosswing6-recentered.dae',
-		scale: 0.1,
+		scale: 1,
 		useEmitter: true,
         controls: true
 	},

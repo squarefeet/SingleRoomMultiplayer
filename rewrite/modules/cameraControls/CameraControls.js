@@ -47,11 +47,6 @@ function CameraControls( opts ) {
 		hasInput = !!(options.keyboardHandler && options.mouseHandler),
 		controls = CONFIG.controls;
 
-
-	for(var i = 0; i < options.targetCameras.length; ++i) {
-		options.targetCameras[i].useQuaternion = true;
-	}
-
 	for(var i in this) {
 		if(typeof this[i] === 'function') {
 			this[i] = this[i].bind(this);
@@ -212,7 +207,7 @@ function CameraControls( opts ) {
 		if( hasInput ) {
 			handleInput();
 		}
-
+		
 		updateRotation();
 		updatePosition();
 		updateCameras( dt );

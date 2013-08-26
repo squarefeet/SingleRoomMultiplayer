@@ -5,59 +5,7 @@
         * { margin: 0; padding: 0; }
     </style>
 
-    <script type="text/javascript">
-        if(typeof Function.prototype.bind === 'undefined') {
-            Function.prototype.bind = function (oThis) {
-                if (typeof this !== "function") {
-                  // closest thing possible to the ECMAScript 5 internal IsCallable function
-                  throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
-                }
-
-                var aArgs = Array.prototype.slice.call(arguments, 1),
-                    fToBind = this,
-                    fNOP = function () {},
-                    fBound = function () {
-                      return fToBind.apply(this instanceof fNOP && oThis
-                                             ? this
-                                             : oThis,
-                                           aArgs.concat(Array.prototype.slice.call(arguments)));
-                    };
-
-                fNOP.prototype = this.prototype;
-                fBound.prototype = new fNOP();
-
-                return fBound;
-            };
-        }
-
-        (function() {
-            var lastTime = 0;
-            var vendors = ['ms', 'moz', 'webkit', 'o'];
-            for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-                window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-                window.cancelAnimationFrame =
-                  window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-            }
-
-            if (!window.requestAnimationFrame)
-                window.requestAnimationFrame = function(callback, element) {
-                    var currTime = new Date().getTime();
-                    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-                    var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                      timeToCall);
-                    lastTime = currTime + timeToCall;
-                    return id;
-                };
-
-            if (!window.cancelAnimationFrame)
-                window.cancelAnimationFrame = function(id) {
-                    clearTimeout(id);
-                };
-        }());
-    </script>
-
-
-    <script type="text/javascript" src="../external/THREE-r58.min.js"></script>
+    <script type="text/javascript" src="../external/THREE-r60.js"></script>
     <script type="text/javascript" src="../external/Stats.min.js"></script>
     <script type="text/javascript" src="./ShaderParticles.js"></script>
 </head>
@@ -77,10 +25,15 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
             camera.position.z = 550;
+            camera.position.y = 100;
+
+            camera.lookAt( scene.position );
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
             renderer.setClearColor(0x000000);
+
+
 
             stats = new Stats();
             clock = new THREE.Clock();
@@ -98,15 +51,16 @@
         function initShader() {
             myParticleGroup = new ShaderParticleGroup({
                 texture: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png'),
-                maxAge: 1,
-                opacityStart: 0.0,
-                opacityEnd: 1.0,
-
-                colorStart: new THREE.Color('red'),
-                colorEnd: new THREE.Color('yellow')
+                maxAge: 4
             });
 
-            var base = 400,
+            myParticleGroup2 = new ShaderParticleGroup({
+                texture: THREE.ImageUtils.loadTexture('../../res/textures/smokeparticle.png'),
+                maxAge: 4,
+                blending: THREE.NormalBlending
+            });
+
+            var base = 1,
                 halfBase = base/2;
 
             function getPos() {
@@ -114,19 +68,84 @@
             }
 
 
-            for( var i = 0; i < 100; ++i ) {
+            for( var i = 0; i < 1; ++i ) {
                 myEmitter = new ShaderParticleEmitter({
                     position: new THREE.Vector3(getPos(), getPos(), getPos()),
                     radius: 1,
+                    // radiusScale: new THREE.Vector3(0.99, 1, 0.99),
+
+
+                    opacityStart: 1.0,
+                    opacityEnd: 0,
+
+                    colorStart: new THREE.Color('red'),
+                    colorEnd: new THREE.Color('yellow'),
 
                     speed: 100,
                     speedSpread: 0,
 
-                    particlesPerSecond: 1000,
-                    size: 20,
-                    sizeSpread: 0,
-                    sizeEnd: -2,
+                    particlesPerSecond: 500,
+                    size: 5,
+                    sizeSpread: 40,
+                    sizeEnd: 300,
+                    emitterDuration: 0.1,
+
+                    type: 'sphere',
+                    alive: 0
+                });
+
+                myParticleGroup.addEmitter( myEmitter );
+                emitters.push( myEmitter );
+
+                myEmitter = new ShaderParticleEmitter({
+                    position: new THREE.Vector3(getPos(), getPos(), getPos()),
+                    radius: 1,
+                    // radiusScale: new THREE.Vector3(0.99, 1, 0.99),
+
+
+                    opacityStart: 1.0,
+                    opacityEnd: 0,
+
+                    colorStart: (new THREE.Color()).setRGB(100, 100, 255),
+                    colorEnd: new THREE.Color('white'),
+
+                    speed: 50,
+                    speedSpread: 0,
+
+                    particlesPerSecond: 5000,
+                    size: 5,
+                    sizeSpread: 10,
+                    sizeEnd: 40,
                     emitterDuration: 0.05,
+
+                    type: 'sphere',
+                    alive: 0
+                });
+
+                myParticleGroup.addEmitter( myEmitter );
+                emitters.push( myEmitter );
+
+
+                myEmitter = new ShaderParticleEmitter({
+                    position: new THREE.Vector3(getPos(), getPos(), getPos()),
+                    radius: 1,
+                    radiusScale: new THREE.Vector3(1, 0.1, 1),
+
+                    opacityStart: 1.0,
+                    opacityEnd: 0,
+
+                    colorStart: (new THREE.Color).setRGB(0, 0, 150),
+                    colorSpread: new THREE.Vector3(0, 0, 255),
+                    colorEnd: (new THREE.Color()).setRGB(1, 1, 1),
+
+                    speed: 900,
+                    speedSpread: 50,
+
+                    particlesPerSecond: 5000,
+                    size: 30,
+                    sizeSpread: 10,
+                    sizeEnd: 20,
+                    emitterDuration: 0.2,
 
                     type: 'sphere',
                     alive: 0
@@ -142,9 +161,10 @@
                     emitters[i].alive = !emitters[i].alive;
                     emitters[i].position = new THREE.Vector3();
                 }
-            }, 2000);
+            }, 5000);
 
             scene.add( myParticleGroup.mesh );
+            scene.add( myParticleGroup2.mesh );
         }
 
 
@@ -163,8 +183,9 @@
 
 
         function render( dt ) {
-            myParticleGroup.tick();
-            // updateCamera();
+            myParticleGroup.tick( dt );
+            myParticleGroup2.tick( dt );
+            updateCamera();
 
             renderer.render( scene, camera );
         }

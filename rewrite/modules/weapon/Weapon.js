@@ -45,9 +45,6 @@ Weapon.prototype = {
 
         // Add objects to the scene
         this.renderables.push( this.mesh );
-
-        // Override some GameObject defaults
-        // this.collideWithGameObjects = 1;
     },
 
     // Object creation functions
@@ -93,6 +90,7 @@ Weapon.prototype = {
     },
 
     _returnToPool: function( obj ) {
+        this._resetObject( obj );
         this.pool.push( obj );
         this.mesh.remove( obj.model );
     },
@@ -120,7 +118,6 @@ Weapon.prototype = {
         EVENTS.trigger('weapon:' + this.name + ':destroyed', destructionType, obj.model.position.x, obj.model.position.y, obj.model.position.z );
 
         obj.model.position.set( pos, pos, pos );
-        this._resetObject( obj );
 
         this._returnToPool( obj );
     },
@@ -202,6 +199,7 @@ Weapon.prototype = {
 
             userData.age += dt;
 
+
             this.checkCollision( obj );
         }
     },
@@ -213,15 +211,10 @@ Weapon.prototype = {
 
         for( var i = 0; i < colliders.length; ++i ) {
             if( obj.model.userData.playerID === colliders[i].playerID ) continue;
-
+            
             worldBox2.copy( colliders[i].boundingBox ).applyMatrix4( colliders[i].mesh.matrixWorld );
 
-            if( worldBox1.isIntersectionBox( worldBox2 ) ) {
-
-            // if( GJK_COLLISIONS.intersect( 
-            //     obj.mesh, 
-            //     colliders[i].getBoundingModel()
-            // ) ) {
+            if( obj.model.position.distanceTo( colliders[i].mesh.position ) < colliders[i].maxBoundingSize && worldBox1.isIntersectionBox( worldBox2 ) ) {
                 console.log( obj.model.userData.playerID, colliders[i].playerID )
                 obj.onCollision();
                 break;

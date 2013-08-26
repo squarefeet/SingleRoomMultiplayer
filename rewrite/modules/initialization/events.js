@@ -13,7 +13,8 @@ EVENTS.on('ASSET_LOADER:allLoaded', function( assets ) {
     MIDDLEGROUND_LAYER = new MiddlegroundLayer( {
         layerManager: LAYER_MANAGER,
         renderer: RENDERER,
-        mouseHandler: MOUSE_HANDLER
+        mouseHandler: MOUSE_HANDLER,
+        cameraControls: CAMERA_CONTROLS
     } );
 
     FOREGROUND_LAYER = new ForegoundLayer( {

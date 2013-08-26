@@ -10,6 +10,8 @@ function ShaderParticleEmitter( options ) {
     this.positionSpread         = options.positionSpread || new THREE.Vector3();
     this.radius                 = typeof options.radius === 'number' ? options.radius : 10;
 
+    this.radiusScale            = options.radiusScale || new THREE.Vector3(1, 1, 1);
+
     this.acceleration           = options.acceleration || new THREE.Vector3();
     this.accelerationSpread     = options.accelerationSpread || new THREE.Vector3();
 
@@ -22,6 +24,15 @@ function ShaderParticleEmitter( options ) {
     this.size                   = options.size || 10.0;
     this.sizeSpread             = options.sizeSpread || 0;
     this.sizeEnd                = options.sizeEnd || 10.0;
+
+    this.colorStart             = options.colorStart || new THREE.Color( 'white' );
+    this.colorEnd               = options.colorEnd || new THREE.Color( 'blue' );
+    this.colorSpread            = options.colorSpread || new THREE.Vector3();
+
+    this.opacityStart           = typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1;
+    this.opacityEnd             = typeof options.opacityEnd === 'number' ? options.opacityEnd : 0;
+
+
 
     this.emitterDuration        = options.emitterDuration || null;
     this.alive                  = typeof options.alive === 'number' ? options.alive : 1;
@@ -76,6 +87,10 @@ ShaderParticleEmitter.prototype = {
         var x = ((r * Math.cos(t)) * radius) + base.x;
         var y = ((r * Math.sin(t)) * radius) + base.y;
         var z = (z * radius) + base.z;
+
+        x *= this.radiusScale.x;
+        y *= this.radiusScale.y;
+        z *= this.radiusScale.z;
 
         v.set(x, y, z);
     },
@@ -156,13 +171,6 @@ function ShaderParticleGroup( options ) {
 
     // Uniform properties ( applied to all particles )
     this.maxAge                 = options.maxAge || 3;
-
-    this.colorStart             = options.colorStart || new THREE.Color( 'white' );
-    this.colorEnd               = options.colorEnd || new THREE.Color( 'blue' );
-
-    this.opacityStart           = typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1;
-    this.opacityEnd             = typeof options.opacityEnd === 'number' ? options.opacityEnd : 0;
-
     this.texture                = ( typeof options.texture === 'string' ? ASSET_LOADER.loaded.textures[ options.texture ] : options.texture ) || null;
     this.hasPerspective         = typeof options.hasPerspective === 'number' ? options.hasPerspective : 1;
     this.colorize               = options.colorize || 1;
@@ -175,14 +183,10 @@ function ShaderParticleGroup( options ) {
 
     // Create uniforms
     this.uniforms = {
-        customColor:    { type: 'c', value: this.colorStart },
-        customColorEnd: { type: 'c', value: this.colorEnd },
         duration:       { type: 'f', value: parseFloat( this.maxAge ) },
         texture:        { type: 't', value: this.texture },
         hasPerspective: { type: 'i', value: parseInt( this.hasPerspective ) },
-        colorize:       { type: 'i', value: parseInt( this.colorize ) },
-        opacity:        { type: 'f', value: parseFloat(this.opacityStart) },
-        opacityEnd:     { type: 'f', value: parseFloat(this.opacityEnd) }
+        colorize:       { type: 'i', value: parseInt( this.colorize ) }
     };
 
     this.attributes = {
@@ -191,7 +195,13 @@ function ShaderParticleGroup( options ) {
         alive:          { type: 'f', value: [] },
         age:            { type: 'f', value: [] },
         size:           { type: 'f', value: [] },
-        sizeEnd:        { type: 'f', value: [] }
+        sizeEnd:        { type: 'f', value: [] },
+
+        customColor:    { type: 'c', value: [] },
+        customColorEnd: { type: 'c', value: [] },
+
+        opacity:        { type: 'f', value: [] },
+        opacityEnd:     { type: 'f', value: [] }
     };
 
     this.emitters   = [];
@@ -241,21 +251,50 @@ ShaderParticleGroup.prototype = {
         return v;
     },
 
+    _randomColor: function( base, spread ) {
+        var v = new THREE.Color();
+
+        v.copy( base );
+
+        v.r += Math.random() * spread.x - (spread.x/2);
+        v.g += Math.random() * spread.y - (spread.y/2);
+        v.b += Math.random() * spread.z - (spread.z/2);
+
+        v.r = Math.min( v.r, 255 );
+        v.g = Math.min( v.g, 255 );
+        v.b = Math.min( v.b, 255 );
+
+        return v;
+    },
+
     _randomFloat: function( base, spread ) {
         return base + spread * (Math.random() - 0.5);
     },
 
-    _randomVector3OnSphere: function( base, radius ) {
+    _randomVector3OnSphere: function( base, radius, scale ) {
         var z = 2 * Math.random() - 1;
         var t = 6.2832 * Math.random();
         var r = Math.sqrt( 1 - z*z );
         var vec3 = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
-        return new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
+
+        var vec = new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
+
+        if( scale ) {
+            vec.multiply( scale );
+        }
+
+        return vec;
     },
 
-    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread ) {
+    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale ) {
         var direction = new THREE.Vector3().subVectors( base, position );
-        return direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
+        direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
+
+        if( scale ) {
+            direction.multiply( scale );
+        }
+
+        return direction;
     },
 
     _randomizeExistingVector3: function( vector, base, spread ) {
@@ -285,14 +324,18 @@ ShaderParticleGroup.prototype = {
             alive = a.alive.value,
             age = a.age.value,
             size = a.size.value,
-            sizeEnd = a.sizeEnd.value;
+            sizeEnd = a.sizeEnd.value,
+            customColor = a.customColor.value,
+            customColorEnd = a.customColorEnd.value,
+            opacity = a.opacity.value,
+            opacityEnd = a.opacityEnd.value;
 
         // Create the values
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
-                vertices[i]     = this._randomVector3OnSphere( emitter.position,   emitter.radius );
-                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+                vertices[i]     = this._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
+                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale );
             }
             else {
                 vertices[i]     = this._randomVector3( emitter.position, emitter.positionSpread );
@@ -307,6 +350,12 @@ ShaderParticleGroup.prototype = {
             sizeEnd[i]      = emitter.sizeEnd;
             age[i]          = 0.0;
             alive[i]        = 0.0;
+
+
+            customColor[i]      = this._randomColor( emitter.colorStart, emitter.colorSpread );
+            customColorEnd[i]   = emitter.colorEnd;
+            opacity[i]          = emitter.opacityStart;
+            opacityEnd[i]       = emitter.opacityEnd;
         }
 
         // Cache properties on the emitter so we can access
@@ -340,11 +389,12 @@ ShaderParticleGroup.prototype = {
 ShaderParticleGroup.shaders = {
     vertex: [
         'uniform float duration;',
-        'uniform vec3 customColor;',
-        'uniform vec3 customColorEnd;',
         'uniform int hasPerspective;',
-        'uniform float opacity;',
-        'uniform float opacityEnd;',
+
+        'attribute vec3 customColor;',
+        'attribute vec3 customColorEnd;',
+        'attribute float opacity;',
+        'attribute float opacityEnd;',
 
         'attribute vec3 acceleration;',
         'attribute vec3 velocity;',

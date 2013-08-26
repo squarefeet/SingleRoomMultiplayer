@@ -61,9 +61,9 @@ function Planet( options ) {
     });
 
 
-    this.jupiterGeometry                = new THREE.SphereGeometry( this.details.jupiter.size,       32, 32 );
-    this.jupiterAtmosphereGeometry      = new THREE.SphereGeometry( this.details.jupiter.size + 2,  32, 32 );
-    this.jupiterAtmosphereGeometry2     = new THREE.SphereGeometry( this.details.jupiter.size + 4,  32, 32 );
+    this.jupiterGeometry                = new THREE.SphereGeometry( this.details.jupiter.size,       64, 64 );
+    this.jupiterAtmosphereGeometry      = new THREE.SphereGeometry( this.details.jupiter.size + 2,   64, 64 );
+    this.jupiterAtmosphereGeometry2     = new THREE.SphereGeometry( this.details.jupiter.size + 4,   64, 64 );
     this.ioGeometry                     = new THREE.SphereGeometry( this.details.io.size,            32, 32 );
     this.europaGeometry                 = new THREE.SphereGeometry( this.details.europa.size ,       32, 32 );
 
@@ -86,12 +86,15 @@ function Planet( options ) {
     this.europa.position = options.position.clone();
     this.europa.position.z += this.details.europa.distance;
 
+    this.mesh = new THREE.Object3D();
 
-    this.renderables.push( this.jupiter );
-    this.renderables.push( this.jupiterAtmosphere );
-    this.renderables.push( this.jupiterAtmosphere2 );
-    this.renderables.push( this.io );
-    this.renderables.push( this.europa );
+    this.mesh.add( this.jupiter );
+    this.mesh.add( this.jupiterAtmosphere );
+    this.mesh.add( this.jupiterAtmosphere2 );
+    this.mesh.add( this.io );
+    this.mesh.add( this.europa );
+
+    this.renderables.push( this.mesh );
 }
 
 Planet.prototype = {
@@ -127,10 +130,13 @@ function Sun( options ) {
     this.material.blending = THREE.AdditiveBlending;
 
     this.geometry = new THREE.PlaneGeometry( 200, 200, 1, 1 );
-    this.mesh = new THREE.Mesh( this.geometry, this.material );
+    this.sun = new THREE.Mesh( this.geometry, this.material );
 
-    this.mesh.position = options.position;
-    this.mesh.rotation.y = Math.PI/2;
+    this.sun.position = options.position;
+    this.sun.rotation.y = Math.PI/2;
+
+    this.mesh = new THREE.Object3D();
+    this.mesh.add( this.sun );
 
     this.addLensFlare( options );
     this.renderables.push( this.mesh );
@@ -169,7 +175,6 @@ Sun.prototype = {
         lensFlare.add( textureFlare2, 512, 0.0,     THREE.AdditiveBlending );
         lensFlare.add( textureFlare2, 512, 0.05,    THREE.AdditiveBlending );
         lensFlare.add( textureFlare2, 256, 0.0,     THREE.AdditiveBlending );
-
         lensFlare.add( textureFlare3, 60, 0.6,      THREE.AdditiveBlending );
         lensFlare.add( textureFlare3, 70, 0.7,      THREE.AdditiveBlending );
         lensFlare.add( textureFlare3, 120, 0.9,     THREE.AdditiveBlending );
@@ -181,8 +186,8 @@ Sun.prototype = {
 
         lensFlare.position = this.mesh.position.clone();
         lensFlare.position.z += 20;
-        lensFlare.position.x += 100;
+        // lensFlare.position.x += 100;
 
-        this.renderables.push( lensFlare );
+        this.sun.add( lensFlare );
     }
 };

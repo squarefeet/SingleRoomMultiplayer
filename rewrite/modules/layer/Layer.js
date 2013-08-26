@@ -146,6 +146,15 @@ var MiddlegroundLayer = Layer.extend({
 		var o = this.objects,
 			o3d = this.object3Ds;
 
+
+		// o.skybox = new Skybox( CONFIG.layers.background.skybox );
+		// o.starfield = new Starfield( CONFIG.layers.background.starfield );
+		// o.planet = new Planet( CONFIG.layers.background.planet );
+		// o.sun = new Sun( CONFIG.layers.background.sun );
+
+		// o3d.sunLight = new THREE.DirectionalLight( 0xfffea6, 0.75 );
+	 	// o3d.sunLight.position = CONFIG.layers.background.sun.position;
+
 		o.starfield = new Starfield( CONFIG.layers.middleground.starfield );
 		o.rockets = new Rockets( _.extend( {
 			particleGroup: this.particleGroups.rockets,
@@ -167,8 +176,7 @@ var MiddlegroundLayer = Layer.extend({
 		}, CONFIG.ship )  );
 		o.ship.playerID = 'enemy';
 
-		// o.ship.controls.setForward( true );
-		o.ship.controls.setY( (window.innerWidth/2) -10 );
+		o.ship.controls.setForward( true );
 
 
 		// o.mothership = new Mothership({
@@ -192,12 +200,26 @@ var MiddlegroundLayer = Layer.extend({
 	},
 
 	tick: function( dt ) {
+		var controls = this.options.cameraControls,
+			pos = controls.getPositionForCamera(1);
+
+		// this.objects.planet.tick( dt );
+
+		// this.objects.skybox.mesh.position.copy( pos );
+		// this.objects.planet.mesh.position.copy( pos );
+		// this.objects.sun.mesh.position.copy( pos );
+		// this.object3Ds.sunLight.position.copy( pos );
+
+		// this.object3Ds.sunLight.position.add( pos );
+
 		this.objects.rockets.tick( dt );
 		this.objects.plasmaCannon.tick( dt );
 		
 		this.particleGroups.rockets.tick();
 		this.particleGroups.rocketExplosions.tick();
 		this.particleGroups.engines.tick();
+
+		// console.log(this.objects.ship.mesh.quaternion.x, this.objects.ship.mesh.quaternion.y, this.objects.ship.mesh.quaternion.z, this.objects.ship.mesh.quaternion.w)
 	}
 });
 

@@ -74,3 +74,11 @@ utils.createDrawableBoundingBox = (function() {
         return new THREE.Mesh( new THREE.CubeGeometry( width, height, depth ), material );
     };
 }());
+
+utils.getMaxBoundingSize = function( box ) {
+    var x = Math.abs( box.max.x - box.min.x ),
+        y = Math.abs( box.max.y - box.min.y ),
+        z = Math.abs( box.max.z - box.min.z );
+
+    return Math.max( x, y, z );
+};
