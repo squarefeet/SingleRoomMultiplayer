@@ -40,7 +40,6 @@ function AssetLoader( opts ) {
     this.options.parent.appendChild( this.domElement );
 
     // Bind scope
-
     for(var i in this) {
         if( typeof this[i] === 'function' ) {
             this[i] = this[i].bind( this );
@@ -75,7 +74,7 @@ AssetLoader.prototype = {
     },
 
     deallocateAll: function() {
-        
+
     },
 
     loadAll: function() {

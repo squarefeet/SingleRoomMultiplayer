@@ -1,0 +1,362 @@
+<html>
+
+	<head>
+		<title>Booster Shader</title>
+
+		<style type="text/css">
+			* { margin: 0; padding: 0; }
+		</style>
+
+		<script type="text/javascript" src="../../modules/external/THREE-r60.js"></script>
+        <script type="text/javascript" src="../../modules/external/THREE-r60.ColladaLoader.js"></script>
+		<script type="text/javascript" src="../../modules/external/Stats.min.js"></script>
+
+
+
+		<script type="text/javascript" src="../postProcessing/EffectComposer.js"></script>
+		<script type="text/javascript" src="../postProcessing/SSAOShader.js"></script>
+		<script type="text/javascript" src="../postProcessing/CopyShader.js"></script>
+		<script type="text/javascript" src="../postProcessing/ShaderPass.js"></script>
+		<script type="text/javascript" src="../postProcessing/RenderPass.js"></script>
+		<script type="text/javascript" src="../postProcessing/MaskPass.js"></script>
+		<script type="text/javascript" src="../postProcessing/FilmPass.js"></script>
+		<script type="text/javascript" src="../postProcessing/FilmShader.js"></script>
+		<script type="text/javascript" src="../postProcessing/DotScreenShader.js"></script>
+	</head>
+
+	<body>
+        <script type="text/x-shader" id="vertex">
+            // 'viewMatrix', 'modelViewMatrix', 'projectionMatrix', 'normalMatrix',
+            // 'modelMatrix', 'cameraPosition', 'morphTargetInfluences'
+
+            uniform vec3 BoosterScale;
+            varying vec2 v_TexCoord;
+
+            void main( void ) {
+                vec4 mvPosition = modelViewMatrix * vec4( position * BoosterScale, 1.0 );
+                gl_Position = projectionMatrix * mvPosition;
+
+                v_TexCoord = uv;
+            }
+        </script>
+
+        <script type="text/x-shader" id="fragment">
+            varying vec2 v_TexCoord;
+
+            uniform sampler2D DiffuseMap;
+            uniform sampler2D WaveMap;
+            uniform float u_Time;
+            uniform vec3 Color;
+            uniform float opacity;
+            uniform float WaveRate;
+            uniform float WavePhase;
+            uniform float u_BoosterGain;
+
+            void main( void ){
+                vec4 x0 = 4.0 * texture2D(
+                    DiffuseMap,
+                    clamp(
+                        v_TexCoord + vec2( 0.5 / 128.0, 0.5 / 128.0 ),
+                        vec2( 0.0, 0.0 ),
+                        vec2( 1.0, 1.0 )
+                    )
+                );
+
+                vec4 x1 = texture2D(
+                    WaveMap,
+                    vec2( v_TexCoord.x, v_TexCoord.y + fract( u_Time * WaveRate + WavePhase ) )
+                );
+
+                x1 *= 4.0;
+
+                gl_FragColor = x0 * vec4(Color, opacity) * x1 * u_BoosterGain;
+            }
+        </script>
+
+
+        <script type="text/x-shader" id="vertex-glow">
+            // uniform mat4 u_View;        // viewMatrix
+            // uniform mat4 u_World;       // modelViewMatrix
+            // uniform mat4 u_Projection;  // projectionMatrix
+            uniform float u_BoosterGain;
+
+            // attribute vec4 a_Position; // position
+            uniform vec4 a_TexCoord0;
+            uniform vec4 a_TexCoord1;
+
+            varying vec2 v_TexCoord;
+            varying vec3 v_Color;
+
+            void main( void ){
+                vec4 newPos = vec4( position, 1.0 );
+
+                vec3 x0 = vec3( newPos.zw, a_TexCoord0.x );
+                vec2 x1 = a_TexCoord0.yz;
+                vec2 x2 = vec2( a_TexCoord0.w, a_TexCoord1.x );
+                vec3 x3 = a_TexCoord1.yzw;
+
+                v_TexCoord = newPos.xy * vec2( 0.5, 0.5 ) + vec2( 0.5, 0.5 );
+
+                vec4 x4 = viewMatrix * modelViewMatrix * vec4( x0, 1.0 );
+                vec4 x5 = normalize( viewMatrix * modelViewMatrix * vec4( 0.0, 0.0, 1.0, 0.0 ) );
+
+                float x6 = -x5.z;
+                x6 = smoothstep( 0.0, 1.0, x6 );
+
+                if( x2.y == 0.0 ){
+                    x6 = 1.0;
+                }
+
+                vec2 x7 = vec2( x6 * x6 );
+                x7 *= x1;
+                x7 *= min( 1.0, u_BoosterGain );
+
+                x4.xy += newPos.xy * x7 * 0.5;
+                vec4 x8 = projectionMatrix * x4;
+                v_Color = x3;
+
+                gl_Position = x8;
+            }
+        </script>
+
+        <script type="text/x-shader" id="fragment-glow">
+            uniform sampler2D DiffuseMap;
+
+            varying vec2 v_TexCoord;
+            varying vec3 v_Color;
+
+            void main( void ){
+                vec4 x0 = texture2D( DiffuseMap, v_TexCoord );
+                x0.rgb *= v_Color;
+                gl_FragColor = x0 * 4.0;
+            }
+        </script>
+
+
+      	<script type="text/javascript">
+      		var scene = new THREE.Scene(),
+                camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 10000 ),
+                renderer = new THREE.WebGLRenderer(),
+                stats = new Stats(),
+                clock = new THREE.Clock(),
+                ship,
+                uniforms, attributes,
+                booster, boosterMaterial,
+                glowMesh,
+                glows = [],
+                boosters = [];
+
+            // urls of the images,
+            // one per half axis
+            var urls = [
+                  'skybox/px.png',
+                  'skybox/nx.png',
+                  'skybox/py.png',
+                  'skybox/ny.png',
+                  'skybox/pz.png',
+                  'skybox/nz.png'
+                ],
+
+                // wrap it up into the
+                // object that we need
+                cubemap = THREE.ImageUtils.loadTextureCube(urls);
+
+            // set the format, likely RGB
+            // unless you've gone crazy
+            cubemap.format = THREE.RGBFormat;
+
+
+            var diffuse = THREE.ImageUtils.loadTexture( 'trusthifi.png' ),
+                wave = THREE.ImageUtils.loadTexture( 'wavehifi.png' );
+
+            diffuse.wrapS = diffuse.wrapT = wave.wrapS = wave.wrapT = THREE.RepeatWrapping;
+
+            uniforms = {
+                DiffuseMap: { type: 't', value: diffuse },
+                WaveMap: { type: 't', value: wave },
+                u_Time: { type: 'f', value: Math.random() },
+                Color: { type: 'c', value: new THREE.Color().setHSL( 0.6, 0.5, 0.1 ) },
+                WaveRate: { type: 'f', value: .1 + (Math.random() / 10)  },
+                WavePhase: { type: 'f', value: Math.random() },
+                u_BoosterGain: { type: 'f', value: 1 },
+                opacity: { type: 'f', value: 1 },
+                BoosterScale: { type: 'v3', value: new THREE.Vector3( 1, 1, 1 ) }
+            };
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+
+            scene.add( camera );
+            camera.position.set( 0, 10, 20 );
+            camera.lookAt( scene.position );
+
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor( 0x000000 );
+
+
+            function init() {
+                var light = new THREE.DirectionalLight( 0x999999 );
+                scene.add( light );
+
+                var shader = THREE.ShaderLib["cube"];
+                var uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+                uniforms['tCube'].texture = cubemap;   // textureCube has been init before
+                var material = new THREE.ShaderMaterial({
+                    fragmentShader: shader.fragmentShader,
+                    vertexShader: shader.vertexShader,
+                    uniforms: uniforms,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending
+                });
+
+                var skybox = new THREE.Mesh( new THREE.CubeGeometry(1000, 1000, 1000), material );
+                scene.add(skybox);
+
+                var wrapper = new THREE.Object3D();
+
+                loadShip( function( dae ) {
+                    dae.scale.set(0.1, 0.1, 0.1);
+                    dae.children[0].material.envMap = cubemap;
+                    dae.children[0].material.shininess = 1;
+                    dae.children[0].material.specular.set(10, 10, 10);
+                    dae.children[0].material.needsUpdate = true;
+
+                    wrapper.add( dae );
+
+                    console.log( dae.children[0].material );
+
+                    makeBoosterAndGlow( dae, wrapper, new THREE.Vector3( -50, -30,  500 ) );
+                    makeBoosterAndGlow( dae, wrapper, new THREE.Vector3( 50, -30,   500 ) );
+                    makeBoosterAndGlow( dae, wrapper, new THREE.Vector3( 0, 60,     500 ) );
+
+                    scene.add( wrapper );
+                    animate();
+                } );
+            }
+
+
+            function makeBoosterAndGlow( dae, parent, pos ) {
+                var booster = makeBooster( dae.scale ),
+                    glow = makeGlow( dae.scale );
+
+                booster.position.copy( pos ).multiply( dae.scale );
+                glow.position.copy( pos ).multiply( dae.scale );
+                glow.position.z -= 385 * dae.scale.z;
+
+                boosters.push( booster );
+                glows.push( glow );
+
+                parent.add( booster );
+                parent.add( glow );
+            }
+
+            function loadShip( cb ) {
+                (new THREE.ColladaLoader()).load(
+                    'ship2.dae',
+                    function( collada ) {
+                        var dae = collada.scene;
+                        dae.updateMatrix();
+                        cb( dae );
+                    }
+                );
+            }
+
+            function makeBooster( scale ) {
+                uniforms.WaveRate.value = (Math.random() / 10) + 0.1;
+                uniforms.WavePhase.value = (Math.random());
+                boosterMaterial = new THREE.ShaderMaterial({
+                    uniforms: uniforms,
+                    attributes: {},
+                    vertexShader: document.getElementById('vertex').innerHTML,
+                    fragmentShader: document.getElementById('fragment').innerHTML,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    transparent: true
+                });
+
+                var geometry = new THREE.Geometry(),
+                    matrix = new THREE.Matrix4(),
+                    numPlanes = 3,
+                    angleIncrement = Math.PI / numPlanes,
+                    angle = 0;
+
+                for( var i = 0; i < numPlanes; ++i ) {
+                    var plane = new THREE.PlaneGeometry(
+                        200 * scale.x,
+                        1000 * scale.z
+                    );
+
+                    plane.applyMatrix( matrix );
+                    THREE.GeometryUtils.merge( geometry, plane );
+                    matrix.makeRotationY( (angle += angleIncrement) );
+                }
+
+                var mesh = new THREE.Mesh( geometry, boosterMaterial );
+                mesh.rotation.set(Math.PI/2, 0, 0);
+                return mesh;
+            }
+
+            function makeGlow( scale ) {
+                var diffuse = THREE.ImageUtils.loadTexture( 'whitesharp.png' );
+                diffuse.wrapS = diffuse.wrapT = THREE.ClampToEdgeWrapping;
+
+                var glowMaterial = new THREE.MeshBasicMaterial({
+                        color: new THREE.Color().setHSL( 0.6, 0.5, 0.5 ),
+                        transparent: true,
+                        blending: THREE.AdditiveBlending,
+                        // side: THREE.DoubleSide,
+                        map: diffuse,
+                        depthWrite: false
+                    }),
+
+                    glowGeometry = new THREE.Geometry();
+
+                for( var i = 0, g; i < 5; ++i ) {
+                    g = new THREE.PlaneGeometry(
+                        500 * i * scale.x,
+                        100 * i * scale.y * uniforms.u_BoosterGain.value
+                    );
+                    THREE.GeometryUtils.merge( glowGeometry, g );
+                }
+
+                glowMesh = new THREE.Mesh( glowGeometry, glowMaterial );
+
+                return glowMesh;
+            }
+
+            function animate() {
+                requestAnimationFrame( animate );
+                stats.update();
+                render();
+            }
+
+
+            function render() {
+                renderer.render( scene, camera );
+                uniforms.u_Time.value -= 0.25;
+
+                var now = Date.now() * 0.0005;
+
+                camera.position.x = Math.cos( now ) * 100;
+                camera.position.y = Math.sin( now ) * 100;
+                camera.position.z = Math.sin( now ) * 100;
+                camera.lookAt( scene.position );
+
+                for( var i = 0; i < boosters.length; ++i ) {
+                    glows[i].lookAt( camera.position );
+                }
+
+                // uniforms.u_BoosterGain.value = Math.sin( now );
+            }
+
+
+            init();
+
+		</script>
+	</body>
+
+</html>

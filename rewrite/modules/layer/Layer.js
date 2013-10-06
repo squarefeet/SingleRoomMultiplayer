@@ -136,7 +136,7 @@ var MiddlegroundLayer = Layer.extend({
 			store;
 
 		// Make rocket explosion pool and add each emitter in this pool to its parent particle group
-		p.rocketExplosions = new Pool( 100, ShaderParticleEmitter, CONFIG.particleEmitters.rocketExplosions );
+		p.rocketExplosions = new Pool( 20, ShaderParticleEmitter, CONFIG.particleEmitters.rocketExplosions );
 
 		store = p.rocketExplosions.getStore();
 
@@ -145,7 +145,7 @@ var MiddlegroundLayer = Layer.extend({
 		}
 
 		// Do the same for plasma cannon explosions
-		p.plasmaCannonExplosions = new Pool( 100, ShaderParticleEmitter, CONFIG.particleEmitters.plasmaCannonExplosions );
+		p.plasmaCannonExplosions = new Pool( 20, ShaderParticleEmitter, CONFIG.particleEmitters.plasmaCannonExplosions );
 
 		store = p.plasmaCannonExplosions.getStore();
 
@@ -184,10 +184,10 @@ var MiddlegroundLayer = Layer.extend({
 		o.ship.controls.setY( window.innerHeight / 10 );
 
 
-		// o.mothership = new Mothership({
-		// 	x: 0, y: 0, z: 0,
-		// 	model: '../../res/models/bigShip3.dae'
-		// });
+		o.mothership = new Mothership({
+			x: 0, y: 0, z: -5000,
+			model: '../../res/models/tempMothership.dae'
+		});
 	},
 
 	triggerRocketExplosion: function( type, x, y, z ) {
@@ -226,9 +226,9 @@ var MiddlegroundLayer = Layer.extend({
 		this.objects.plasmaCannon.tick( dt );
 		
 		this.particleGroups.rockets.tick();
-		this.particleGroups.rocketExplosions.tick();
-		this.particleGroups.plasmaCannonExplosions.tick();
-		this.particleGroups.engines.tick();
+		this.particleGroups.rocketExplosions.tick( dt );
+		this.particleGroups.plasmaCannonExplosions.tick( dt );
+		this.particleGroups.engines.tick( dt );
 	}
 });
 

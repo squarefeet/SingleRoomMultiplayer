@@ -97,9 +97,11 @@ Ship.prototype = {
         this.mesh.__updatePosition = true;
         this.mesh.__updateRotation = true;
 
-        var controls = new CameraControls({
+        var controls = new CameraControls( _.extend( {
             targetCameras: [ this.mesh ]
-        });
+        }, CONFIG.cameraControls ) );
+
+
 
         controls.setCenterX( window.innerWidth/2 );
         controls.setCenterY( window.innerHeight/2 );

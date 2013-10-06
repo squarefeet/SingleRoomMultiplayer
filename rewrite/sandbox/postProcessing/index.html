@@ -1,0 +1,213 @@
+<html>
+<head>
+	<title>&gt;1 scene post-processing</title>
+
+	<style type="text/css">
+		* { margin: 0; padding: 0; }
+	</style>
+
+	<script type="text/javascript" src="../../modules/external/THREE-r60.min.js"></script>
+	<script type="text/javascript" src="../../modules/external/Stats.min.js"></script>
+
+	<script type="text/javascript" src="EffectComposer.js"></script>
+	<script type="text/javascript" src="SSAOShader.js"></script>
+	<script type="text/javascript" src="CopyShader.js"></script>
+	<script type="text/javascript" src="ShaderPass.js"></script>
+	<script type="text/javascript" src="RenderPass.js"></script>	
+	<script type="text/javascript" src="MaskPass.js"></script>	
+	<script type="text/javascript" src="FilmPass.js"></script>
+	<script type="text/javascript" src="FilmShader.js"></script>	
+</head>
+<body>
+
+
+	<script type="text/javascript">
+		var scene1, camera1,
+			scene2, camera2,
+			renderer, composer,
+			sphere, cube,
+			depthMaterial, depthTarget;
+
+		function init() {
+			scene1 = new THREE.Scene();
+			scene2 = new THREE.Scene();
+
+			camera1 = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 10000 );
+			camera2 = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 10000 );
+
+			camera1.position.set(0, 0, -500 );
+			camera2.position.set(0, 0, -500 );
+
+			camera1.lookAt( scene1.position );
+			camera2.lookAt( scene2.position );
+
+			scene1.add( camera1 );
+			scene2.add( camera2 );
+
+			renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor( 0x000000 );
+            renderer.autoClear = false;
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            makeSceneObjects();
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+		}
+
+
+		function makeSceneObjects() {
+			sphere = new THREE.Mesh(
+				new THREE.SphereGeometry(50, 32, 32),
+				new THREE.MeshPhongMaterial({
+					color: 0x515802
+				})
+			);
+
+			cube = new THREE.Mesh(
+				new THREE.CubeGeometry(100, 100, 100),
+				new THREE.MeshPhongMaterial({
+					color: 0x082459
+				})
+			);
+
+			var light = new THREE.DirectionalLight( 0xffffff, 1 );
+			light.position.set(0, 0, -1);
+			scene1.add( light );
+
+			var light = new THREE.DirectionalLight( 0xffffff, 1 );
+			light.position.set(0, 0, -1);
+			scene2.add( light );
+
+
+			sphere.position.set( 250, 0, 500 );
+			cube.position.set( -250, 0, 500 );
+
+			scene1.add( sphere );
+			scene2.add( cube );
+		}
+
+
+		function addPostProcessing() {
+			var renderPass1 = new THREE.RenderPass( scene1, camera1 ),
+				renderPass2 = new THREE.RenderPass( scene2, camera2 ),
+				filmPass = new THREE.FilmPass( 0.9, 0.75, 512, false );
+
+			renderPass2.clear = false;
+			filmPass.renderToScreen = true;
+
+
+		    var depthShader = THREE.ShaderLib[ "depthRGBA" ];
+		    var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
+
+		    depthMaterial = new THREE.ShaderMaterial({ 
+		    	fragmentShader: depthShader.fragmentShader, 
+		    	vertexShader: depthShader.vertexShader, 
+		    	uniforms: depthUniforms 
+		    });
+		    depthMaterial.blending = THREE.NoBlending;
+
+	    
+			// create a custom render target with a stencil buffer
+			// the stencil buffer allows for masking to take place
+			var renderTargetParameters = { 
+				minFilter: THREE.LinearFilter, 
+				magFilter: THREE.LinearFilter, 
+				format: THREE.RGBAFormat, 
+				stencilBuffer: true 
+			};
+
+			var renderTarget = new THREE.WebGLRenderTarget( 
+				window.innerWidth, 
+				window.innerHeight, 
+				renderTargetParameters 
+			);
+
+			var clearMask = new THREE.ClearMaskPass();
+			var renderMask = new THREE.MaskPass( scene2, camera2 );
+
+			depthTarget = new THREE.WebGLRenderTarget( 
+				window.innerWidth, 
+				window.innerHeight, 
+				{ 
+					minFilter: THREE.NearestFilter, 
+					magFilter: THREE.NearestFilter, 
+					format: THREE.RGBAFormat 
+				} 
+			);
+
+
+			var ssaoPass = new THREE.ShaderPass( THREE.SSAOShader );
+		    ssaoPass.uniforms[ 'tDepth' ].value = depthTarget;
+		    ssaoPass.uniforms[ 'size' ].value.set( window.innerWidth, window.innerHeight );
+		    ssaoPass.uniforms[ 'cameraNear' ].value = camera2.near;
+		    ssaoPass.uniforms[ 'cameraFar' ].value = camera2.far;
+		    ssaoPass.uniforms[ 'aoClamp' ].value = 0.4;
+
+			composer = new THREE.EffectComposer( renderer, renderTarget );
+			// composer.addPass( renderPass1 );
+			// composer.addPass( filmPass );
+
+			// composer.addPass( renderPass2 );
+			// composer.addPass( filmPass );
+
+
+			composer.addPass( renderPass1 );
+			composer.addPass( renderPass2 );
+			composer.addPass( renderMask );
+		    composer.addPass( ssaoPass );
+		    composer.addPass( clearMask );
+		    composer.addPass( filmPass );
+		}
+
+
+
+		function animate() {
+			requestAnimationFrame( animate );
+			stats.update();
+			moveObjects();
+			render();
+		}
+
+		function moveObjects() {
+			var now = Date.now();
+
+			cube.position.set(
+				Math.cos( now * 0.001 ) * 250,
+				0,
+				500
+			);
+
+			sphere.position.set(
+				0,
+				Math.sin( now * 0.001 ) * 250,
+				500
+			);
+		}
+
+
+		function render() {
+			// renderer.clear();
+			// renderer.render( scene1, camera1 );
+			// renderer.clear( false, true, false );
+			// renderer.render( scene2, camera2 );
+
+			scene2.overrideMaterial = depthMaterial;
+			renderer.render( scene2, camera2, depthTarget, true );
+			scene2.overrideMaterial = null;
+			composer.render();
+		}
+
+		init();
+		addPostProcessing();
+		animate();
+
+	</script>
+</body>
+</html>

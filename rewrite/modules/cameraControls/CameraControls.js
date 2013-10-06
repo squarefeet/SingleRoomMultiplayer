@@ -47,14 +47,14 @@ function CameraControls( opts ) {
 		hasInput = !!(options.keyboardHandler && options.mouseHandler),
 		controls = CONFIG.controls;
 
-	for(var i in this) {
-		if(typeof this[i] === 'function') {
-			this[i] = this[i].bind(this);
-		}
-	}
+	// for(var i in this) {
+	// 	if(typeof this[i] === 'function') {
+	// 		this[i] = this[i].bind(this);
+	// 	}
+	// }
 
 
-	var updateRotation = function() {
+	var updateRotation = function( dt ) {
 		var inc = options.rollVelocityIncrement,
 			dec = options.rollVelocityDecrement,
 			max = options.maxRollVelocity;
@@ -93,7 +93,7 @@ function CameraControls( opts ) {
 
 
 
-	var updatePosition = function() {
+	var updatePosition = function( dt ) {
 		var inc = options.positionVelocityIncrement,
 			dec = options.positionVelocityDecrement,
 			max = options.maxPositionVelocity;
@@ -160,8 +160,8 @@ function CameraControls( opts ) {
 			i;
 
 		rotationQuaternion.set(
-			rotationVector.x,
-			rotationVector.y,
+			rotationVector.x * dt,
+			rotationVector.y * dt,
 			roll,
 			1
 		).normalize();
@@ -208,8 +208,8 @@ function CameraControls( opts ) {
 			handleInput();
 		}
 		
-		updateRotation();
-		updatePosition();
+		updateRotation( dt );
+		updatePosition( dt );
 		updateCameras( dt );
 
 		prevX = mouseX;

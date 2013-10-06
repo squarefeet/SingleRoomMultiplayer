@@ -1,7 +1,9 @@
 var CONFIG = {
 
     // Performance
-    resolutionScaling: 1,
+    resolutionScaling: 1.5,
+
+    frameRateLimit: 1/70,
 
     drawBoundingBoxes: false,
 
@@ -86,7 +88,7 @@ var CONFIG = {
         positionVelocityIncrement: 10,
         positionVelocityDecrement: 0.99,
 
-        rotationDamping: 50,
+        rotationDamping: 50 * 0.016,
 
         rollVelocityIncrement: 0.05,
         rollVelocityDecrement: 0.95,
@@ -130,7 +132,8 @@ var CONFIG = {
             '../../res/models/crosswing6-recentered.dae',
             '../../res/models/crosswingBounding2.dae',
             '../../res/models/bigShip3.dae',
-            '../../res/models/PlasmaCannon.dae'
+            '../../res/models/PlasmaCannon.dae',
+            '../../res/models/tempMothership.dae'
 	    ],
 		textures: [
 	        '../../res/textures/universe_sml_darker.jpg',
@@ -255,9 +258,9 @@ var CONFIG = {
 
         rockets: {
             particlesPerSecond: 200,
-            accelerationSpread: new THREE.Vector3(20, 20, 20),
+            accelerationSpread: new THREE.Vector3(20, 20, 0),
             size: 10,
-            sizeEnd: 50,
+            sizeEnd: 100,
             sizeSpread: 8,
             alive: 0,
             colorStart: new THREE.Color( 'white' ),
@@ -315,7 +318,7 @@ var CONFIG = {
             freeFlightDuration: 0.5,
             lerpAmount: 0.07,
             maxAge: 10,
-            launchGap: 1000,
+            launchGap: 1,
             model: '../../res/models/rocket.dae',
             name: 'rocket',
             rate: 200,

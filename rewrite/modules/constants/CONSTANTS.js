@@ -32,5 +32,6 @@ var RENDERER = new Renderer({
 
     gammaInput: true,
     gammaOutput: true,
-    physicallyBasedShading: true
+    physicallyBasedShading: true,
+    clearAlpha: 0.1
 });

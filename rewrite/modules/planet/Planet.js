@@ -185,7 +185,7 @@ Sun.prototype = {
         lensFlare.customUpdateCallback = lensFlareUpdateCallback;
 
         lensFlare.position = this.mesh.position.clone();
-        lensFlare.position.z += 20;
+        lensFlare.position.z += 50;
         // lensFlare.position.x += 100;
 
         this.sun.add( lensFlare );

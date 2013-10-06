@@ -54,6 +54,17 @@ function LayerManager( opts ) {
 		store[ name ] = [];
 	};
 
+	var createComposerLayer = function() {
+		var composerScene = new THREE.Scene(),
+			composerCamera = new THREE.PerspectiveCamera(
+				options.fov,
+				1,
+				options.near,
+				options.far
+			),
+			composerQuad = new THREE.PlaneGeometry();
+	};
+
 	var addFogToLayer = function( layerName, color, dropoff ) {
 		layers[ layerName ].scene.fog = new THREE.FogExp2( color, dropoff );
 	};

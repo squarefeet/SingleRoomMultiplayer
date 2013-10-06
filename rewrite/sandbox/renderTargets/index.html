@@ -1,0 +1,159 @@
+<html>
+
+	<head>
+		<title>RenderTargets</title>
+
+		<style type="text/css">
+			* { margin: 0; padding: 0; }
+		</style>
+
+		<script type="text/javascript" src="../../modules/external/THREE-r60.min.js"></script>
+		<script type="text/javascript" src="../../modules/external/Stats.min.js"></script>
+
+
+
+		<script type="text/javascript" src="../postProcessing/EffectComposer.js"></script>
+		<script type="text/javascript" src="../postProcessing/SSAOShader.js"></script>
+		<script type="text/javascript" src="../postProcessing/CopyShader.js"></script>
+		<script type="text/javascript" src="../postProcessing/ShaderPass.js"></script>
+		<script type="text/javascript" src="../postProcessing/RenderPass.js"></script>	
+		<script type="text/javascript" src="../postProcessing/MaskPass.js"></script>	
+		<script type="text/javascript" src="../postProcessing/FilmPass.js"></script>
+		<script type="text/javascript" src="../postProcessing/FilmShader.js"></script>	
+		<script type="text/javascript" src="../postProcessing/DotScreenShader.js"></script>	
+	</head>
+
+	<body>
+		<script type="text/javascript">
+			var roundToNearestPowerOfTwo = function( n ) {
+			    n--;
+			    n |= n >> 1;
+			    n |= n >> 2;
+			    n |= n >> 4;
+			    n |= n >> 8;
+			    n |= n >> 16;
+			    n++;
+
+			    return n;
+			};
+
+			var largestDimension = Math.max( window.innerWidth, window.innerHeight );
+			var largestDimensionRounded = roundToNearestPowerOfTwo( largestDimension );
+
+			console.log( largestDimension );
+
+			var scene = new THREE.Scene();
+			var renderScene = new THREE.Scene();
+
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 10000 );
+			var renderCamera = new THREE.PerspectiveCamera( 75, 1, 1, 10000 );
+
+			var renderer = new THREE.WebGLRenderer();
+			var stats = new Stats();
+            var clock = new THREE.Clock();
+
+            var renderTarget = new THREE.WebGLRenderTarget( largestDimensionRounded, largestDimensionRounded, { 
+            	format: THREE.RGBFormat,
+            	minFilter: THREE.LinearFilter, 
+				magFilter: THREE.LinearFilter, 
+				stencilBuffer: true 
+            } );
+            var quadGeometry = new THREE.PlaneGeometry( largestDimensionRounded, largestDimensionRounded, 1, 1 );
+            var quadMaterial = new THREE.MeshBasicMaterial({ map: renderTarget });
+            var quadMesh = new THREE.Mesh( quadGeometry, quadMaterial );
+
+
+            var cube = new THREE.Mesh( 
+            	new THREE.CubeGeometry(100, 100, 100), 
+            	new THREE.MeshBasicMaterial({ color: 0x002245 }) 
+            );
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+
+            quadMesh.position.z = -1000;
+            scene.add( quadMesh );
+            scene.add( camera );
+            camera.lookAt( quadMesh.position );
+
+
+            cube.position.z = -101;
+            renderScene.add( cube );
+            renderScene.add( renderCamera );
+            // renderCamera.lookAt( cube.position );
+
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor( 0xffffff );
+            renderer.autoClear = false;
+
+
+            // Make another scene!
+            var fgScene = new THREE.Scene();
+            var fgCamera = new THREE.PerspectiveCamera(75, 1, 1, 1000);
+            var fgCube = new THREE.Mesh( 
+            	new THREE.CubeGeometry(100, 100, 100), 
+            	new THREE.MeshBasicMaterial({ color: 0x00ff00 }) 
+            );
+
+            fgCube.position.z = -200;
+
+            fgScene.add( fgCamera );
+            fgScene.add( fgCube );
+
+
+            var composer = new THREE.EffectComposer( renderer ),
+            	renderPass = new THREE.RenderPass( scene, camera ),
+            	dotPass = new THREE.ShaderPass( THREE.DotScreenShader ),
+            	filmPass = new THREE.FilmPass( 0.9, 0.4, 1024, true );
+
+			dotPass.uniforms[ 'scale' ].value = 3;
+			// dotPass.renderToScreen = true;
+			filmPass.renderToScreen = true;
+
+            composer.addPass( renderPass );
+            composer.addPass( filmPass );
+            // composer.addPass( dotPass );
+
+
+
+            function updateFGCube() {
+            	fgCube.position.x = Math.cos(Date.now() * 0.001) * 50 - 25;
+            	fgCube.position.y = Math.sin(Date.now() * 0.001) * 50 - 25;
+            }
+
+            function updateCube() {
+            	// cube.position.z = Math.cos(Date.now() * 0.005) * 100;
+            }
+
+            function animate() {
+            	requestAnimationFrame( animate );
+            	updateFGCube();
+            	updateCube();
+            	render();
+            	stats.update();
+            }
+
+
+            function render() {
+            	// renderer.clear();
+            	
+            	renderer.render( renderScene, renderCamera, renderTarget, true );
+            	renderer.clear( false, true, false );
+            	renderer.render( fgScene, fgCamera, renderTarget, false );
+            	renderer.clear( false, true, false );
+            	composer.render();
+
+            	// renderer.render( scene, camera );
+            	// renderer.render( renderScene, renderCamera );
+            	// renderer.render( fgScene, fgCamera );
+            }
+
+            animate();
+
+		</script>
+	</body>
+
+</html>
