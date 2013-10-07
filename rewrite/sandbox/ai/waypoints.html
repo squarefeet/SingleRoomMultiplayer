@@ -1,0 +1,121 @@
+<html>
+	<head>
+		<title>AI Tests</title>
+
+		<style type="text/css">
+			* { margin: 0; padding: 0; }
+		</style>
+
+		<script type="text/javascript" src="../../modules/external/THREE-r60.js"></script>
+		<script type="text/javascript" src="../../modules/external/Stats.min.js"></script>
+		<script type="text/javascript" src="js/Waypoints.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript">
+			var scene = new THREE.Scene(),
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 10000 ),
+                renderer = new THREE.WebGLRenderer(),
+                stats = new Stats(),
+                clock = new THREE.Clock();
+
+            camera.position.set( 0, 0, 1200 );
+
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+
+            var waypoints = new Waypoints(),
+            	ship = new THREE.Mesh( new THREE.CubeGeometry(10, 10, 50), new THREE.MeshBasicMaterial({
+            		color: 0x867589
+            	}));
+
+            var nubbin = new THREE.Mesh( new THREE.SphereGeometry(1, 16, 16), new THREE.MeshBasicMaterial({
+            		color: new THREE.Color().setHSL( Math.random(), 0.5, 0.5 )
+            	}) );
+
+           	nubbin.position.z += 10;
+            ship.add( nubbin );
+
+
+            var targets = [];
+
+            function makeTarget( v ) {
+            	var target = new THREE.Mesh( new THREE.SphereGeometry(10, 10, 16, 16), new THREE.MeshBasicMaterial({
+            		color: new THREE.Color().setHSL( Math.random(), 0.5, 0.5 )
+            	}) );
+
+            	target.position.copy( v );
+
+            	targets.push( target );
+
+            	waypoints.addPoint( v );
+            	scene.add( target );
+            }
+
+            ship.velocity = 5;
+            ship.steerAmount = 0.02;
+            ship.targetMatrix = new THREE.Matrix4();
+            ship.targetQuaternion = new THREE.Quaternion();
+
+            for( var i = 0; i < 20; ++i ) {
+            	var size = 1000;
+
+            	makeTarget( new THREE.Vector3(
+            		(size/2) - Math.random() * size,
+            		(size/2) - Math.random() * size,
+            		(size/2) - Math.random() * size
+            	));
+            }
+
+            waypoints.registerObject( ship );
+
+
+
+            scene.add( ship );
+            // camera.position = ship.position;
+
+
+
+            function updateShip() {
+            	var currentWaypoint = waypoints.getPointAtIndex( ship.waypointsIndex );
+
+            	targets[ ship.waypointsIndex ].material.color.setHSL( Math.random(), 0.5, Math.random() );
+
+            	// camera.lookAt( currentWaypoint );
+
+            	ship.targetMatrix.lookAt( currentWaypoint, ship.position, ship.up );
+            	ship.targetQuaternion.setFromRotationMatrix( ship.targetMatrix );
+
+            	ship.quaternion.slerp( ship.targetQuaternion, ship.steerAmount );
+
+            	ship.translateZ( ship.velocity );
+
+            	var dist = ship.position.distanceTo( currentWaypoint );
+
+            	if( dist < ship.velocity * ship.steerAmount * 1400 ) {
+            		ship.waypointsIndex += 1;
+
+            		if( ship.waypointsIndex === waypoints.getNumPoints() ) {
+            			ship.waypointsIndex = 0;
+            		}
+            	}
+            }
+
+
+
+			function animate() {
+                requestAnimationFrame( animate );
+                stats.update();
+                render();
+                updateShip();
+            }
+
+
+            function render() {
+                renderer.render( scene, camera );
+                camera.lookAt( ship.position );
+            }
+
+            animate();
+		</script>
+	</body>
+</html>
