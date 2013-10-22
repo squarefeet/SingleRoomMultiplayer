@@ -1,0 +1,94 @@
+<html>
+	<head>
+		<title>AI Tests</title>
+
+		<style type="text/css">
+			* { margin: 0; padding: 0; }
+		</style>
+
+		<script type="text/javascript" src="../../modules/external/THREE-r60.js"></script>
+		<script type="text/javascript" src="../../modules/external/Stats.min.js"></script>
+		<script type="text/javascript" src="js/Waypoints.js"></script>
+        <script type="text/javascript" src="js/Flags.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript">
+			var scene = new THREE.Scene(),
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 10000 ),
+                renderer = new THREE.WebGLRenderer(),
+                stats = new Stats(),
+                clock = new THREE.Clock();
+
+            camera.position.set( 0, 900, 0 );
+            camera.lookAt( scene.position );
+
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+
+
+            var ship = new THREE.Mesh( new THREE.CubeGeometry(10, 10, 20), new THREE.MeshBasicMaterial({
+        		color: 0x867589
+        	}));
+
+
+            ship.steering = new THREE.Vector3();
+            ship.maxSteerForce = new THREE.Vector3( 10, 10, 10 );
+            ship.mass = 100;
+
+            ship.velocity = new THREE.Vector3(-10, -10, -10);
+            ship.desiredVelocity = new THREE.Vector3();
+            ship.maxVelocity = new THREE.Vector3( 10, 10, 10 );
+
+            ship.targetMatrix = new THREE.Matrix4();
+            ship.targetQuaternion = new THREE.Quaternion();
+
+            scene.add( ship );
+
+
+            var target = new THREE.Mesh( new THREE.SphereGeometry(10, 16, 16), new THREE.MeshBasicMaterial({
+                color: 0x867589
+            }));
+            target.position.set(250, 100, 100);
+            scene.add( target );
+
+
+
+            function updateShipVelocity() {
+                ship.velocity.subVectors(target.position, ship.position).normalize();
+                ship.position.add( ship.velocity );
+            }
+
+
+            function updateShipSteering() {
+                ship.desiredVelocity
+                    .subVectors( target.position, ship.position )
+                    // .normalize()
+                    // .multiply( ship.maxVelocity );
+
+                ship.steering.subVectors( ship.desiredVelocity, ship.velocity ).min( ship.maxSteerForce );
+                ship.steering.divideScalar( ship.mass );
+
+                ship.velocity.add( ship.steering ).min( ship.maxVelocity );
+
+                ship.position.add( ship.velocity );
+            }
+
+
+
+			function animate() {
+                requestAnimationFrame( animate );
+                stats.update();
+                render();
+                updateShipSteering();
+            }
+
+
+            function render() {
+                renderer.render( scene, camera );
+                camera.lookAt( ship.position );
+            }
+
+            animate();
+		</script>
+	</body>
+</html>

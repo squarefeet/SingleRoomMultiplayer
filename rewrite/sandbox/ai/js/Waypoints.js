@@ -1,13 +1,9 @@
 function Waypoints() {
 	this.points = [];
+	this.index = 0;
 }
 
 Waypoints.prototype = {
-
-	registerObject: function( obj ) {
-		obj.waypoints = this;
-		obj.waypointsIndex = 0;
-	},
 
 	addPoint: function( v ) {
 		this.points.push( v );
@@ -49,4 +45,26 @@ Waypoints.prototype = {
 	getNumPoints: function() {
 		return this.points.length;
 	},
+
+	getCurrentWaypoint: function() {
+		return this.getPointAtIndex( this.index );
+	},
+
+	nextWaypoint: function() {
+		if( ++this.index === this.points.length ) {
+			this.index = 0;
+		}
+	},
+
+	prevWaypoint: function() {
+		if( --this.index === -1 ) {
+			this.index = this.points.length - 1;
+		}
+	},
+
+	randomWaypoint: function() {
+		this.index = Math.random() * this.points.length | 0;
+	}
+
+
 };
